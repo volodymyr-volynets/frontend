@@ -16,10 +16,10 @@ class numbers_frontend_captcha_checkbox_controller_captcha {
 				if ($garbage_verified === null && !empty($garbage) && !empty($input['garbage']) && $garbage == $input['garbage']) {
 					// putting flag into sessions
 					session::set(['numbers', 'captcha', $token_data['data'], 'garbage_verified'], true);
-					layout::render_as_json(['success' => true]);
+					layout::render_as(['success' => true], 'application/json');
 				} else {
 					session::set(['numbers', 'captcha', $token_data['data'], 'garbage_verified'], false);
-					layout::render_as_json(['success' => false]);
+					layout::render_as(['success' => false], 'application/json');
 				}
 			}
 		}

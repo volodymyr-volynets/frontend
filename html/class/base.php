@@ -28,7 +28,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 * @param array $options
 	 * @return string
 	 */
-	private static function generate_select_options($options) {
+	private static function generate_select_options($options, $value) {
 		$result = '';
 		foreach($options as $k => $v) {
 			$k = (string) $k;
@@ -282,13 +282,13 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		}
 		// options first
 		if (!empty($options_array)) {
-			$result.= self::generate_select_options($options_array);
+			$result.= self::generate_select_options($options_array, $value);
 		}
 		// optgroups second
 		if (!empty($optgroups_array)) {
 			foreach ($optgroups_array as $k2 => $v2) {
 				$result.= '<optgroup label="' . $v2['name'] . '" id="' . $k2 . '">';
-					$result.= self::generate_select_options($v2['options']);
+					$result.= self::generate_select_options($v2['options'], $value);
 				$result.= '</optgroup>';
 			}
 		}
@@ -435,7 +435,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 			if (is_array($v)) {
 				$temp3 = !empty($v['value']) ? $v['value'] : '';
 				unset($v['value']);
-				$temp[]= '<li' . self::generate_attributes($v) . '>' . $temp3 . '</li>';
+				$temp[]= '<li ' . self::generate_attributes($v) . '>' . $temp3 . '</li>';
 			} else {
 				$temp[]= '<li>' . $v . '</li>';
 			}
@@ -469,6 +469,11 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 *
 	 * @param mixed $msg
 	 * @param string $type
+	 *		error
+	 *		warning
+	 *		success
+	 *		info
+	 *		other
 	 * @return string
 	 */
 	public static function message($options = []) {

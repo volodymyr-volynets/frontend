@@ -39,7 +39,8 @@ class numbers_frontend_captcha_gd_base extends numbers_frontend_captcha_class_ba
 			$angle = rand(-30, 30);
 			imagettftext($image, $font_size, $angle, $x, $y, $color, __DIR__ . '/fonts/arial.ttf', $word[$i]);
 		}
-		// output image
+		// output image, important to set content type in application
+		application::set('flag.global.__content_type', 'image/png');
 		header("Content-type: image/png");
 		imagepng($image);
 		imagedestroy($image);
