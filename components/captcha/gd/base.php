@@ -1,6 +1,6 @@
 <?php
 
-class numbers_frontend_captcha_gd_base extends numbers_frontend_captcha_class_base implements numbers_frontend_captcha_interface_base {
+class numbers_frontend_components_captcha_gd_base extends numbers_frontend_components_captcha_class_base implements numbers_frontend_components_captcha_interface_base {
 
 	/**
 	 * Draw captcha
@@ -39,27 +39,41 @@ class numbers_frontend_captcha_gd_base extends numbers_frontend_captcha_class_ba
 			$angle = rand(-30, 30);
 			imagettftext($image, $font_size, $angle, $x, $y, $color, __DIR__ . '/fonts/arial.ttf', $word[$i]);
 		}
-		// output image, important to set content type in application
-		application::set('flag.global.__content_type', 'image/png');
-		header("Content-type: image/png");
-		imagepng($image);
-		imagedestroy($image);
-		exit;
+		// returning image
+		if (!empty($options['return_image'])) {
+			ob_start();
+			imagepng($image);
+			imagedestroy($image);
+			return ob_get_clean();
+		} else {
+			// output image, important to set content type in application
+			application::set('flag.global.__content_type', 'image/png');
+			header("Content-type: image/png");
+			imagepng($image);
+			imagedestroy($image);
+			exit;
+		}
 	}
 
 	/**
-	 * Captcha image tag
+	 * Captcha
 	 *
-	 * @param string $id
+	 * @param array $options
 	 * @return string
 	 */
-	public function captcha($options = []) {
-		$options['id'] = isset($options['id']) ? ($options['id'] . '') : 'default';
-		$options['style'] = isset($options['style']) ? $options['style'] : 'vertical-align: middle;';
-		$crypt = new crypt();
-		$token = $crypt->token_create('captcha', $options['id']);
-		$options['src'] = '/numbers/frontend/captcha/gd/controller/captcha.png?token=' . $token;
-		$options['id'].= '_gd_base';
-		return html::img($options);
+	public static function captcha($options = []) {
+		$captcha_link = $options['id'] ?? 'default';
+		// generating password
+		$password = self::generate_password($captcha_link, $options['password_letters'] ?? null, $options['password_length'] ?? 5);
+		array_key_unset($options, ['password_letters', 'password_length']);
+		$image_options = [
+			'src' => 'data:image/png;base64,' . base64_encode(self::draw($password, ['return_image' => true])),
+			'style' => $options['img_style'] ?? 'vertical-align: middle;',
+		];
+		if (!empty($options['only_image'])) {
+			return html::img($image_options);
+		} else {
+			return '<table width="100%"><tr><td>' . html::input($options) . '</td><td width="1%">&nbsp;</td><td width="1%">' . html::img($image_options) . '</td></tr></table>';
+		}
 	}
 }

@@ -6,12 +6,108 @@
 class numbers_frontend_html_class_base implements numbers_frontend_html_interface_base {
 
 	/**
+	 * Cached options
+	 *
+	 * @var array
+	 */
+	public static $cached_options = [];
+
+	/**
+	 * Process options
+	 *
+	 * @param string $model_and_method
+	 * @return array
+	 */
+	public static function process_options($model_and_method, $existing_object = null) {
+		if (isset(self::$cached_options[$model_and_method])) {
+			return self::$cached_options[$model_and_method];
+		} else {
+			$temp = explode('::', $model_and_method);
+			if (count($temp) == 1) {
+				$model = $temp[0];
+				$method = 'options';
+			} else {
+				$model = $temp[0];
+				$method = $temp[1];
+			}
+			if ($model == 'this' && !empty($existing_object)) {
+				$object = $existing_object;
+			} else {
+				$object = new $model();
+			}
+			self::$cached_options[$model_and_method] = $object->{$method}();
+			return self::$cached_options[$model_and_method];
+		}
+	}
+
+	/**
+	 * Generate html based on value in options
+	 *
+	 * @param mixed $value
+	 * @param array $data
+	 * @return string
+	 */
+	public static function render_value_from_options($value, $data) {
+		$result = [];
+		if (is_array($value)) {
+			$common = array_intersect($value, array_keys($data));
+			foreach ($common as $k => $v) {
+				$i18n = isset($data[$v]['i18n']) ? $data[$v]['i18n'] : null;
+				$result[]= i18n($i18n, $data[$v]['name']);
+			}
+		} else {
+			if (isset($data[$value])) {
+				$i18n = isset($data[$value]['i18n']) ? $data[$value]['i18n'] : null;
+				$result[]= i18n($i18n, $data[$value]['name']);
+			}
+		}
+		return implode(', ', $result);
+	}
+
+	/**
+	 * Generate html tag
+	 *
+	 * @param string $tag
+	 * @param array $options
+	 * @return string
+	 */
+	public static function tag($tag, $options = []) {
+		$value = isset($options['value']) ? $options['value'] : '';
+		unset($options['value'], $options['options']);
+		return '<' . $tag . ' ' . self::generate_attributes($options) . '>' . $value . '</' . $tag . '>';
+	}
+
+	/**
+	 * @see html::div()
+	 */
+	public static function div($options = []) {
+		return html::tag('div', $options);
+	}
+
+	/**
+	 * Label
+	 *
+	 * @param array $options
+	 * @return string
+	 */
+	public static function label($options = []) {
+		return html::tag('label', $options);
+	}
+
+	/**
+	 * @see html::span()
+	 */
+	public static function span($options = []) {
+		return html::tag('span', $options);
+	}
+
+	/**
 	 * Generate attributes
 	 *
 	 * @param array $options
 	 * @return string
 	 */
-	private static function generate_attributes($options) {
+	protected static function generate_attributes($options) {
 		$result = [];
 		foreach ($options as $k => $v) {
 			if (is_array($v)) {
@@ -62,22 +158,16 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	}
 
 	/**
-	 * Link element
-	 *
-	 * @param array $options
-	 * @return string
+	 * @see html::a()
 	 */
 	public static function a($options = []) {
-		$value = !empty($options['value']) ? $options['value'] : '';
-		unset($options['value']);
+		$value = isset($options['value']) ? $options['value'] : '';
+		unset($options['value'], $options['options']);
 		return '<a ' . self::generate_attributes($options) . '>' . $value . '</a>';
 	}
 
 	/**
-	 * Image element
-	 *
-	 * @param array $options
-	 * @return string
+	 * @see html::img()
 	 */
 	public static function img($options = []) {
 		$options['border'] = isset($options['border']) ? $options['border'] : 0;
@@ -85,13 +175,10 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	}
 
 	/**
-	 * Script element
-	 *
-	 * @param array $options
-	 * @return string
+	 * @see html::script()
 	 */
 	public static function script($options = []) {
-		$value = !empty($options['value']) ? $options['value'] : '';
+		$value = isset($options['value']) ? $options['value'] : '';
 		unset($options['value']);
 		$options['type'] = !empty($options['type']) ? $options['type'] : 'text/javascript';
 		return '<script ' . self::generate_attributes($options) . '>' . $value . '</script>';
@@ -104,17 +191,14 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 * @return string
 	 */
 	public static function style($options = []) {
-		$value = !empty($options['value']) ? $options['value'] : '';
+		$value = isset($options['value']) ? $options['value'] : '';
 		unset($options['value']);
 		$options['type'] = !empty($options['type']) ? $options['type'] : 'text/css';
 		return '<style ' . self::generate_attributes($options) . '>' . $value . '</style>';
 	}
 
 	/**
-	 * Input element
-	 *
-	 * @param array $options
-	 * @return string
+	 * @see html::input()
 	 */
 	public static function input($options = []) {
 		$options['type'] = isset($options['type']) ? $options['type'] : 'text';
@@ -136,15 +220,12 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		if (!isset($options['autocomplete'])) {
 			$options['autocomplete'] = 'off';
 		}
-		$options['value'] = !empty($options['value']) ? htmlspecialchars($options['value']) : '';
+		$options['value'] = isset($options['value']) ? htmlspecialchars($options['value']) : '';
 		return '<input ' . self::generate_attributes($options) . ' />';
 	}
 
 	/**
-	 * Radio element
-	 *
-	 * @param array $options
-	 * @return string
+	 * @see html::radio()
 	 */
 	public static function radio($options = []) {
 		if (!empty($options['checked'])) {
@@ -157,14 +238,11 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		}
 		unset($options['options'], $options['readonly']);
 		$options['type'] = 'radio';
-		return self::input($options);
+		return html::input($options);
 	}
 
 	/**
-	 * Checkbox element
-	 *
-	 * @param array $options
-	 * @return string
+	 * @see html::radio()
 	 */
 	public static function checkbox($options = []) {
 		if (empty($options['value'])) {
@@ -189,18 +267,15 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		}
 		unset($options['options'], $options['readonly']);
 		$options['type'] = 'checkbox';
-		return self::input($options);
+		return html::input($options);
 	}
 
 	/**
-	 * Password element
-	 *
-	 * @param array $options
-	 * @return string
+	 * @see html::password()
 	 */
 	public static function password($options = []) {
 		$options['type'] = 'password';
-		return self::input($options);
+		return html::input($options);
 	}
 
 	/**
@@ -211,7 +286,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 */
 	public static function file($options = []) {
 		$options['type'] = 'file';
-		return self::input($options);
+		return html::input($options);
 	}
 
 	/**
@@ -222,7 +297,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 */
 	public static function hidden($options = []) {
 		$options['type'] = 'hidden';
-		return self::input($options);
+		return html::input($options);
 	}
 
 	/**
@@ -233,7 +308,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 */
 	public static function textarea($options = []) {
 		$options['wrap'] = isset($options['wrap']) ? $options['wrap'] : 'off';
-		$value = !empty($options['value']) ? $options['value'] : '';
+		$value = isset($options['value']) ? $options['value'] : '';
 		unset($options['value'], $options['maxlength']);
 		if (empty($options['readonly'])) {
 			unset($options['readonly']);
@@ -244,10 +319,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	}
 
 	/**
-	 * Select element
-	 *
-	 * @param array $options
-	 * @return string
+	 * @see html::select()
 	 */
 	public static function select($options = []) {
 		$multiselect = null;
@@ -273,7 +345,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		// options & optgroups
 		$optgroups_array = !empty($options['optgroups']) ? $options['optgroups'] : [];
 		$options_array = !empty($options['options']) ? $options['options'] : [];
-		$value = !empty($options['value']) ? $options['value'] : null;
+		$value = isset($options['value']) ? $options['value'] : null;
 		unset($options['options'], $options['optgroups'], $options['value'], $options['no_choose']);
 		// assembling
 		$result = '';
@@ -303,7 +375,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 */
 	public static function multiselect($options = []) {
 		$options['multiple'] = 1;
-		return self::select($options);
+		return html::select($options);
 	}
 
 	/**
@@ -314,9 +386,9 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 */
 	public static function button($options = []) {
 		$options['type'] = 'button';
-		$options['value'] = isset($options['value']) ? $options['value'] : 'Submit';
-		$options['class'] = isset($options['class']) ? $options['class'] : 'button';
-		return self::input($options);
+		$options['value'] = $options['value'] ?? strip_tags(i18n(null, 'Submit'));
+		$options['class'] = $options['class'] ?? 'button';
+		return html::input($options);
 	}
 
 	/**
@@ -326,31 +398,25 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 * @return string
 	 */
 	public static function button2($options = []) {
-		$options['type'] = isset($options['type']) ? $options['type'] : 'submit';
-		$value = isset($options['value']) ? $options['value'] : 'Submit';
-		$options['class'] = isset($options['class']) ? $options['class'] : 'button';
-		$options['value'] = !empty($options['name']) ? $options['name'] : 1;
+		$options['type'] = $options['type'] ?? 'submit';
+		$value = $options['value'] ?? strip_tags(i18n(null, 'Submit'));
+		$options['class'] = $options['class'] ?? 'button';
+		$options['value'] = 1;
 		return '<button ' . self::generate_attributes($options) . '>' . $value . '</button>';
 	}
 
 	/**
-	 * Submit element
-	 *
-	 * @param array $options
-	 * @return string
+	 * @see html::submit()
 	 */
 	public static function submit($options = []) {
 		$options['type'] = 'submit';
-		$options['value'] = isset($options['value']) ? $options['value'] : 'Submit';
-		$options['class'] = isset($options['class']) ? $options['class'] : 'button';
-		return self::input($options);
+		$options['value'] = $options['value'] ?? strip_tags(i18n(null, 'Submit'));
+		$options['class'] = $options['class'] ?? 'button';
+		return html::input($options);
 	}
 
 	/**
-	 * Form element
-	 *
-	 * @param array $options
-	 * @return string
+	 * @see html::form()
 	 */
 	public static function form($options = []) {
 		$options['method'] = isset($options['method']) ? $options['method'] : 'post';
@@ -364,47 +430,122 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		}
 
 		// assembling form
-		$value = !empty($options['value']) ? $options['value'] : '';
+		$value = $options['value'] ?? '';
 		unset($options['value']);
 		return '<form ' . self::generate_attributes($options) . '>' . $value . '</form>';
 	}
 
 	/**
-	 * Table element
-	 *
-	 * @param array $options
-	 * @return string
+	 * @see html::table()
 	 */
 	public static function table($options = []) {
 		$rows = isset($options['options']) ? $options['options'] : [];
-		$header = isset($options['header']) ? $options['header'] : (!empty($rows) ? array_keys(current($rows)) : []);
-		unset($options['options'], $options['header']);
-		$temp = [];
-		// header first
-		if (!empty($header)) {
-			$temp2 = '<tr>';
-				foreach ($header as $v) {
-					$temp2.= '<th>' . $v . '</th>';
+		if (isset($options['header']) && is_array($options['header'])) {
+			$header = $options['header'];
+		} else {
+			// we need to grab header from first row
+			$header = current($rows);
+			if (is_array($header)) {
+				foreach ($header as $k => $v) {
+					$header[$k] = $k;
 				}
-			$temp2.= '</tr>';
-			$temp[] = $temp2;
+			}
 		}
-		// rows
-		foreach ($rows as $k => $v) {
+		$result = [];
+		// header first
+		if (!empty($header) && empty($options['skip_header'])) {
 			$temp2 = '<tr>';
-				foreach ($v as $v2) {
-					if (is_array($v2)) {
-						$temp3 = !empty($v2['value']) ? $v2['value'] : '';
-						unset($v2['value']);
-						$temp2.= '<td' . self::generate_attributes($v2) . '>' . $temp3 . '</td>';
+				foreach ($header as $k => $v) {
+					if (is_array($v)) {
+						$tag = !empty($v['header_use_td_tag']) ? 'td' : 'th';
+						$temp_value = isset($v['value']) ? $v['value'] : '';
+						unset($v['value']);
+						$temp2.= '<' . $tag . ' ' . self::generate_attributes($v) . '>' . $temp_value . '</' . $tag . '>';
 					} else {
-						$temp2.= '<td>' . $v2 . '</td>';
+						$temp2.= '<th nowrap>' . $v . '</th>';
 					}
 				}
 			$temp2.= '</tr>';
-			$temp[] = $temp2;
+			$result[] = $temp2;
 		}
-		return '<table ' . self::generate_attributes($options) . '>' . implode('', $temp) . '</table>';
+		// unsetting some values
+		unset($options['options'], $options['header'], $options['skip_header']);
+		// rows second
+		foreach ($rows as $k => $v) {
+			$temp2 = '<tr>';
+				// important we render based on header array and not on what is in rows
+				$flag_colspan = 0;
+				foreach ($header as $k2 => $v2) {
+					if ($flag_colspan > 0) {
+						$flag_colspan--;
+						continue;
+					}
+					if (!isset($v[$k2])) {
+						$v[$k2] = null;
+					}
+					if (is_array($v[$k2])) {
+						$temp3 = isset($v[$k2]['value']) ? $v[$k2]['value'] : '';
+						unset($v[$k2]['value']);
+						if (!empty($v[$k2]['nowrap'])) {
+							$v[$k2]['nowrap'] = 'nowrap';
+						}
+						if (!empty($v[$k2]['colspan'])) {
+							$flag_colspan = $v[$k2]['colspan'];
+							$flag_colspan--;
+						}
+						$temp2.= '<td ' . self::generate_attributes($v[$k2]) . '>' . $temp3 . '</td>';
+					} else {
+						$temp2.= '<td nowrap>' . $v[$k2] . '</td>';
+					}
+				}
+				// reset colspan
+				$flag_colspan = 0;
+			$temp2.= '</tr>';
+			$result[] = $temp2;
+		}
+		// todo: add footer
+		// todo: maybe use <thead>, <tfoot>, and a <tbody> tags
+		return '<table ' . self::generate_attributes($options) . '>' . implode('', $result) . '</table>';
+	}
+
+	/**
+	 * @see html::grid()
+	 */
+	public static function grid($options = []) {
+		$rows = isset($options['options']) ? $options['options'] : [];
+		unset($options['options']);
+		$data = [
+			'header' => [],
+			'options' => [],
+			'skip_header' => true
+		];
+		foreach ($rows as $k => $v) {
+			$index = 0;
+			foreach ($v as $k2 => $v2) {
+				foreach ($v2 as $k3 => $v3) {
+					$cell = [
+						'header' => [0],
+						'options' => [
+							[$v3['label'] ?? ''],
+							[$v3['value'] ?? ''],
+							[$v3['description'] ?? '']
+						],
+						'skip_header' => true
+					];
+					if (!empty($v3['separator'])) {
+						$data['options'][$k][$index] = [
+							'value' => $v3['value'],
+							'colspan' => 24 // maximum grid count
+						];
+					} else {
+						$data['options'][$k][$index] = html::table($cell);
+					}
+					$data['header'][$index] = $index;
+					$index++;
+				}
+			}
+		}
+		return html::table($data);
 	}
 
 	/**
@@ -414,17 +555,14 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 * @return string
 	 */
 	public static function fieldset($options = []) {
-		$value = !empty($options['value']) ? $options['value'] : '';
-		$legend = !empty($options['legend']) ? $options['legend'] : '';
+		$value = isset($options['value']) ? $options['value'] : '';
+		$legend = isset($options['legend']) ? $options['legend'] : '';
 		unset($options['value'], $options['legend']);
-		return '<fieldset' . self::generate_attributes($options) . '>' . '<legend>' . $legend . '</legend>' . $value . '</fieldset>';
+		return '<fieldset ' . self::generate_attributes($options) . '>' . '<legend>' . $legend . '</legend>' . $value . '</fieldset>';
 	}
 
 	/**
-	 * List element
-	 *
-	 * @param array $options
-	 * @return string
+	 * @see html::ul()
 	 */
 	public static function ul($options = []) {
 		$value = !empty($options['options']) ? $options['options'] : [];
@@ -444,12 +582,35 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	}
 
 	/**
-	 * Mandatory tag
-	 *
-	 * @return string
+	 * @see html::mandatory()
 	 */
-	public static function mandatory() {
-		return '<span class="mandatory">*</span>';
+	public static function mandatory($options = []) {
+		$asterisk = '';
+		switch ($options['type'] ?? '') {
+			case 'mandatory':
+				$asterisk = '<b style="color: red;" title="' . strip_tags(i18n(null, 'Mandatory')) . '">*</b>';
+				$options['tag'] = 'b';
+				break;
+			case 'conditional':
+				$asterisk = '<b style="color: green;" title="' . strip_tags(i18n(null, 'Conditional')) . '">*</b>';
+				$options['tag'] = 'b';
+				break;
+			default:
+				$options['tag'] = 'span';
+		}
+		// if we are formatting value
+		if (isset($options['value'])) {
+			if (is_array($options['value'])) {
+				$options['value']['value'] = $options['value']['value'] . ' ' . $asterisk . ($options['prepend'] ?? '');
+			} else {
+				$options['value'] = [
+					'value' => $options['value'] . ' ' . $asterisk . ($options['prepend'] ?? '')
+				];
+			}
+			return html::tag($options['tag'], $options['value']);
+		} else {
+			return $asterisk;
+		}
 	}
 
 	/**
@@ -459,7 +620,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 * @return string
 	 */
 	public static function tooltip($options = []) {
-		$value = !empty($options['value']) ? $options['value'] : '';
+		$value = isset($options['value']) ? $options['value'] : '';
 		unset($options['value']);
 		return '<span ' . self::generate_attributes($options) . '>' . $value . '</span>';
 	}
@@ -492,16 +653,13 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	}
 
 	/**
-	 * Render frame
-	 *
-	 * @param array $options
-	 * @return string
+	 * @see html::segment()
 	 */
-	public static function frame($options = []) {
-		$value = isset($options['value']) ? $options['value'] : '';
-		$type = isset($options['type']) ? $options['type'] : 'simple';
+	public static function segment($options = []) {
+		$value = $options['value'] ?? '';
+		$type = $options['type'] ?? 'simple';
 		unset($options['value'], $options['type']);
-		$options['class'] = ['frame', $type];
+		$options['class'] = ['segment', $type];
 		return '<div ' . self::generate_attributes($options) . '>' . $value . '</div>';
 	}
 
@@ -534,6 +692,47 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		}
 		// unsettings arrays
 		unset($options['options_paremeters'], $options['format_paremeters'], $options['sequence']);
-		return call_user_func(['h', $element], $options);
+		return call_user_func(['html', $element], $options);
+	}
+
+	/**
+	 * Calendar
+	 *
+	 * @param array $options
+	 * @return string
+	 */
+	public static function calendar($options = []) {
+		return html::input($options);
+	}
+
+	/**
+	 * @see html::icon()
+	 */
+	public static function icon($options = []) {
+		// if we are rendering image
+		if (isset($options['file'])) {
+			$name = $options['file'];
+			if (isset($options['path'])) {
+				$path = $options['path'];
+			}
+			$options['src'] = $path . $name;
+			if (!isset($options['style'])) {
+				$options['style'] = 'vertical-align: middle;';
+			}
+			array_key_unset($options, ['file', 'path']);
+			// we need to get width and height of the image from the end of filename
+			if (preg_match('/([0-9]+)(x([0-9]+))?./', $name, $matches)) {
+				if (isset($matches[1])) {
+					$options['width'] = $matches[1];
+				}
+				if (isset($matches[3])) {
+					$options['height'] = $matches[1];
+				}
+			}
+			return html::img($options);
+		} else if (isset($options['type'])) {
+			$options['class'] = array_add_token($options['class'] ?? [], 'icon ' . $options['type'], ' ');
+			return html::tag($options['tag'] ?? 'i', $options);
+		}
 	}
 }
