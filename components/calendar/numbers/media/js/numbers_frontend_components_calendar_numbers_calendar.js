@@ -868,8 +868,7 @@ var numbers_calendar = function (options) {
 if (window.jQuery) {
 	(function ($) {
 		$.fn.numbers_calendar = function (options) {
-			if (!options)
-				options = {};
+			if (!options) options = {};
 			// loop through all elements
 			return this.each(function () {
 				var elem = $(this), id = elem.attr('id'), options2 = $.extend({}, options);
@@ -878,7 +877,6 @@ if (window.jQuery) {
 					elem.attr('id', id);
 				}
 				options2.id = id;
-				console.log(options2);
 				numbers_calendar(options2);
 			});
 		};
