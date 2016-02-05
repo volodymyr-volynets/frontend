@@ -18,11 +18,11 @@
 	outline: none !important;
 	/* prevent selection*/
 	-webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 .numbers_calendar_header_button i, .numbers_calendar_time_button i {
 	display: inline-block;
@@ -41,9 +41,9 @@
 	background: transparent;
 	outline: none;
 	-webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    border: none;
+	-moz-appearance: none;
+	appearance: none;
+	border: none;
 	font-size: 1em;
 }
 .numbers_calendar_date_day_cell {

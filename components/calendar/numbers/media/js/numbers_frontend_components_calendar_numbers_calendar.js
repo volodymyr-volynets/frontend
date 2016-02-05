@@ -182,7 +182,7 @@ var numbers_calendar = function (options) {
 		} else {
 			return data;
 		}
-	}
+	};
 
 	/**
 	 * Load master/slave dates
