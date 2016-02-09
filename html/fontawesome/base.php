@@ -10,11 +10,14 @@ class numbers_frontend_html_fontawesome_base {
 		if (isset($options['file'])) {
 			return numbers_frontend_html_class_base::icon($options);
 		} else if (isset($options['type'])) {
-			// we need to add font awesome library
-			factory::submodule('flag.global.library.fontawesome.submodule')->add();
+			library::add('fontawesome');
 			// generating class & rendering tag
 			$options['class'] = array_add_token($options['class'] ?? [], 'fa fa-' . $options['type'], ' ');
-			return html::tag('i', $options);
+			if (!empty($options['class_only'])) {
+				return $options['class'];
+			} else {
+				return html::tag('i', $options);
+			}
 		}
 	}
 }

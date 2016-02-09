@@ -358,6 +358,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		}
 		// optgroups second
 		if (!empty($optgroups_array)) {
+			$options['optgroups'] = 'optgroups';
 			foreach ($optgroups_array as $k2 => $v2) {
 				$result.= '<optgroup label="' . $v2['name'] . '" id="' . $k2 . '">';
 					$result.= self::generate_select_options($v2['options'], $value);
@@ -658,9 +659,20 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	public static function segment($options = []) {
 		$value = $options['value'] ?? '';
 		$type = $options['type'] ?? 'simple';
-		unset($options['value'], $options['type']);
+		$header = $options['header'] ?? null;
+		$footer = $options['footer'] ?? null;
+		unset($options['value'], $options['type'], $options['header'], $options['footer']);
 		$options['class'] = ['segment', $type];
-		return '<div ' . self::generate_attributes($options) . '>' . $value . '</div>';
+		$result = '<div ' . self::generate_attributes($options) . '>';
+			if ($header) {
+				$result.= '<div class="segment_header">' . $header . '</div>';
+			}
+			$result.= '<div class="segment_body">' . $value . '</div>';
+			if ($footer) {
+				$result.= '<div class="segment_footer">' . $footer . '</div>';
+			}
+		$result.= '</div>';
+		return $result;
 	}
 
 	/**

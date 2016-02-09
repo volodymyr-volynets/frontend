@@ -2,6 +2,9 @@
 
 class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_base implements numbers_frontend_html_interface_base {
 
+	/**
+	 * see html::segment()
+	 */
 	public static function segment($options = []) {
 		$value = $options['value'] ?? '';
 		$type = $options['type'] ?? '';
@@ -27,6 +30,9 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 		return $result;
 	}
 
+	/**
+	 * see html::input()
+	 */
 	public static function input($options = []) {
 		if (!in_array($options['type'] ?? 'text', ['button', 'submit'])) {
 			$options['class'] = array_add_token($options['class'] ?? [], 'form-control', ' ');
@@ -34,34 +40,60 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 		return parent::input($options);
 	}
 
+	/**
+	 * see html::select()
+	 */
+	public static function select($options = []) {
+		$options['class'] = array_add_token($options['class'] ?? [], 'form-control', ' ');
+		return parent::select($options);
+	}
+
+	/**
+	 * see html::form()
+	 */
 	public static function form($options = []) {
 		$options['role'] = 'form';
 		return parent::form($options);
 	}
 
+	/**
+	 * see html::button()
+	 */
 	public static function button($options = []) {
 		$type = $options['type'] ?? 'default';
 		$options['class'] = array_add_token($options['class'] ?? [], 'btn btn-' . $type, ' ');
 		return parent::submit($options);
 	}
 
+	/**
+	 * see html::button2()
+	 */
 	public static function button2($options = []) {
 		$type = $options['type'] ?? 'default';
 		$options['class'] = array_add_token($options['class'] ?? [], 'btn btn-' . $type, ' ');
 		return parent::submit($options);
 	}
 
+	/**
+	 * see html::submit()
+	 */
 	public static function submit($options = []) {
 		$type = $options['type'] ?? 'default';
 		$options['class'] = array_add_token($options['class'] ?? [], 'btn btn-' . $type, ' ');
 		return parent::submit($options);
 	}
 
+	/**
+	 * see html::table()
+	 */
 	public static function table($options = []) {
 		$options['class'] = array_add_token($options['class'] ?? [], 'table', ' ');
 		return '<div class="table-responsive">' . parent::table($options) . '</div>';
 	}
 
+	/**
+	 * see html::grid()
+	 */
 	public static function grid($options = []) {
 		$rows = isset($options['options']) ? $options['options'] : [];
 		unset($options['options']);
