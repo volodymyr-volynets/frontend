@@ -98,6 +98,7 @@ tr.numbers_select_option_table_tr_hover:hover {
 }
 .numbers_select_multiple_item {
 	border: 1px solid #d3d3d3;
+	border-radius: 4px;
 	padding-top : 1px;
 	padding-bottom: 1px;
 	padding-left: 3px;

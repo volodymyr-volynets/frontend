@@ -41,6 +41,31 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 	}
 
 	/**
+	 * @see html::input_group()
+	 */
+	public static function input_group($options = []) {
+		$temp = [];
+		foreach (['left', 'center', 'right'] as $k0) {
+			if ($k0 == 'center') {
+				$temp[] = $options['value'];
+			} else {
+				if (!empty($options[$k0])) {
+					if (!is_array($options[$k0])) {
+						$options[$k0] = [$options[$k0]];
+					}
+					foreach ($options[$k0] as $k => $v) {
+						$temp[] = html::span(['value' => $v, 'class' => 'input-group-addon']);
+					}
+				}
+			}
+		}
+		unset($options['left'], $options['right']);
+		$options['value'] = implode('', $temp);
+		$options['class'] = 'input-group';
+		return html::div($options);
+	}
+
+	/**
 	 * see html::select()
 	 */
 	public static function select($options = []) {

@@ -1,5 +1,5 @@
 /**
- * Numbers calendar object
+ * Numbers calendar
  *
  * @param array options
  *		id - id of the input element
@@ -9,11 +9,11 @@
  *		date_max - maximum date & time
  *		date_week_start_day - which day to start rendering (0-6)
  *		date_disable_week_days - which weekdays to disable, array of (0-6)
- *		append_icon - whether to append an icon
  *		i18n - translated date/time texts
  *		master_id - id of master input
  *		slave_id - id of slave input
  *		show_presets - whether we need to display presets panel
+ *		holder_div_id - whether we have div holder
  */
 var numbers_calendar = function (options) {
 	// initializing object
@@ -36,24 +36,32 @@ var numbers_calendar = function (options) {
 	div.onblur = function () {
 		window[result.var_id].onfocus(true);
 	};
-	result.elem.parentNode.insertBefore(div, result.elem.nextSibling);
-	result.div_elem = document.getElementById(result.div_id);
-	// if we need to append calendar icon, right after div
-	if (options.append_icon) {
-		var icon = document.createElement("span");
-		icon.setAttribute('class', 'numbers_calendar_icon');
-		icon.innerHTML = '<i class="fa ' + (result.type == 'time' ? 'fa-clock-o' : 'fa-calendar') + '"></i>';
-		icon.onclick = function () {
-			window[result.var_id].elem.focus();
-		};
-		result.elem.parentNode.insertBefore(icon, result.elem.nextSibling);
+	if (window.addEventListener) {
+		div.addEventListener('DOMMouseScroll', function(event) { window[result.var_id].onscroll(event); }, false);
 	}
+	div.onmousewheel = function (event) {
+		window[result.var_id].onscroll(event);
+	};
+	div.onkeyup = function (event) {
+		window[result.var_id].onkeyup(event);
+	};
+
+	// appending to holder if present
+	if (options.holder_div_id) {
+		document.getElementById(options.holder_div_id).appendChild(div);
+	} else {
+		result.elem.parentNode.appendChild(div);
+	}
+	result.div_elem = document.getElementById(result.div_id);
 	// we need to set onfocus and onblur on input element
 	result.elem.onfocus = function () {
 		window[result.var_id].show(true);
 	};
 	result.elem.onblur = function () {
 		window[result.var_id].onfocus(true);
+	};
+	result.elem.onkeyup = function (event) {
+		window[result.var_id].onkeyup(event);
 	};
 	// initializing other elements
 	result.date_month_id = result.div_id + '_date_month';
@@ -153,11 +161,55 @@ var numbers_calendar = function (options) {
 	// calendar specific flags
 	result.flag_skeleton_rendered = false;
 	result.flag_is_focused = false;
+	result.flag_onscroll_lock = false;
 	// master/slave
 	result.master_id = options.master_id ? options.master_id : null;
 	result.master_datetime = null;
 	result.slave_id = options.slave_id ? options.slave_id : null;
 	result.slave_datetime = null;
+
+	/**
+	 * Onkeyup handler
+	 */
+	result.onkeyup = function(event) {
+		// we clode everything on escape
+		if (event) {
+			var code = event.which || event.keyCode;
+			if (code == 27) {
+				this.onfocus(true);
+				return;
+			}
+		}
+	};
+
+	/**
+	 * Onscroll handler
+	 * @param object event
+	 */
+	result.onscroll = function (event) {
+		if (this.flag_onscroll_lock || !(this.type == 'datetime' || this.type == 'date')) {
+			return;
+		}
+		var delta = 0;
+		if (!event) {
+			event = window.event;
+		}
+		event.preventDefault();
+		event.stopPropagation();
+		// normalize the delta
+		if (event.wheelDelta) { // IE and Opera
+			delta = event.wheelDelta / 60;
+		} else if (event.detail) { // W3C
+			delta = -event.detail / 2;
+		}
+		if (delta >= 0) {
+			this.prev_next(true, false);
+		} else {
+			this.prev_next(false, true);
+		}
+		this.flag_onscroll_lock = true;
+		setInterval(function(){ window[result.var_id].flag_onscroll_lock = false }, 500);
+	};
 
 	/**
 	 * Get calendar parameters
@@ -343,12 +395,7 @@ var numbers_calendar = function (options) {
 			if (this.type == 'time' || this.type == 'datetime') {
 				this.time_go_elem = document.getElementById(this.time_go_id);
 			}
-			// we need to detect mobile by width and fix position and left
-			if (window.innerWidth > 800) {
-				// todo: fix responsive here
-				this.div_elem.style.position = 'absolute';
-				this.div_elem.style.left = (this.elem.getBoundingClientRect().left + window.pageXOffset).toFixed(0) + 'px';
-			}
+			// todo: fix responsive here
 		}
 		// hide/show calendar
 		if (this.div_elem.style.display != 'none' && !only_show) {
@@ -360,7 +407,7 @@ var numbers_calendar = function (options) {
 			if (this.flag_skeleton_rendered && (this.type == 'date' || this.type == 'datetime')) {
 				this.render_days();
 			}
-			this.div_elem.focus();
+			this.elem.focus();
 			this.flag_is_focused = true;
 			this.div_elem.style.display = 'block'; // or table
 		}
@@ -637,7 +684,7 @@ var numbers_calendar = function (options) {
 			html += '<td' + hide_seconds + '>&nbsp;</td>';
 			html += '<td align="center"' + hide_seconds + '><span onclick="' + this.var_id + '.time_changed(\'second\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-up"></i></span></td>';
 			html += '<td align="center"' + hide_am_pm + '><span onclick="' + this.var_id + '.time_changed(\'am_pm\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-up"></i></span></td>';
-			html += '<td align="center" width="33" rowspan="3" valign="middle"><span onclick="' + this.var_id + '.time_chosen();" id="' + result.time_go_id + '" class="numbers_calendar_time_button"><i class="fa fa-arrow-circle-o-right"></span></a></td>';
+			html += '<td align="center" width="33" rowspan="3" valign="middle"><span onclick="' + this.var_id + '.time_chosen();" id="' + this.time_go_id + '" class="numbers_calendar_time_button"><i class="fa fa-arrow-circle-o-right"></span></a></td>';
 			html += '</tr>';
 			html += '<tr>';
 			html += '<td align="center">';

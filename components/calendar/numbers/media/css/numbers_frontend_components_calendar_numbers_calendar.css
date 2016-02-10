@@ -7,12 +7,14 @@
 	cursor: hand;
 }
 .numbers_calendar_div {
+	position: absolute;
+	z-index: 1000;
 	padding: 6px;
 	background: #fff;
 	font-size: 1em;
 	vertical-align: top;
 	border: 1px solid #d3d3d3;
-	border-radius: 4px;
+	/*border-radius: 4px;*/
 	box-shadow: 0 2px 5px rgba(0, 0, 0, .1);
 	width: auto;
 	outline: none !important;
@@ -23,6 +25,11 @@
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
+}
+.numbers_calendar_div_holder {
+	display: block;
+	position: relative;
+	height: 0;
 }
 .numbers_calendar_header_button i, .numbers_calendar_time_button i {
 	display: inline-block;

@@ -3,10 +3,7 @@
 class numbers_frontend_components_calendar_numbers_base implements numbers_frontend_components_calendar_interface_base {
 
 	/**
-	 * Render calendar widget
-	 *
-	 * @param array $options
-	 * @return string
+	 * see html::calendar()
 	 */
 	public static function calendar($options = []) {
 		// include js & css files
@@ -20,13 +17,11 @@ class numbers_frontend_components_calendar_numbers_base implements numbers_front
 			'id' => $options['id'],
 			'type' => $type,
 			'format' => $options['calendar_format'] ?? format::get_date_format($type),
-			'date_week_start_day' => $options['date_week_start_day'] ?? 1,
-			'date_disable_week_days' => $options['date_disable_week_days'] ?? null,
+			'date_week_start_day' => $options['calendar_date_week_start_day'] ?? 1,
+			'date_disable_week_days' => $options['calendar_date_disable_week_days'] ?? null,
 			'master_id' => $options['calendar_master_id'] ?? null,
-			'slave_id' => $options['calendar_slave_id'] ?? null,
-			'append_icon' => $options['calendar_append_icon'] ?? false,
+			'slave_id' => $options['calendar_slave_id'] ?? null
 		];
-		layout::onload('numbers_calendar(' . json_encode($widget_options) . ');');
 		// rendering input
 		if ($type == 'time') {
 			$options['size'] = $options['size'] ?? 11;
@@ -38,6 +33,20 @@ class numbers_frontend_components_calendar_numbers_base implements numbers_front
 		if (!empty($options['calendar_placeholder'])) {
 			$options['placeholder'] = format::get_date_placeholder($widget_options['format']);
 		}
-		return html::input($options);
+		if (isset($options['calendar_icon']) && ($options['calendar_icon'] == 'left' || $options['calendar_icon'] == 'right')) {
+			$position = $options['calendar_icon'];
+			$icon_type = $type == 'time' ? 'clock-o' : 'calendar';
+			unset($options['calendar_icon']);
+			$icon_onclick = 'numbers_calendar_var_' . $options['id'] . '.show();';
+			$icon_value = html::span(['onclick' => $icon_onclick, 'class' => 'numbers_calendar_icon', 'value' => html::icon(['type' => $icon_type])]);
+			$result = html::input_group(['value' => html::input($options), $position => $icon_value]);
+			$div_id = $options['id'] . '_div_holder';
+			$result.= html::div(['id' => $div_id, 'class' => 'numbers_calendar_div_holder']);
+			$widget_options['holder_div_id'] = $div_id;
+		} else {
+			$result = html::input($options);
+		}
+		layout::onload('numbers_calendar(' . json_encode($widget_options) . ');');
+		return $result;
 	}
 }

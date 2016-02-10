@@ -16,13 +16,14 @@ interface numbers_frontend_html_interface_base {
 	public static function segment($options = []);
 	public static function element($options = []);
 	// simple tags
-	public static function tag($tag, $options = []);
+	public static function tag($options = []);
 	public static function div($options = []);
 	public static function span($options = []);
 	public static function label($options = []);
 	// form related elements
 	public static function form($options = []);
 	public static function input($options = []);
+	public static function input_group($options = []);
 	public static function radio($options = []);
 	public static function checkbox($options = []);
 	public static function password($options = []);

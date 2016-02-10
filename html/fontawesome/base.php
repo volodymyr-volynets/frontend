@@ -14,9 +14,10 @@ class numbers_frontend_html_fontawesome_base {
 			// generating class & rendering tag
 			$options['class'] = array_add_token($options['class'] ?? [], 'fa fa-' . $options['type'], ' ');
 			if (!empty($options['class_only'])) {
-				return $options['class'];
+				return implode(' ', $options['class']);
 			} else {
-				return html::tag('i', $options);
+				$options['tag'] = $options['tag'] ?? 'i';
+				return html::tag($options);
 			}
 		}
 	}

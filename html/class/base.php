@@ -71,9 +71,10 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 * @param array $options
 	 * @return string
 	 */
-	public static function tag($tag, $options = []) {
+	public static function tag($options = []) {
 		$value = isset($options['value']) ? $options['value'] : '';
-		unset($options['value'], $options['options']);
+		$tag = $options['tag'] ?? 'div';
+		unset($options['value'], $options['tag']);
 		return '<' . $tag . ' ' . self::generate_attributes($options) . '>' . $value . '</' . $tag . '>';
 	}
 
@@ -81,7 +82,8 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 * @see html::div()
 	 */
 	public static function div($options = []) {
-		return html::tag('div', $options);
+		$options['tag'] = 'div';
+		return html::tag($options);
 	}
 
 	/**
@@ -91,14 +93,16 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 * @return string
 	 */
 	public static function label($options = []) {
-		return html::tag('label', $options);
+		$options['tag'] = 'label';
+		return html::tag($options);
 	}
 
 	/**
 	 * @see html::span()
 	 */
 	public static function span($options = []) {
-		return html::tag('span', $options);
+		$options['tag'] = 'span';
+		return html::tag($options);
 	}
 
 	/**
@@ -222,6 +226,31 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		}
 		$options['value'] = isset($options['value']) ? htmlspecialchars($options['value']) : '';
 		return '<input ' . self::generate_attributes($options) . ' />';
+	}
+
+	/**
+	 * @see html::input_group()
+	 */
+	public static function input_group($options = []) {
+		$temp = [];
+		foreach (['left', 'center', 'right'] as $k0) {
+			if ($k0 == 'center') {
+				$temp[] = $options['value'];
+			} else {
+				if (!empty($options[$k0])) {
+					if (!is_array($options[$k0])) {
+						$options[$k0] = [$options[$k0]];
+					}
+					foreach ($options[$k0] as $k => $v) {
+						$temp[] = html::span(['value' => $v, 'class' => 'input_group_' . $k0]);
+					}
+				}
+			}
+		}
+		unset($options['left'], $options['right']);
+		$options['value'] = implode('', $temp);
+		$options['class'] = 'input_group';
+		return html::div($options);
 	}
 
 	/**
@@ -608,7 +637,8 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 					'value' => $options['value'] . ' ' . $asterisk . ($options['prepend'] ?? '')
 				];
 			}
-			return html::tag($options['tag'], $options['value']);
+			$options['value']['tag'] = $options['tag'];
+			return html::tag($options['value']);
 		} else {
 			return $asterisk;
 		}
@@ -744,7 +774,8 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 			return html::img($options);
 		} else if (isset($options['type'])) {
 			$options['class'] = array_add_token($options['class'] ?? [], 'icon ' . $options['type'], ' ');
-			return html::tag($options['tag'] ?? 'i', $options);
+			$options['tag'] = $options['tag'] ?? 'i';
+			return html::tag($options);
 		}
 	}
 }

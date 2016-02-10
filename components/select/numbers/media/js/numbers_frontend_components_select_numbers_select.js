@@ -25,7 +25,7 @@ var numbers_select = function (options) {
 	// replacement elements
 	var container = document.createElement("div");
 	container.style.position = 'relative';
-	var temp = '<div class="' + result.elem.className + ' numbers_select_icons" onclick="window[\'' + result.var_id + '\'].show(true);"><i class="fa fa-caret-down"></i></div>';
+	var temp = '<div class="' + result.elem.className + ' numbers_select_icons" onclick="window[\'' + result.var_id + '\'].show();"><i class="fa fa-caret-down"></i></div>';
 	temp+= '<div class="' + result.elem.className + ' numbers_select_replacement" id="' + result.replacement_div_id + '" onkeyup="window[\'' + result.var_id + '\'].onkeyup(event);" onkeydown="window[\'' + result.var_id + '\'].onkeydown(event);" tabindex="-1"' + (result.searchable ? ' contenteditable="true"' : '') + '></div>';
 	temp+= '<div id="' + result.div_id + '" class="numbers_select_div" tabindex="-1" style="display:none;"></div>';
 	container.innerHTML = temp;
@@ -129,7 +129,7 @@ var numbers_select = function (options) {
 	 * @returns string
 	 */
 	result.get_search_input = function () {
-		if (this.replacement_div_elem.lastChild) {
+		if (this.replacement_div_elem.lastChild && this.replacement_div_elem.lastChild.nodeType == 3) {
 			return this.replacement_div_elem.lastChild.textContent.toLowerCase().trim();
 		} else {
 			return '';
@@ -253,7 +253,6 @@ var numbers_select = function (options) {
 					var span = document.createElement("span");
 					//span.setAttribute('contenteditable', false);
 					html = '';
-					html+= '<a href="javascript: void(0);" class="numbers_select_option_multiple_item_close" onclick="window[\'' + result.var_id + '\'].unchoose(' + i + ');"><i class="fa fa-times"></i></a> ';
 					if (this.data[i].icon_class) {
 						html+= '<i class="numbers_select_option_table_icon ' + this.data[i].icon_class + '"></i> ';
 					}
@@ -261,6 +260,7 @@ var numbers_select = function (options) {
 						html+= '<span class="numbers_select_option_table_color" style="background-color:#' + this.data[i].value + ';">&nbsp;</span> ';
 					}
 					html+= this.data[i].text;
+					html+= ' <a href="javascript: void(0);" class="numbers_select_option_multiple_item_close" onclick="window[\'' + result.var_id + '\'].unchoose(' + i + ');"><i class="fa fa-times"></i></a> ';
 					span.innerHTML = html;
 					span.className = 'numbers_select_multiple_item numbers_select_noneditable_item';
 					span.setAttribute('search-id', i);
@@ -312,10 +312,6 @@ var numbers_select = function (options) {
 		if (!this.flag_skeleton_rendered) {
 			this.render_skeleton();
 			this.flag_skeleton_rendered = true;
-			// we need to detect mobile by width and fix position and left
-			if (window.innerWidth > 800) {
-				// todo: fix responsive here
-			}
 		}
 		// hide/show
 		if (this.div_elem.style.display != 'none' && !only_show) {
@@ -436,7 +432,7 @@ var numbers_select = function (options) {
 			}
 			for (i = 0; i < this.data.length; i++) {
 				if (this.data[i].disabled) {
-					html+= '<tr search-id="' + i + '">'; // class="' + this.table_tr_class + '"
+					html+= '<tr class="' + this.table_tr_class + '" search-id="' + i + '">';
 				} else {
 					html+= '<tr onclick="' + this.var_id + '.chosen(' + i + ', this);" class="' + this.table_tr_class + (this.data[i].selected ? ' numbers_select_option_table_checked' : '') + ' numbers_select_option_table_tr_hover" search-id="' + i + '">';
 				}
