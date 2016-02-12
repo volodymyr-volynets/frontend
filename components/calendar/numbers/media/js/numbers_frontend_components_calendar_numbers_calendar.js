@@ -45,6 +45,12 @@ var numbers_calendar = function (options) {
 	div.onkeyup = function (event) {
 		window[result.var_id].onkeyup(event);
 	};
+	div.onmouseover = function () {
+		document.body.style.overflow = 'hidden';
+	};
+	div.onmouseout = function () {
+		document.body.style.overflow = 'auto';
+	};
 
 	// appending to holder if present
 	if (options.holder_div_id) {
@@ -187,6 +193,8 @@ var numbers_calendar = function (options) {
 	 * @param object event
 	 */
 	result.onscroll = function (event) {
+		event.preventDefault();
+		event.stopPropagation();
 		if (this.flag_onscroll_lock || !(this.type == 'datetime' || this.type == 'date')) {
 			return;
 		}
@@ -194,8 +202,6 @@ var numbers_calendar = function (options) {
 		if (!event) {
 			event = window.event;
 		}
-		event.preventDefault();
-		event.stopPropagation();
 		// normalize the delta
 		if (event.wheelDelta) { // IE and Opera
 			delta = event.wheelDelta / 60;

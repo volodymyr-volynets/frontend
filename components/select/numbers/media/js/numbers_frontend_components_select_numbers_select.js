@@ -49,6 +49,9 @@ var numbers_select = function (options) {
 	result.div_elem.onblur = function () {
 		window[result.var_id].onfocus(true);
 	};
+	result.div_elem.onkeyup = function (event) {
+		window[result.var_id].onkeyup(event);
+	};
 	// i18n
 	if (options.i18n) {
 		result.i18n = options.i18n;

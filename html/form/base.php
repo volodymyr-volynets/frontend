@@ -80,8 +80,8 @@ class numbers_frontend_html_form_base {
 		$this->container($container_link);
 		if (!isset($this->data[$container_link]['rows'][$row_link])) {
 			// validating row type
-			$type_model = new object_type_form_row_type();
-			if (!isset($options['type']) || !isset($type_model->data[$options['type']])) {
+			$types = object_html_form_row_type::get_static();
+			if (!isset($options['type']) || !isset($types[$options['type']])) {
 				$options['type'] = $this->data[$container_link]['default_row_type'];
 			}
 			// setting values
