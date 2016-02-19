@@ -1,6 +1,6 @@
 <?php
 
-class numbers_frontend_html_form_wrapper extends object_override_data {
+class numbers_frontend_html_form_wrapper_base extends object_override_data {
 
 	/**
 	 * Form link

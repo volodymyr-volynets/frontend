@@ -178,4 +178,102 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 		}
 		return $result;
 	}
+
+	/**
+	 * Generate submenu
+	 *
+	 * @param array $item
+	 * @return string
+	 */
+	private static function menu_submenu($item, $level) {
+		$level++;
+		$caret = $level == 1 ? ' <b class="caret"></b>' : '';
+		//todo: add translation
+		$result = html::a(['href' => $item['url'], 'class' => 'dropdown-toggle', 'data-toggle' => 'dropdown', 'value' => $item['name'] . $caret]);
+		$result.= '<ul class="dropdown-menu">';
+			foreach ($item['options'] as $k2 => $v2) {
+				$class = !empty($v2['options']) ? ' class="dropdown-submenu"' : '';
+				$result.= '<li' . $class . '>';
+					if (!empty($v2['options'])) {
+						$result.= self::menu_submenu($v2, $level);
+					} else {
+						//todo: add translation
+						if (!empty($v2['url'])) {
+							$result.= html::a(['href' => $v2['url'], 'value' => $v2['name']]);
+						} else {
+							$result.= $v2['name'];
+						}
+					}
+				$result.= '</li>';
+			}
+		$result.= '</ul>';
+		return $result;
+	}
+
+	/**
+	 * @see html::menu()
+	 */
+	public static function menu($options = []) {
+		$items = $options['options'] ?? [];
+		$brand = $options['brand'] ?? null;
+		array_key_unset($options, ['options', 'brand']);
+		$result = '<div class="navbar navbar-default" role="navigation">';
+			$result.= '<div class="container">';
+				$result.= '<div class="navbar-header">';
+					$result.= '<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">';
+						$result.= '<span class="sr-only">Toggle navigation</span>';
+						$result.= '<span class="icon-bar"></span>';
+						$result.= '<span class="icon-bar"></span>';
+						$result.= '<span class="icon-bar"></span>';
+					$result.= '</button>';
+					$result.= '<a class="navbar-brand" href="/">' . $brand . '</a>';
+				$result.= '</div>';
+				$result.= '<div class="collapse navbar-collapse navbar-nav-fix">';
+					$result.= '<ul class="nav navbar-nav">';
+						$index = 1;
+						foreach ($items as $k => $v) {
+							$result.= '<li class="navbar-nav-li-level1" search-id="' . $index . '">';
+								// if we have options
+								if (!empty($v['options'])) {
+									$result.= self::menu_submenu($v, 0);
+								} else {
+									//todo: add translation
+									if (!empty($v['url'])) {
+										$result.= html::a(['href' => $v['url'], 'value' => $v['name']]);
+									} else {
+										$result.= $v['name'];
+									}
+								}
+							$result.= '</li>';
+							$items[$k]['index'] = $index;
+							$index++;
+						}
+						// and we need to add all tabs again into others tab
+						$result.= '<li search-id="0" class="navbar-nav-others">';
+							$result.= '<a href="#" class="dropdown-toggle" data-toggle="dropdown">More <b class="caret"></b></a>';
+							$result.= '<ul class="dropdown-menu navbar-nav-others-ul">'; //multi-level
+								foreach ($items as $k => $v) {
+									$class = !empty($v['options']) ? ' dropdown-submenu' : '';
+									$result.= '<li class="navbar-nav-li-level1-others' . $class . '" search-id="' . $v['index'] . '">';
+										// if we have options
+										if (!empty($v['options'])) {
+											$result.= self::menu_submenu($v, 1);
+										} else {
+											// todo: add translation
+											if (!empty($v['url'])) {
+												$result.= html::a(['href' => $v['url'], 'value' => $v['name']]);
+											} else {
+												$result.= $v['name'];
+											}
+										}
+									$result.= '</li>';
+								}
+							$result.= '</ul>';
+						$result.= '</li>';
+					$result.= '</ul>';
+				$result.= '</div>';
+			$result.= '</div>';
+		$result.= '</div>';
+		return $result;
+	}
 }

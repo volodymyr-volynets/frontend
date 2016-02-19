@@ -13,8 +13,10 @@ interface numbers_frontend_html_interface_base {
 	public static function mandatory($options = []);
 	public static function tooltip($options = []);
 	public static function message($options = []);
-	public static function segment($options = []);
 	public static function element($options = []);
+	// assemblies
+	public static function segment($options = []);
+	public static function menu($options = []);
 	// simple tags
 	public static function tag($options = []);
 	public static function div($options = []);

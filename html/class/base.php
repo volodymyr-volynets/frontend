@@ -778,4 +778,11 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 			return html::tag($options);
 		}
 	}
+
+	/**
+	 * @see html::menu()
+	 */
+	public static function menu($options = []) {
+		Throw new Exception('Menu?');
+	}
 }

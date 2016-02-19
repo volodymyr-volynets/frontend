@@ -9,7 +9,7 @@
 	max-height: 600px;
 	overflow-y: scroll;
 	position: absolute;
-	z-index: 1001;
+	z-index: 2;
 	width: 100%;
 	/* prevent selection*/
 	-webkit-touch-callout: none;
@@ -24,7 +24,7 @@
 	display: inline-block !important;
 	position: absolute !important;
 	width: 2em !important;
-	z-index: 1000 !important;
+	z-index: 1;
 	text-align: center !important;
 	padding-left: 0 !important;
 	padding-right: 0 !important;
@@ -36,7 +36,7 @@
 	right: 0 !important;
 	box-shadow: none !important;
 }
-.numbers_select_option_table tr, .numbers_select_option_multiple_item_close {
+.numbers_select_option_table tr, .numbers_select_option_multiple_item_close, .numbers_select_icons {
 	cursor: pointer;
 	cursor: hand;
 }

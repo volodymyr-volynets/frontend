@@ -104,10 +104,10 @@ class numbers_frontend_html_form_base {
 	 *
 	 * @param string $container_link
 	 * @param string $row_link
-	 * @param string $field_link
+	 * @param string $element_link
 	 * @param array $options
 	 */
-	public function element($container_link, $row_link, $field_link, $options = []) {
+	public function element($container_link, $row_link, $element_link, $options = []) {
 		// presetting options for buttons, making them last
 		if ($row_link == $this::BUTTONS) {
 			$options['row_type'] = 'grid';
@@ -119,9 +119,9 @@ class numbers_frontend_html_form_base {
 		$this->container($container_link, array_key_extract_by_prefix($options, 'container_'));
 		$this->row($container_link, $row_link, array_key_extract_by_prefix($options, 'row_'));
 		// setting value
-		if (!isset($this->data[$container_link]['rows'][$row_link]['elements'][$field_link])) {
+		if (!isset($this->data[$container_link]['rows'][$row_link]['elements'][$element_link])) {
 			// name and id
-			$options['name'] = $options['id'] = $this->form_link . '_' . $field_link;
+			$options['name'] = $options['id'] = $this->form_link . '_' . $element_link;
 			// child container
 			$container = null;
 			if ($this->data[$container_link]['rows'][$row_link]['type'] == 'tabs') {
@@ -133,18 +133,18 @@ class numbers_frontend_html_form_base {
 				$type = 'field';
 			}
 			// vertical separator
-			if ($field_link == $this::SEPARATOR_VERTICAL) {
+			if ($element_link == $this::SEPARATOR_VERTICAL) {
 				$options['element_vertical_separator'] = true;
 			}
 			// setting data
-			$this->data[$container_link]['rows'][$row_link]['elements'][$field_link] = [
+			$this->data[$container_link]['rows'][$row_link]['elements'][$element_link] = [
 				'type' => $type,
 				'container' => $container,
 				'options' => $options,
 				'order' => $options['order'] ?? 0
 			];
 		} else {
-			$this->data[$container_link]['rows'][$row_link]['elements'][$field_link]['options'] = array_merge_hard($this->data[$container_link]['rows'][$row_link]['elements'][$field_link], $options);
+			$this->data[$container_link]['rows'][$row_link]['elements'][$element_link]['options'] = array_merge_hard($this->data[$container_link]['rows'][$row_link]['elements'][$element_link], $options);
 		}
 	}
 
