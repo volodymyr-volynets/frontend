@@ -25,9 +25,9 @@ var numbers_select = function (options) {
 	// replacement elements
 	var container = document.createElement("div");
 	container.style.position = 'relative';
-	var temp = '<div class="' + result.elem.className + ' numbers_select_icons" onclick="window[\'' + result.var_id + '\'].show();"><i class="fa fa-caret-down"></i></div>';
+	var temp = '<div class="' + result.elem.className + ' numbers_select_icons numbers_select_prevent_selection" onclick="window[\'' + result.var_id + '\'].show();"><i class="fa fa-caret-down"></i></div>';
 	temp+= '<div class="' + result.elem.className + ' numbers_select_replacement" id="' + result.replacement_div_id + '" onkeyup="window[\'' + result.var_id + '\'].onkeyup(event);" onkeydown="window[\'' + result.var_id + '\'].onkeydown(event);" tabindex="-1"' + (result.searchable ? ' contenteditable="true"' : '') + '></div>';
-	temp+= '<div id="' + result.div_id + '" class="numbers_select_div" tabindex="-1" style="display:none;"></div>';
+	temp+= '<div id="' + result.div_id + '" class="numbers_select_div numbers_select_prevent_selection" tabindex="-1" style="display:none;"></div>';
 	container.innerHTML = temp;
 	result.elem.parentNode.insertBefore(container, result.elem.nextSibling);
 	// hide select element
@@ -66,6 +66,7 @@ var numbers_select = function (options) {
 	result.flag_data_prepered = false;
 	result.flag_skeleton_rendered = false;
 	result.flag_is_focused = false;
+	result.flag_onshow_lock = false;
 
 	/**
 	 * Check for flag_is_focused flag
@@ -311,6 +312,10 @@ var numbers_select = function (options) {
 	 * Show
 	 */
 	result.show = function (only_show) {
+		// we need to lock show function to prevent double firing
+		if (this.flag_onshow_lock) {
+			return;
+		}
 		// render skeleton
 		if (!this.flag_skeleton_rendered) {
 			this.render_skeleton();
@@ -331,6 +336,8 @@ var numbers_select = function (options) {
 			this.onkeyup();
 			this.div_elem.style.display = 'block'; // or table
 		}
+		this.flag_onshow_lock = true;
+		setInterval(function(){ window[result.var_id].flag_onshow_lock = false }, 500);
 	};
 
 	/**

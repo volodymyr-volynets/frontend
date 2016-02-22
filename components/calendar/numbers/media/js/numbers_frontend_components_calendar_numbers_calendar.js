@@ -27,7 +27,7 @@ var numbers_calendar = function (options) {
 	// we need to insert div element right after input
 	var div = document.createElement("div");
 	div.setAttribute('id', result.div_id);
-	div.setAttribute('class', 'numbers_calendar_div');
+	div.setAttribute('class', 'numbers_calendar_div numbers_calendar_prevent_selection');
 	div.setAttribute('tabindex', -1);
 	div.style.display = 'none';
 	div.onfocus = function () {
@@ -168,6 +168,7 @@ var numbers_calendar = function (options) {
 	result.flag_skeleton_rendered = false;
 	result.flag_is_focused = false;
 	result.flag_onscroll_lock = false;
+	result.flag_onshow_lock = false;
 	// master/slave
 	result.master_id = options.master_id ? options.master_id : null;
 	result.master_datetime = null;
@@ -383,6 +384,10 @@ var numbers_calendar = function (options) {
 	 * Show calendar
 	 */
 	result.show = function (only_show) {
+		// we need to lock show function to prevent double firing
+		if (this.flag_onshow_lock) {
+			return;
+		}
 		// render skeleton
 		if (!this.flag_skeleton_rendered) {
 			// we need to determine selected date & used date
@@ -417,6 +422,8 @@ var numbers_calendar = function (options) {
 			this.flag_is_focused = true;
 			this.div_elem.style.display = 'block'; // or table
 		}
+		this.flag_onshow_lock = true;
+		setInterval(function(){ window[result.var_id].flag_onshow_lock = false }, 500);
 	};
 
 	/**

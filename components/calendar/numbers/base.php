@@ -38,7 +38,7 @@ class numbers_frontend_components_calendar_numbers_base implements numbers_front
 			$icon_type = $type == 'time' ? 'clock-o' : 'calendar';
 			unset($options['calendar_icon']);
 			$icon_onclick = 'numbers_calendar_var_' . $options['id'] . '.show();';
-			$icon_value = html::span(['onclick' => $icon_onclick, 'class' => 'numbers_calendar_icon', 'value' => html::icon(['type' => $icon_type])]);
+			$icon_value = html::span(['onclick' => $icon_onclick, 'class' => 'numbers_calendar_icon numbers_calendar_prevent_selection', 'value' => html::icon(['type' => $icon_type])]);
 			$result = html::input_group(['value' => html::input($options), $position => $icon_value]);
 			$div_id = $options['id'] . '_div_holder';
 			$result.= html::div(['id' => $div_id, 'class' => 'numbers_calendar_div_holder']);

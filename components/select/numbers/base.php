@@ -11,7 +11,10 @@ class numbers_frontend_components_select_numbers_base implements numbers_fronten
 		layout::add_css('/numbers/media_submodules/numbers_frontend_components_select_numbers_select.css', 10000);
 		// font awesome icons
 		library::add('fontawesome');
-		// generating
+		// preset id with name
+		if (empty($options['id']) && !empty($options['name'])) {
+			$options['id'] = $options['name'];
+		}
 		layout::onload('numbers_select(' . json_encode(['id' => $options['id']]) . ');');
 		// must gain proper class from previous submodule
 		$options['flag_call_previous_parent'] = true;

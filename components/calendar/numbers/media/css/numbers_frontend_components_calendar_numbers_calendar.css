@@ -18,7 +18,8 @@
 	box-shadow: 0 2px 5px rgba(0, 0, 0, .1);
 	width: auto;
 	outline: none !important;
-	/* prevent selection*/
+}
+.numbers_calendar_prevent_selection {
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
 	-khtml-user-select: none;

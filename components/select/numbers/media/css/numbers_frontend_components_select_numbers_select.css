@@ -11,7 +11,8 @@
 	position: absolute;
 	z-index: 2;
 	width: 100%;
-	/* prevent selection*/
+}
+.numbers_select_prevent_selection {
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
 	-khtml-user-select: none;
