@@ -13,8 +13,12 @@ $(document).ready(function() {
  */
 function bootstrap_fix_navbar_submenus() {
 	$('.dropdown-submenu').mouseover(function() {
-		if ($(window).width() - $(this).offset().left - $(this).width() < 200) {
-			if(!$(this).hasClass("dropdown-submenu-pull-left")){
+		var width = $(this).width();
+		if (width == 0) {
+			width = 200;
+		}
+		if ($(window).width() - $(this).offset().left - width < 201) {
+			if(!$(this).hasClass("dropdown-submenu-pull-left")) {
 				$(this).addClass('dropdown-submenu-pull-left');
 			}
 		}
@@ -57,11 +61,11 @@ function bootstrap_fix_navbar() {
 		// hide last element
 		$(last).css('display', 'none');
 		hash[$(last).attr('search-id')] = 1;
-		hidden++;
 		$('li.navbar-nav-others').css('display', 'inline');
 		$('li.navbar-nav-li-level1-others').each(function(index, obj) {
 			if (hash[$(obj).attr('search-id')]) {
-				$(obj).css('display', 'inline');
+				// must be block, inline causes with absolute left positioning
+				$(obj).css('display', 'block');
 			} else {
 				$(obj).css('display', 'none');
 			}

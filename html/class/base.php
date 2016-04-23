@@ -659,13 +659,14 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	/**
 	 * Message
 	 *
-	 * @param mixed $msg
-	 * @param string $type
-	 *		error
-	 *		warning
-	 *		success
-	 *		info
-	 *		other
+	 * @param array $options
+	 *		type one of:
+	 *			error
+	 *			warning
+	 *			success
+	 *			info
+	 *			other
+	 *		options - a list of error messages
 	 * @return string
 	 */
 	public static function message($options = []) {
@@ -678,7 +679,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		}
 		$error_type_addon = '';
 		if ($type == 'error') {
-			$error_type_addon = '<b>There was some errors with your submission</b></br/>';
+			$error_type_addon = '<b>There was some errors with your submission:</b></br/>';
 		}
 		return '<div ' . self::generate_attributes($options) . '>' . $error_type_addon . self::ul(['options' => $value, 'type' => 'ul']) . '</div>';
 	}
