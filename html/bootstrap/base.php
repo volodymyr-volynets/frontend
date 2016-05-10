@@ -189,7 +189,7 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 		$level++;
 		$caret = $level == 1 ? ' <b class="caret"></b>' : '';
 		//todo: add translation
-		$result = html::a(['href' => $item['url'], 'class' => 'dropdown-toggle', 'data-toggle' => 'dropdown', 'value' => $item['name'] . $caret]);
+		$result = html::a(['href' => $item['url'] ?? 'javascript:void(0);', 'class' => 'dropdown-toggle', 'data-toggle' => 'dropdown', 'value' => $item['name'] . $caret]);
 		$result.= '<ul class="dropdown-menu">';
 			foreach ($item['options'] as $k2 => $v2) {
 				$class = !empty($v2['options']) ? ' class="dropdown-submenu"' : '';
