@@ -484,18 +484,20 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		$result = [];
 		// header first
 		if (!empty($header) && empty($options['skip_header'])) {
-			$temp2 = '<tr>';
-				foreach ($header as $k => $v) {
-					if (is_array($v)) {
-						$tag = !empty($v['header_use_td_tag']) ? 'td' : 'th';
-						$temp_value = isset($v['value']) ? $v['value'] : '';
-						unset($v['value']);
-						$temp2.= '<' . $tag . ' ' . self::generate_attributes($v) . '>' . $temp_value . '</' . $tag . '>';
-					} else {
-						$temp2.= '<th nowrap>' . $v . '</th>';
+			$temp2 = '<thead>';
+				$temp2.= '<tr>';
+					foreach ($header as $k => $v) {
+						if (is_array($v)) {
+							$tag = !empty($v['header_use_td_tag']) ? 'td' : 'th';
+							$temp_value = isset($v['value']) ? $v['value'] : '';
+							unset($v['value']);
+							$temp2.= '<' . $tag . ' ' . self::generate_attributes($v) . '>' . $temp_value . '</' . $tag . '>';
+						} else {
+							$temp2.= '<th nowrap>' . $v . '</th>';
+						}
 					}
-				}
-			$temp2.= '</tr>';
+				$temp2.= '</tr>';
+			$temp2.= '</thead>';
 			$result[] = $temp2;
 		}
 		// unsetting some values
@@ -657,17 +659,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	}
 
 	/**
-	 * Message
-	 *
-	 * @param array $options
-	 *		type one of:
-	 *			error
-	 *			warning
-	 *			success
-	 *			info
-	 *			other
-	 *		options - a list of error messages
-	 * @return string
+	 * @see html::message()
 	 */
 	public static function message($options = []) {
 		$value = isset($options['options']) ? $options['options'] : [];
@@ -785,5 +777,12 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 */
 	public static function menu($options = []) {
 		Throw new Exception('Menu?');
+	}
+
+	/**
+	 * @see html::modal()
+	 */
+	public static function modal($options = []) {
+		Throw new Exception('Modal?');
 	}
 }

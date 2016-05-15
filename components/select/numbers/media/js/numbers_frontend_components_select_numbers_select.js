@@ -25,6 +25,7 @@ var numbers_select = function (options) {
 	// replacement elements
 	var container = document.createElement("div");
 	container.style.position = 'relative';
+	container.style.textAlign = 'left';
 	var temp = '<div class="' + result.elem.className + ' numbers_select_icons numbers_select_prevent_selection" onclick="window[\'' + result.var_id + '\'].show();"><i class="fa fa-caret-down"></i></div>';
 	temp+= '<div class="' + result.elem.className + ' numbers_select_replacement" id="' + result.replacement_div_id + '" onkeyup="window[\'' + result.var_id + '\'].onkeyup(event);" onkeydown="window[\'' + result.var_id + '\'].onkeydown(event);" tabindex="-1"' + (result.searchable ? ' contenteditable="true"' : '') + '></div>';
 	temp+= '<div id="' + result.div_id + '" class="numbers_select_div numbers_select_prevent_selection" tabindex="-1" style="display:none;"></div>';
@@ -204,6 +205,8 @@ var numbers_select = function (options) {
 			this.render_value();
 			this.show();
 		}
+		// we need to trigger onchange event
+		$(this.elem).trigger('change');
 	};
 
 	/**

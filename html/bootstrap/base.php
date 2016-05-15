@@ -112,7 +112,7 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 	 * see html::table()
 	 */
 	public static function table($options = []) {
-		$options['class'] = array_add_token($options['class'] ?? [], 'table', ' ');
+		$options['class'] = array_add_token($options['class'] ?? [], 'table table-striped', ' ');
 		return '<div class="table-responsive">' . parent::table($options) . '</div>';
 	}
 
@@ -296,5 +296,35 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 			$error_type_addon = '<b>There was some errors with your submission:</b></br/>';
 		}
 		return '<div role="alert" ' . self::generate_attributes($options) . '>' . $error_type_addon . self::ul(['options' => $value, 'type' => 'ul']) . '</div>';
+	}
+
+	/**
+	 * @see html::modal()
+	 */
+	public static function modal($options = []) {
+		$options['class'] = $options['class'] ?? '';
+		if ($options['class'] == 'large') {
+			$options['class'] = 'modal-lg';
+		}
+		$result = '';
+		$result.= '<div class="modal fade" id="' . $options['id'] . '" tabindex="-1" role="dialog">';
+			$result.= '<div class="modal-dialog ' . $options['class'] . '">';
+				$result.= '<div class="modal-content">';
+					$result.= '<div class="modal-header">';
+						$result.= '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
+						$result.= '<h4 class="modal-title">' . ($options['title'] ?? '') . '</h4>';
+					$result.= '</div>';
+					$result.= '<div class="modal-body">';
+						$result.= $options['body'] ?? '';
+					$result.= '</div>';
+					$result.= '<div class="modal-footer">';
+						$result.= $options['footer'] ?? '';
+						//<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+						//<button type="button" class="btn btn-primary">Save changes</button>
+					$result.= '</div>';
+				$result.= '</div>';
+			$result.= '</div>';
+		$result.= '</div>';
+		return $result;
 	}
 }
