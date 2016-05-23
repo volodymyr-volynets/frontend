@@ -186,10 +186,13 @@ class numbers_frontend_html_list_base {
 	/**
 	 * Render list
 	 *
+	 * @param string $format
 	 * @return string
 	 */
-	final public function render() {
+	final public function render($format = 'text/html') {
 		$result = '';
+		// css fixes
+		layout::add_css('/numbers/media_submodules/numbers_frontend_html_list_fixes.css', 9000);
 		// hidden fields
 		$result.= html::hidden(['name' => 'offset', 'id' => 'offset', 'value' => $this->offset]);
 		$result.= html::hidden(['name' => 'limit', 'id' => 'limit', 'value' => $this->limit]);
@@ -232,7 +235,11 @@ class numbers_frontend_html_list_base {
 			$object = new $class();
 			$result.= $object->render($this, 'bottom');
 		}
-		return html::form(['name' => 'list', 'value' => $result]);
+		if ($format == 'text/html') {
+			return html::form(['name' => 'list', 'value' => $result]);
+		} else {
+			Throw new Exception('Format?');
+		}
 	}
 
 	/**

@@ -20,11 +20,21 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 		$options['class'] = array_add_token($options['class'] ?? [], ['panel', $type], ' ');
 		$result = '<div ' . self::generate_attributes($options) . '>';
 			if ($header != null) {
-				$result.= '<div class="panel-heading">' . $header . '</div>';
+				if (is_array($header)) {
+					$icon = !empty($header['icon']) ? (html::icon($header['icon']) . ' ') : null;
+					$result.= '<div class="panel-heading">' . $icon . i18n(null, $header['title']) . '</div>';
+				} else {
+					$result.= '<div class="panel-heading">' . i18n(null, $header) . '</div>';
+				}
 			}
 			$result.= '<div class="panel-body">' . $value . '</div>';
 			if ($footer != null) {
-				$result.= '<div class="panel-footer">' . $footer . '</div>';
+				if (is_array($footer)) {
+					$icon = !empty($footer['icon']) ? (html::icon($footer['icon']) . ' ') : null;
+					$result.= '<div class="panel-footer">' . $icon . i18n(null, $footer['title']) . '</div>';
+				} else {
+					$result.= '<div class="panel-footer">' . i18n(null, $footer) . '</div>';
+				}
 			}
 		$result.= '</div>';
 		return $result;
@@ -150,12 +160,17 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 			foreach ($v as $k2 => $v2) {
 				$flag_first_field = true;
 				foreach ($v2 as $k3 => $v3) {
-					//$temp = html::number_to_word($field_new_sizes['data'][$index]);
-					$result.= '<div class="col-sm-' . $field_new_sizes['data'][$index] . ' form-group">';
-						//$result.= '<div class="form-group">';
+					$error_class = '';
+					if (!empty($v3['error']['type'])) {
+						if ($v3['error']['type'] == 'danger') {
+							$v3['error']['type'] = 'error';
+						}
+						$error_class = 'has-' . $v3['error']['type'];
+					}
+					$result.= '<div class="col-sm-' . $field_new_sizes['data'][$index] . ' form-group ' . $error_class . '">';
 						// label
 						if ($flag_first_field) {
-							if (($v3['label'] ?? '') .'' != '') {
+							if (($v3['label'] ?? '') . '' != '') {
 								$result.= $v3['label'];
 							} else if ($flag_have_label) {
 								$result.= '<label>&nbsp;</label>';
@@ -169,13 +184,34 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 						$result.= $v3['value'] ?? '';
 						// todo: add description
 						//$v3['description']
-						//$result.= '</div>';
+						// error messages
+						if (!empty($v3['error']['message'])) {
+							$result.= $v3['error']['message'];
+						}
 					$result.= '</div>';
 					$index++;
 				}
 			}
 			$result.= '</div>';
 		}
+		return $result;
+	}
+
+	/**
+	 * @see html::breadcrumbs()
+	 */
+	public static function breadcrumbs($options) {
+		$result = '';
+		$result.= '<ul class="breadcrumbs">';
+		$options = array_values($options);
+		$last = count($options) - 1;
+		foreach ($options as $k => $v) {
+			$result.= '<li' . ($k == $last ? ' class="last"' : '') . '>' . i18n(null, $v) . '</li>';
+			if ($k != $last) {
+				$result.= '<li> / </li>';
+			}
+		}
+		$result.= '</ul>';
 		return $result;
 	}
 
@@ -188,8 +224,12 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 	private static function menu_submenu($item, $level) {
 		$level++;
 		$caret = $level == 1 ? ' <b class="caret"></b>' : '';
-		//todo: add translation
-		$result = html::a(['href' => $item['url'] ?? 'javascript:void(0);', 'class' => 'dropdown-toggle', 'data-toggle' => 'dropdown', 'value' => $item['name'] . $caret]);
+		// create name
+		$name = i18n(null, $item['name']);
+		if (!empty($item['icon'])) {
+			$name = html::icon(['type' => $item['icon']]) . ' ' . $name;
+		}
+		$result = html::a(['href' => $item['url'] ?? 'javascript:void(0);', 'class' => 'dropdown-toggle', 'data-toggle' => 'dropdown', 'value' => $name . $caret]);
 		$result.= '<ul class="dropdown-menu">';
 			foreach ($item['options'] as $k2 => $v2) {
 				$class = !empty($v2['options']) ? ' class="dropdown-submenu"' : '';
@@ -197,11 +237,15 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 					if (!empty($v2['options'])) {
 						$result.= self::menu_submenu($v2, $level);
 					} else {
-						//todo: add translation
+						// create name
+						$name = i18n(null, $v2['name']);
+						if (!empty($v2['icon'])) {
+							$name = html::icon(['type' => $v2['icon']]) . ' ' . $name;
+						}
 						if (!empty($v2['url'])) {
-							$result.= html::a(['href' => $v2['url'], 'value' => $v2['name']]);
+							$result.= html::a(['href' => $v2['url'], 'value' => $name]);
 						} else {
-							$result.= $v2['name'];
+							$result.= $name;
 						}
 					}
 				$result.= '</li>';
@@ -215,6 +259,7 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 	 */
 	public static function menu($options = []) {
 		$items = $options['options'] ?? [];
+		$items_right = $options['options_right'] ?? [];
 		$brand = $options['brand'] ?? null;
 		array_key_unset($options, ['options', 'brand']);
 		$result = '<div class="navbar navbar-default" role="navigation">';
@@ -237,11 +282,15 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 								if (!empty($v['options'])) {
 									$result.= self::menu_submenu($v, 0);
 								} else {
-									//todo: add translation
+									// create name
+									$name = i18n(null, $v['name']);
+									if (!empty($v['icon'])) {
+										$name = html::icon(['type' => $v['icon']]) . ' ' . $name;
+									}
 									if (!empty($v['url'])) {
-										$result.= html::a(['href' => $v['url'], 'value' => $v['name']]);
+										$result.= html::a(['href' => $v['url'], 'value' => $name]);
 									} else {
-										$result.= $v['name'];
+										$result.= $name;
 									}
 								}
 							$result.= '</li>';
@@ -259,11 +308,15 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 										if (!empty($v['options'])) {
 											$result.= self::menu_submenu($v, 1);
 										} else {
-											// todo: add translation
+											// create name
+											$name = i18n(null, $v['name']);
+											if (!empty($v['icon'])) {
+												$name = html::icon(['type' => $v['icon']]) . ' ' . $name;
+											}
 											if (!empty($v['url'])) {
-												$result.= html::a(['href' => $v['url'], 'value' => $v['name']]);
+												$result.= html::a(['href' => $v['url'], 'value' => $name]);
 											} else {
-												$result.= $v['name'];
+												$result.= $name;
 											}
 										}
 									$result.= '</li>';
@@ -271,6 +324,25 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 							$result.= '</ul>';
 						$result.= '</li>';
 					$result.= '</ul>';
+					// right menu
+					if (!empty($items_right)) {
+						$result.= '<ul class="nav navbar-nav navbar-right">';
+							foreach ($items_right as $k => $v) {
+								$result.= '<li class="navbar-nav-li-level-right">';
+									// create name
+									$name = i18n(null, $v['name']);
+									if (!empty($v['icon'])) {
+										$name = html::icon(['type' => $v['icon']]) . ' ' . $name;
+									}
+									if (!empty($v['url'])) {
+										$result.= html::a(['href' => $v['url'], 'value' => $name]);
+									} else {
+										$result.= $name;
+									}
+								$result.= '</li>';
+							}
+						$result.= '</ul>';
+					}
 				$result.= '</div>';
 			$result.= '</div>';
 		$result.= '</div>';
@@ -284,17 +356,16 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 		$value = isset($options['options']) ? $options['options'] : [];
 		$type = isset($options['type']) ? $options['type'] : 'other';
 		unset($options['options'], $options['type']);
-		// we need to do replaces
-		$type2 = $type;
-		if ($type == 'error') $type2 = 'danger';
-		$options['class'] = ['alert', 'alert-' . $type2];
+		$options['class'] = ['alert', 'alert-' . $type];
 		if (!is_array($value)) {
 			$value = [$value];
 		}
 		$error_type_addon = '';
+		/*
 		if ($type == 'error') {
 			$error_type_addon = '<b>There was some errors with your submission:</b></br/>';
 		}
+		*/
 		return '<div role="alert" ' . self::generate_attributes($options) . '>' . $error_type_addon . self::ul(['options' => $value, 'type' => 'ul']) . '</div>';
 	}
 
@@ -326,5 +397,15 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 			$result.= '</div>';
 		$result.= '</div>';
 		return $result;
+	}
+
+	/**
+	 * @see html::text();
+	 */
+	public static function text($options = []) {
+		$options['tag'] = $options['tag'] ?? 'p';
+		$options['type'] = 'text-' . ($options['type'] ?? 'primary');
+		$options['class'] = array_add_token($options['class'] ?? [], [$options['type']], ' ');
+		return html::tag($options);
 	}
 }

@@ -160,7 +160,7 @@ class numbers_frontend_system_controller_dev extends object_controller {
 		if (!empty($input['submit_yes'])) {
 			$result = object_name_code::check($input['type'] ?? null, $input['name'] ?? null);
 			if (!$result['success']) {
-				echo html::message(['options' => $result['error'], 'type' => 'error']);
+				echo html::message(['options' => $result['error'], 'type' => 'danger']);
 			} else {
 				echo html::message(['options' => 'Name is good!', 'type' => 'success']);
 			}
@@ -182,7 +182,7 @@ class numbers_frontend_system_controller_dev extends object_controller {
 		if (!empty($input['submit_yes2'])) {
 			$result = object_name_db::check($input['type2'] ?? null, $input['name2'] ?? null);
 			if (!$result['success']) {
-				echo html::message(['options' => $result['error'], 'type' => 'error']);
+				echo html::message(['options' => $result['error'], 'type' => 'danger']);
 			} else {
 				echo html::message(['options' => 'Name is good!', 'type' => 'success']);
 			}

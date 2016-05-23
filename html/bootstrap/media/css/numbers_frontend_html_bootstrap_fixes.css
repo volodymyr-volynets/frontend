@@ -60,6 +60,27 @@
 .navbar {
 	margin-bottom: 0;
 }
+.navbar-nav-li-level-right > a {
+	padding-right: 0 !important;
+	padding-left: 10px !important;
+}
+
+/* actions */
 .actions {
 	text-align: right;
+}
+/* breadcrumbs */
+.breadcrumbs {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	color: #777;
+}
+.breadcrumbs li {
+	display: inline;
+}
+/* page title */
+.page_title {
+	margin-top: 5px;
+	margin-bottom: 10px;
 }

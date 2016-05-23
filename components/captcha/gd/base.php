@@ -63,6 +63,10 @@ class numbers_frontend_components_captcha_gd_base extends numbers_frontend_compo
 	 */
 	public static function captcha($options = []) {
 		$captcha_link = $options['id'] ?? 'default';
+		// validation
+		if (!empty($options['validate'])) {
+			return self::validate($captcha_link, $options['password']);
+		}
 		// generating password
 		$password = self::generate_password($captcha_link, $options['password_letters'] ?? null, $options['password_length'] ?? 5);
 		array_key_unset($options, ['password_letters', 'password_length']);
