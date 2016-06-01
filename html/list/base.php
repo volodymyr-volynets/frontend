@@ -64,12 +64,15 @@ class numbers_frontend_html_list_base {
 	 * @var array
 	 */
 	public $page_sizes = [
+		1 => ['name' => 1],
+		10 => ['name' => 10],
 		20 => ['name' => 20],
 		30 => ['name' => 30],
 		50 => ['name' => 50],
 		100 => ['name' => 100],
 		250 => ['name' => 250],
-		500 => ['name' => 500]
+		500 => ['name' => 500],
+		PHP_INT_MAX => ['name' => 'All']
 	];
 
 	/**
@@ -114,6 +117,20 @@ class numbers_frontend_html_list_base {
 	public $filter = [];
 
 	/**
+	 * Whether filter has been set
+	 *
+	 * @var boolean
+	 */
+	public $filtered = false;
+
+	/**
+	 * Actions
+	 *
+	 * @var array
+	 */
+	public $actions = [];
+
+	/**
 	 * Constructor
 	 *
 	 * @param string $list_link
@@ -136,10 +153,33 @@ class numbers_frontend_html_list_base {
 		if ($limit > 0) {
 			$this->limit = $limit;
 		}
+		// we need to set maximum limit if we are exporting
+		if (!empty($this->options['input']['submit_export']) && !empty($this->options['input']['export']['format'])) {
+			$this->limit = PHP_INT_MAX;
+		}
 		// offset
 		$offset = intval($options['input']['offset'] ?? 0);
 		if ($offset > 0) {
 			$this->offset = $offset;
+		}
+		// filter
+		$where = [];
+		if (!empty($this->options['input']['filter'])) {
+			$where = numbers_frontend_html_list_filter::where($this);
+			if (!empty($where)) {
+				$this->filtered = true;
+			}
+		}
+		// sort
+		if (!empty($this->options['input']['sort'])) {
+			$this->orderby = [];
+			foreach ($this->options['input']['sort'] as $k => $v) {
+				if (!empty($v['column']) && !empty($this->columns[$v['column']])) {
+					$this->orderby[$v['column']] = $v['order'] ?? SORT_ASC;
+				} else if (!empty($v['column']) && $v['column'] == 'full_text_search' && !empty($this->filter['full_text_search'])) {
+					$this->orderby['full_text_search'] = $v['order'] ?? SORT_ASC;
+				}
+			}
 		}
 		// datasources, count first
 		if (empty($this->datasources['count']) && !empty($this->model)) {
@@ -147,14 +187,14 @@ class numbers_frontend_html_list_base {
 				'model' => 'numbers_frontend_html_list_model_datasource_count',
 				'options' => [
 					'model' => $this->model,
-					// todo: add where
+					'where' => $where
 				]
 			];
 		} else if (!empty($this->datasources['count'])) {
 			$this->datasources['count'] = [
 				'model' => $this->datasources['count'],
 				'options' => [
-					// todo: add where
+					'where' => $where
 				]
 			];
 		}
@@ -166,8 +206,8 @@ class numbers_frontend_html_list_base {
 					'model' => $this->model,
 					'offset' => $this->offset,
 					'limit' => $this->limit,
-					'orderby' => $this->orderby
-					// todo: add where
+					'orderby' => $this->orderby,
+					'where' => $where
 				]
 			];
 		} else if (!empty($this->datasources['data'])) {
@@ -176,11 +216,37 @@ class numbers_frontend_html_list_base {
 				'options' => [
 					'offset' => $this->offset,
 					'limit' => $this->limit,
-					'orderby' => $this->orderby
-					// todo: add where
+					'orderby' => $this->orderby,
+					'where' => $where
 				]
 			];
 		}
+		// process options model
+		foreach ($this->columns as $k => $v) {
+			if (!empty($v['options_model'])) {
+				$this->columns[$k]['options'] = factory::model($v['options_model'])->options();
+			}
+		}
+	}
+
+	/**
+	 * Render actions
+	 *
+	 * @return string
+	 */
+	private function render_actions() {
+		// sorting first
+		array_key_sort($this->actions, ['sort' => SORT_ASC], ['sort' => SORT_NUMERIC]);
+		// looping through data and building html
+		$temp = [];
+		foreach ($this->actions as $k => $v) {
+			$icon = !empty($v['icon']) ? (html::icon(['type' => $v['icon']]) . ' ') : '';
+			$onclick = !empty($v['onclick']) ? $v['onclick'] : '';
+			$value = !empty($v['value']) ? i18n(null, $v['value']) : '';
+			$href = $v['href'] ?? 'javascript:void(0);';
+			$temp[] = html::a(array('value' => $icon . $value, 'href' => $href, 'onclick' => $onclick));
+		}
+		return implode(' ', $temp);
 	}
 
 	/**
@@ -193,50 +259,85 @@ class numbers_frontend_html_list_base {
 		$result = '';
 		// css fixes
 		layout::add_css('/numbers/media_submodules/numbers_frontend_html_list_fixes.css', 9000);
+		layout::add_js('/numbers/media_submodules/numbers_frontend_html_list_base.js', 9000);
+		// load mask
+		numbers_frontend_media_libraries_loadmask_base::add();
 		// hidden fields
 		$result.= html::hidden(['name' => 'offset', 'id' => 'offset', 'value' => $this->offset]);
 		$result.= html::hidden(['name' => 'limit', 'id' => 'limit', 'value' => $this->limit]);
-		// filter
-		if (!empty($this->filter)) {
-			layout::add_action('list_filter', ['value' => 'Filter', 'orderby' => 1, 'icon' => 'filter', 'onclick' => "$('#list_filter').modal('show');"]);
-			$result.= numbers_frontend_html_list_filter::render($this);
-		}
 		// get total number of rows from count datasource
 		if (!empty($this->datasources['count'])) {
-			$class = $this->datasources['count']['model'];
-			$object = new $class();
-			$temp = $object->get($this->datasources['count']['options']);
-			$this->total = intval($temp[0]['count'] ?? 0);
+			$temp = factory::model($this->datasources['count']['model'])->get($this->datasources['count']['options']);
+			$this->total = $temp[0]['count'] ?? 0;
 		}
 		// get rows
 		if (!empty($this->datasources['data'])) {
-			$class = $this->datasources['data']['model'];
-			$object = new $class();
-			$this->rows = $object->get($this->datasources['data']['options']);
+			$this->rows = factory::model($this->datasources['data']['model'])->get($this->datasources['data']['options']);
 			$this->num_rows = count($this->rows);
+		}		
+		// filter
+		if (!empty($this->filter)) {
+			$this->actions['list_filter'] = ['value' => 'Filter', 'sort' => 1, 'icon' => 'filter', 'onclick' => "numbers.modal.show('list_{$this->list_link}_filter');"];
+			$result.= numbers_frontend_html_list_filter::render($this);
+		}
+		// order by
+		$this->actions['list_sort'] = ['value' => 'Sort', 'sort' => 2, 'icon' => 'sort-alpha-asc', 'onclick' => "numbers.modal.show('list_{$this->list_link}_sort');"];
+		$result.= numbers_frontend_html_list_sort::render($this);
+		// export, before pagination
+		if (object_controller::can('list_export')) {
+			// add export link to the panel
+			$result.= numbers_frontend_html_list_export::render($this);
+			$this->actions['list_export'] = ['value' => 'Export/Print', 'sort' => 3, 'icon' => 'print', 'onclick' => "numbers.modal.show('list_{$this->list_link}_export');"];
+			// if we are exporting
+			if (!empty($this->options['input']['submit_export']) && !empty($this->options['input']['export']['format'])) {
+				$result.= numbers_frontend_html_list_export::export($this, $this->options['input']['export']['format']);
+				goto finish;
+			}
 		}
 		// pagination top
 		if (!empty($this->pagination['top'])) {
-			$class = $this->pagination['top'];
-			$object = new $class();
-			$result.= $object->render($this, 'top');
+			$result.= factory::model($this->pagination['top'])->render($this, 'top');
 		}
 		// data
-		$result.= '<hr/>';
+		$result.= '<hr class="simple"/>';
 		if (method_exists($this, 'render_data')) {
 			$result.= $this->render_data();
 		} else {
 			$result.= $this->render_data_default();
 		}
-		$result.= '<hr/>';
+		$result.= '<hr class="simple"/>';
 		// pagination bottom
 		if (!empty($this->pagination['bottom'])) {
-			$class = $this->pagination['bottom'];
-			$object = new $class();
-			$result.= $object->render($this, 'bottom');
+			$result.= factory::model($this->pagination['bottom'])->render($this, 'bottom');
 		}
+finish:
 		if ($format == 'text/html') {
-			return html::form(['name' => 'list', 'value' => $result]);
+			$value = '';
+			if (!empty($this->actions)) {
+				$value.= '<div style="text-align: right;">' . $this->render_actions() . '</div>';
+				$value.= '<hr class="simple" />';
+			}
+			$value.= html::form([
+				'name' => "list_{$this->list_link}_form",
+				'id' => "list_{$this->list_link}_form",
+				'value' => $result,
+				'onsubmit' => 'return numbers.frontend_list.submit(this);'
+			]);
+			// if we came from ajax we return as json object
+			if (!empty($this->options['input']['__ajax'])) {
+				$result = [
+					'success' => true,
+					'html' => $value,
+					'js' => layout::$onload
+				];
+				layout::render_as($result, 'application/json');
+			}
+			$value = "<div id=\"list_{$this->list_link}_form_mask\"><div id=\"list_{$this->list_link}_form_wrapper\">" . $value . '</div></div>';
+			$temp = [
+				'type' => 'primary',
+				'value' => $value
+			];
+			return html::segment($temp);
 		} else {
 			Throw new Exception('Format?');
 		}
@@ -251,15 +352,7 @@ class numbers_frontend_html_list_base {
 		$result = '';
 		// if we have no rows we display a messsage
 		if ($this->num_rows == 0) {
-			return html::message(['type' => 'warning', 'options' => ['No rows found!']]);
-		}
-		// process options_models
-		foreach ($this->columns as $k => $v) {
-			if (!empty($v['options_model'])) {
-				$class = $v['options_model'];
-				$object = new $class();
-				$this->columns[$k]['options'] = $object->options();
-			}
+			return html::message(['type' => 'warning', 'options' => [i18n(null, object_content_messages::$no_rows_found)]]);
 		}
 		$counter = 1;
 		$table = [
@@ -268,7 +361,7 @@ class numbers_frontend_html_list_base {
 		];
 		// generate columns
 		foreach ($this->columns as $k => $v) {
-			$table['header'][$k] = ['value' => $v['name'], 'width' => $v['width'] ?? null];
+			$table['header'][$k] = ['value' => i18n(null, $v['name']) , 'nowrap' => true, 'width' => $v['width'] ?? null];
 		}
 		// generate rows
 		foreach ($this->rows as $k => $v) {

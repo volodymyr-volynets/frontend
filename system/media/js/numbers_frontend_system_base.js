@@ -103,36 +103,12 @@ var numbers = {
 			var src = '/numbers/frontend/system/controller/error.png?token=' + encodeURIComponent(numbers.token) + '&data=' + encodeURIComponent(JSON.stringify(data));
 			img.crossOrigin = 'anonymous';
 			img.onload = function success() {
-				console.log('success', data);
+				//console.log('success', data);
 			};
 			img.onerror = img.onabort = function failure() {
-				console.error('failure', data);
+				//console.error('failure', data);
 			};
 			img.src = src;
-		}
-	},
-
-	/**
-	 * Controller objects
-	 */
-	controller: {
-		base: {
-			name: "numbers controller base",
-			extend: function(options) {
-				return $.extend({}, this, options);
-			}
-		}
-	},
-
-	/**
-	 * Ajax calls will be done via these get/post methods
-	 */
-	ajax: {
-		get: function (url, data, callback) {
-			$.get(url, data, callback, 'json');
-		},
-		post: function (url, data, callback) {
-			$.post(url, data, callback, 'json');
 		}
 	}
 };

@@ -84,3 +84,8 @@
 	margin-top: 5px;
 	margin-bottom: 10px;
 }
+/* hr tag */
+hr.simple {
+	margin-top: 10px !important;
+	margin-bottom: 10px !important;
+}

@@ -425,6 +425,7 @@ function array_key_get(arr, keys) {
 
 /**
  * Strip tags
+ *
  * @param string str
  * @param string allowable_tags
  * @returns string

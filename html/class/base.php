@@ -470,16 +470,12 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 */
 	public static function table($options = []) {
 		$rows = isset($options['options']) ? $options['options'] : [];
-		if (isset($options['header']) && is_array($options['header'])) {
+		if (!empty($options['header']) && is_array($options['header'])) {
 			$header = $options['header'];
 		} else {
 			// we need to grab header from first row
 			$header = current($rows);
-			if (is_array($header)) {
-				foreach ($header as $k => $v) {
-					$header[$k] = $k;
-				}
-			}
+			$options['skip_header'] = true;
 		}
 		$result = [];
 		// header first

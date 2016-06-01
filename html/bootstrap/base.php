@@ -97,7 +97,7 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 	public static function button($options = []) {
 		$type = $options['type'] ?? 'default';
 		$options['class'] = array_add_token($options['class'] ?? [], 'btn btn-' . $type, ' ');
-		return parent::submit($options);
+		return parent::button($options);
 	}
 
 	/**
@@ -106,7 +106,7 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 	public static function button2($options = []) {
 		$type = $options['type'] ?? 'default';
 		$options['class'] = array_add_token($options['class'] ?? [], 'btn btn-' . $type, ' ');
-		return parent::submit($options);
+		return parent::button2($options);
 	}
 
 	/**
@@ -123,7 +123,8 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 	 */
 	public static function table($options = []) {
 		$options['class'] = array_add_token($options['class'] ?? [], 'table table-striped', ' ');
-		return '<div class="table-responsive">' . parent::table($options) . '</div>';
+		//'<div class="table-responsive">' . parent::table($options) . '</div>';
+		return parent::table($options);
 	}
 
 	/**
@@ -167,7 +168,14 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 						}
 						$error_class = 'has-' . $v3['error']['type'];
 					}
-					$result.= '<div class="col-sm-' . $field_new_sizes['data'][$index] . ' form-group ' . $error_class . '">';
+					// style
+					$style = '';
+					if (isset($v3['options']['style'])) {
+						$style = ' style="' . $v3['options']['style'] . '"';
+					}
+					$field_size = $v3['options']['field_size'] ?? ('col-sm-' . $field_new_sizes['data'][$index]);
+					$class = $v3['class'] ?? '';
+					$result.= '<div class="' . $field_size . ' form-group ' . $error_class . ' ' . $class . '"' . $style . '>';
 						// label
 						if ($flag_first_field) {
 							if (($v3['label'] ?? '') . '' != '') {
@@ -226,6 +234,9 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 		$caret = $level == 1 ? ' <b class="caret"></b>' : '';
 		// create name
 		$name = i18n(null, $item['name']);
+		if (!empty($item['name_extension'])) {
+			$name.= '<br/>' . $item['name_extension'];
+		}
 		if (!empty($item['icon'])) {
 			$name = html::icon(['type' => $item['icon']]) . ' ' . $name;
 		}
@@ -239,6 +250,9 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 					} else {
 						// create name
 						$name = i18n(null, $v2['name']);
+						if (!empty($v2['name_extension'])) {
+							$name.= '<br/>' . $v2['name_extension'];
+						}
 						if (!empty($v2['icon'])) {
 							$name = html::icon(['type' => $v2['icon']]) . ' ' . $name;
 						}
@@ -328,16 +342,24 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 					if (!empty($items_right)) {
 						$result.= '<ul class="nav navbar-nav navbar-right">';
 							foreach ($items_right as $k => $v) {
-								$result.= '<li class="navbar-nav-li-level-right">';
-									// create name
-									$name = i18n(null, $v['name']);
-									if (!empty($v['icon'])) {
-										$name = html::icon(['type' => $v['icon']]) . ' ' . $name;
-									}
-									if (!empty($v['url'])) {
-										$result.= html::a(['href' => $v['url'], 'value' => $name]);
+								$result.= '<li class="navbar-nav-li-level1">';
+									// if we have options
+									if (!empty($v['options'])) {
+										$result.= self::menu_submenu($v, 0);
 									} else {
-										$result.= $name;
+										// create name
+										$name = i18n(null, $v['name']);
+										if (!empty($v['name_extension'])) {
+											$name.= '<br/>' . $v['name_extension'];
+										}
+										if (!empty($v['icon'])) {
+											$name = html::icon(['type' => $v['icon']]) . ' ' . $name;
+										}
+										if (!empty($v['url'])) {
+											$result.= html::a(['href' => $v['url'], 'value' => $name]);
+										} else {
+											$result.= $name;
+										}
 									}
 								$result.= '</li>';
 							}

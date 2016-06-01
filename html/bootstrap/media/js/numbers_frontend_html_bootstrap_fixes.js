@@ -1,11 +1,13 @@
 /* js fixes for bootstrap */
 $(document).ready(function() {
-	setTimeout(function(){ bootstrap_fix_navbar(); }, 10);
-	bootstrap_fix_navbar_submenus();
-	// resize handler
-	$(window).resize(function() {
-		bootstrap_fix_navbar();
-	});
+	if ($('.navbar-header').length) {
+		setTimeout(function(){ bootstrap_fix_navbar(); }, 10);
+		bootstrap_fix_navbar_submenus();
+		// resize handler
+		$(window).resize(function() {
+			bootstrap_fix_navbar();
+		});
+	}
 });
 
 /**
@@ -72,3 +74,29 @@ function bootstrap_fix_navbar() {
 		});
 	}
 }
+
+/**
+ * Modal interfaces
+ *
+ * @type object
+ */
+numbers.modal = {
+	/**
+	 * Show modal
+	 *
+	 * @param string id
+	 */
+	show: function(id) {
+		$('#' + id).modal('show');
+	},
+	/**
+	 * Hide modal
+	 *
+	 * @param string id
+	 */
+	hide: function(id) {
+		$('#' + id).modal('hide');
+		$('#' + id).removeClass("in");
+		$('.modal-backdrop').remove();
+	}
+};
