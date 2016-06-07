@@ -6,41 +6,6 @@
 class numbers_frontend_html_class_base implements numbers_frontend_html_interface_base {
 
 	/**
-	 * Cached options
-	 *
-	 * @var array
-	 */
-	public static $cached_options = [];
-
-	/**
-	 * Process options
-	 *
-	 * @param string $model_and_method
-	 * @return array
-	 */
-	public static function process_options($model_and_method, $existing_object = null) {
-		if (isset(self::$cached_options[$model_and_method])) {
-			return self::$cached_options[$model_and_method];
-		} else {
-			$temp = explode('::', $model_and_method);
-			if (count($temp) == 1) {
-				$model = $temp[0];
-				$method = 'options';
-			} else {
-				$model = $temp[0];
-				$method = $temp[1];
-			}
-			if ($model == 'this' && !empty($existing_object)) {
-				$object = $existing_object;
-			} else {
-				$object = new $model();
-			}
-			self::$cached_options[$model_and_method] = $object->{$method}();
-			return self::$cached_options[$model_and_method];
-		}
-	}
-
-	/**
 	 * Generate html based on value in options
 	 *
 	 * @param mixed $value

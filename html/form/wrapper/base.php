@@ -1,17 +1,6 @@
 <?php
 
-class numbers_frontend_html_form_wrapper_base extends object_override_data {
-
-	/**
-	 * Separators
-	 */
-	const SEPARATOR_VERTICAL = '__separator_vertical';
-	const SEPARATOR_HORISONTAL = '__separator_horizontal';
-
-	/**
-	 * Row for buttons
-	 */
-	const BUTTONS = '__submit_buttons';
+class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form_wrapper_parent {
 
 	/**
 	 * Form link
@@ -56,6 +45,20 @@ class numbers_frontend_html_form_wrapper_base extends object_override_data {
 	public $elements = [];
 
 	/**
+	 * Collection
+	 *
+	 * @var mixed
+	 */
+	public $collection;
+
+	/**
+	 * A list of wraper methods
+	 *
+	 * @var array
+	 */
+	public $wrapper_methods = [];
+
+	/**
 	 * Constructor
 	 *
 	 * @param array $options
@@ -75,6 +78,8 @@ class numbers_frontend_html_form_wrapper_base extends object_override_data {
 		}
 		// step 1: create form object
 		$this->form_object = new numbers_frontend_html_form_base($this->form_link, array_merge_hard($this->options, $options));
+		// add collection
+		$this->form_object->collection = $this->collection;
 		// step 2: create all containers
 		foreach ($this->containers as $k => $v) {
 			if ($v === null) {
@@ -105,7 +110,17 @@ class numbers_frontend_html_form_wrapper_base extends object_override_data {
 		// step 3: methods
 		foreach (['save', 'validate'] as $v) {
 			if (method_exists($this, $v)) {
-				$this->form_object->wrapper_methods[$v] = [$this, $v];
+				$this->form_object->wrapper_methods[$v]['main'] = [$this, $v];
+			}
+		}
+		// extensions can have their own verify methods
+		if (!empty($this->wrapper_methods)) {
+			foreach ($this->wrapper_methods as $k => $v) {
+				$index = 1;
+				foreach ($v as $k2 => $v2) {
+					$this->form_object->wrapper_methods[$k][$index] = [new $k2, $v2];
+					$index++;
+				}
 			}
 		}
 		// last step: process form

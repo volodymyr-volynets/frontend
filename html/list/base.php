@@ -81,6 +81,13 @@ class numbers_frontend_html_list_base {
 	 * @var string
 	 */
 	public $model;
+
+	/**
+	 * Model object
+	 *
+	 * @var object
+	 */
+	private $model_object;
 	
 	/**
 	 * Datasources
@@ -139,10 +146,11 @@ class numbers_frontend_html_list_base {
 	public function __construct($options = []) {
 		$this->options = $options;
 		// processing model
+		if (!empty($this->model)) {
+			$this->model_object = factory::model($this->model);
+		}
 		if (empty($this->columns) && !empty($this->model)) {
-			$model_class = $this->model;
-			$model_object = new $model_class();
-			$this->columns = $model_object->columns;
+			$this->columns = $this->model_object->columns;
 		}
 		// check if we have columns
 		if (empty($this->columns)) {
@@ -252,10 +260,9 @@ class numbers_frontend_html_list_base {
 	/**
 	 * Render list
 	 *
-	 * @param string $format
 	 * @return string
 	 */
-	final public function render($format = 'text/html') {
+	final public function render() {
 		$result = '';
 		// css fixes
 		layout::add_css('/numbers/media_submodules/numbers_frontend_html_list_fixes.css', 9000);
@@ -274,7 +281,13 @@ class numbers_frontend_html_list_base {
 		if (!empty($this->datasources['data'])) {
 			$this->rows = factory::model($this->datasources['data']['model'])->get($this->datasources['data']['options']);
 			$this->num_rows = count($this->rows);
-		}		
+		}
+		// new record
+		if (object_controller::can('record_new')) {
+			$mvc = application::get('mvc');
+			$url = $mvc['controller'] . '/_edit';
+			$this->actions['list_new'] = ['value' => 'New', 'sort' => -32000, 'icon' => 'file-o', 'href' => $url];
+		}
 		// filter
 		if (!empty($this->filter)) {
 			$this->actions['list_filter'] = ['value' => 'Filter', 'sort' => 1, 'icon' => 'filter', 'onclick' => "numbers.modal.show('list_{$this->list_link}_filter');"];
@@ -311,36 +324,32 @@ class numbers_frontend_html_list_base {
 			$result.= factory::model($this->pagination['bottom'])->render($this, 'bottom');
 		}
 finish:
-		if ($format == 'text/html') {
-			$value = '';
-			if (!empty($this->actions)) {
-				$value.= '<div style="text-align: right;">' . $this->render_actions() . '</div>';
-				$value.= '<hr class="simple" />';
-			}
-			$value.= html::form([
-				'name' => "list_{$this->list_link}_form",
-				'id' => "list_{$this->list_link}_form",
-				'value' => $result,
-				'onsubmit' => 'return numbers.frontend_list.submit(this);'
-			]);
-			// if we came from ajax we return as json object
-			if (!empty($this->options['input']['__ajax'])) {
-				$result = [
-					'success' => true,
-					'html' => $value,
-					'js' => layout::$onload
-				];
-				layout::render_as($result, 'application/json');
-			}
-			$value = "<div id=\"list_{$this->list_link}_form_mask\"><div id=\"list_{$this->list_link}_form_wrapper\">" . $value . '</div></div>';
-			$temp = [
-				'type' => 'primary',
-				'value' => $value
-			];
-			return html::segment($temp);
-		} else {
-			Throw new Exception('Format?');
+		$value = '';
+		if (!empty($this->actions)) {
+			$value.= '<div style="text-align: right;">' . $this->render_actions() . '</div>';
+			$value.= '<hr class="simple" />';
 		}
+		$value.= html::form([
+			'name' => "list_{$this->list_link}_form",
+			'id' => "list_{$this->list_link}_form",
+			'value' => $result,
+			'onsubmit' => 'return numbers.frontend_list.submit(this);'
+		]);
+		// if we came from ajax we return as json object
+		if (!empty($this->options['input']['__ajax'])) {
+			$result = [
+				'success' => true,
+				'html' => $value,
+				'js' => layout::$onload
+			];
+			layout::render_as($result, 'application/json');
+		}
+		$value = "<div id=\"list_{$this->list_link}_form_mask\"><div id=\"list_{$this->list_link}_form_wrapper\">" . $value . '</div></div>';
+		$temp = [
+			'type' => 'primary',
+			'value' => $value
+		];
+		return html::segment($temp);
 	}
 
 	/**
@@ -359,8 +368,17 @@ finish:
 			'header' => [],
 			'options' => []
 		];
+		// action flags
+		$actions = [];
+		if (object_controller::can('record_view')) {
+			$actions['view'] = true;
+		}
 		// generate columns
 		foreach ($this->columns as $k => $v) {
+			// if we can not view we skip action column
+			if (empty($actions) && $k == 'action') {
+				continue;
+			}
 			$table['header'][$k] = ['value' => i18n(null, $v['name']) , 'nowrap' => true, 'width' => $v['width'] ?? null];
 		}
 		// generate rows
@@ -368,6 +386,10 @@ finish:
 			// process all columns first
 			$row = [];
 			foreach ($this->columns as $k2 => $v2) {
+				// if we can not view we skip action column
+				if (empty($actions) && $k2 == 'action') {
+					continue;
+				}
 				$value = [];
 				// create cell properties
 				foreach (['width', 'align'] as $v3) {
@@ -376,7 +398,16 @@ finish:
 					}
 				}
 				// process rows
-				if ($k2 == 'row_number') {
+				if ($k2 == 'action') {
+					$value['value'] = [];
+					if (!empty($actions['view'])) {
+						$mvc = application::get('mvc');
+						$pk = extract_keys($this->model_object->pk, $v);
+						$url = $mvc['controller'] . '/_edit?' . http_build_query2($pk);
+						$value['value'][] = html::a(['value' => i18n(null, 'View'), 'href' => $url]);
+					}
+					$value['value'] = implode(' ', $value['value']);
+				} else if ($k2 == 'row_number') {
 					$value['value'] = $counter . '.';
 				} else if ($k2 == 'offset_number') {
 					$value['value'] = ($this->offset + $counter) . '.';

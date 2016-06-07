@@ -1,17 +1,6 @@
 <?php
 
-class numbers_frontend_html_form_base {
-
-	/**
-	 * Separators
-	 */
-	const SEPARATOR_VERTICAL = '__separator_vertical';
-	const SEPARATOR_HORISONTAL = '__separator_horizontal';
-
-	/**
-	 * Row for buttons
-	 */
-	const BUTTONS = '__submit_buttons';
+class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper_parent {
 
 	/**
 	 * Form link
@@ -49,6 +38,20 @@ class numbers_frontend_html_form_base {
 	public $values = [];
 
 	/**
+	 * Collection, model or array
+	 *
+	 * @var mixed
+	 */
+	public $collection;
+
+	/**
+	 * Collection object
+	 *
+	 * @var object
+	 */
+	public $collection_object;
+
+	/**
 	 * Error messages
 	 *
 	 * @var array
@@ -68,6 +71,36 @@ class numbers_frontend_html_form_base {
 	 * @var array
 	 */
 	public $process_submit = [];
+
+	/**
+	 * Actions
+	 *
+	 * @var array
+	 */
+	public $actions = [];
+
+	/**
+	 * Indicator that values has been loaded
+	 *
+	 * @var boolean
+	 */
+	public $values_loaded = false;
+
+	/**
+	 * Optimistic Lock
+	 *
+	 * @var array
+	 *		column
+	 *		value
+	 */
+	public $optimistic_lock;
+
+	/**
+	 * Primary key
+	 *
+	 * @var array
+	 */
+	public $pk;
 
 	/**
 	 * Constructor
@@ -94,14 +127,31 @@ class numbers_frontend_html_form_base {
 				$this->process_submit[$k] = true;
 			}
 		}
-		// if form has been submitted
-		if ($submitted) {
+		// __form_values_loaded
+		if (!empty($this->options['input']['__form_values_loaded'])) {
+			$this->values_loaded = true;
+		}
+		// process optimistic lock
+		if ($this->preload_collection_object() && $this->collection_object->primary_model->optimistic_lock) {
+			$this->optimistic_lock = [
+				'column' => $this->collection_object->primary_model->optimistic_lock_column,
+				'value' => $this->options['input'][$this->collection_object->primary_model->optimistic_lock_column] ?? null,
+			];
+			$this->values[$this->collection_object->primary_model->optimistic_lock_column] = $this->optimistic_lock['value'] . '';
+		}
+		// if form has been submitted but not for save
+		if (!empty($this->options['input']['__form_submitted']) && !$submitted) {
+			// nothing for now
+		} else if ($submitted) { // if form has been submitted
+			$this->validate_data_types();
 			$this->validate_required();
 			// call attached method to the form
 			if (method_exists($this, 'validate')) {
 				$this->validate($this);
-			} else if ($this->wrapper_methods['validate']) {
-				call_user_func_array($this->wrapper_methods['validate'], [& $this]);
+			} else if (!empty($this->wrapper_methods['validate'])) {
+				foreach ($this->wrapper_methods['validate'] as $k => $v) {
+					call_user_func_array($v, [& $this]);
+				}
 			}
 			// adding general error
 			if ($this->errors['flag_error_in_fields']) {
@@ -111,11 +161,199 @@ class numbers_frontend_html_form_base {
 			if (empty($this->errors['general']['danger'])) {
 				if (method_exists($this, 'save')) {
 					$this->save($this);
-				} else if ($this->wrapper_methods['save']) {
-					call_user_func_array($this->wrapper_methods['save'], [& $this]);
+				} else if (!empty($this->wrapper_methods['save'])) {
+					foreach ($this->wrapper_methods['save'] as $k => $v) {
+						call_user_func_array($v, [& $this]);
+					}
+				} else {
+					// native save based on collection
+					if ($this->save_values() || empty($this->errors['general']['danger'])) {
+						// we need to redirect for certain buttons
+						$mvc = application::get('mvc');
+						// save and new
+						if (!empty($this->process_submit[self::BUTTON_SUBMIT_SAVE_AND_NEW])) {
+							request::redirect($mvc['full']);
+						}
+						// save and close
+						if (!empty($this->process_submit[self::BUTTON_SUBMIT_SAVE_AND_CLOSE])) {
+							request::redirect($mvc['controller'] . '/_index');
+						}
+					}
+					// we reload form values
+					goto load_values;
+				}
+			}
+		} else {
+load_values:
+			// if not submitted we try to load data from database
+			$temp = $this->load_values();
+			if (!empty($temp)) {
+				$this->values = $temp;
+				$this->values_loaded = true;
+				// update optimistic lock
+				if (!empty($this->optimistic_lock)) {
+					$this->optimistic_lock['value'] = $this->values[$this->optimistic_lock['column']];
 				}
 			}
 		}
+		// we need to hide buttons
+		foreach ($this->data as $k => $v) {
+			foreach ($v['rows'] as $k2 => $v2) {
+				if ($k2 == self::BUTTONS) {
+					// remove delete buttons if we do not have loaded values or do not have permission
+					$record_delete = object_controller::can('record_delete');
+					if (!$this->values_loaded || !$record_delete) {
+						unset($this->data[$k]['rows'][$k2]['elements'][self::BUTTON_SUBMIT_DELETE]);
+					}
+					// we need to check permissions
+					$show_save_buttons = false;
+					if (object_controller::can('record_new') && !$this->values_loaded) {
+						$show_save_buttons = true;
+					}
+					if (object_controller::can('record_edit') && $this->values_loaded) {
+						$show_save_buttons = true;
+					}
+					if (!$show_save_buttons) {
+						unset(
+							$this->data[$k]['rows'][$k2]['elements'][self::BUTTON_SUBMIT_SAVE],
+							$this->data[$k]['rows'][$k2]['elements'][self::BUTTON_SUBMIT_SAVE_AND_NEW],
+							$this->data[$k]['rows'][$k2]['elements'][self::BUTTON_SUBMIT_SAVE_AND_CLOSE]
+						);
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Validate datatypes
+	 */
+	final public function validate_data_types() {
+		foreach ($this->fields as $k => $v) {
+			if (!empty($v['options']['process_submit'])) {
+				continue;
+			}
+			// process domains first
+			$data = object_table_columns::process_single_column_type($k, $v['options'], $this->values[$k]);
+			//print_r2($temp);
+			if (array_key_exists($k, $data)) {
+				// validations
+				$error = false;
+				$value = $this->values[$k];
+				if ($v['options']['php_type'] == 'integer') {
+					if (!empty($value) && $data[$k] == 0) {
+						$this->error('danger', i18n(null, 'Wrong integer value!'), $k);
+						$error = true;
+					}
+				} else if ($v['options']['php_type'] == 'float') {
+					if (!empty($value) && $data[$k] == 0) {
+						$this->error('danger', i18n(null, 'Wrong numeric value!'), $k);
+						$error = true;
+					}
+				} else if ($v['options']['php_type'] == 'string') {
+					if (!empty($v['options']['length']) && strlen($value) > $v['options']['length']) {
+						$this->error('danger', i18n(null, 'String is too long, should be no longer than [length]!', ['replace' => [
+							'[length]' => $v['options']['length']
+						]]), $k);
+						$error = true;
+					}
+				}
+				// if no error we update the value
+				if (!$error) {
+					$this->values[$k] = $data[$k];
+				}
+			} else {
+				unset($this->values[$k]);
+			}
+		}
+	}
+
+	/**
+	 * Save values to database
+	 *
+	 * @return boolean
+	 */
+	final public function save_values() {
+		// double check if we have collection object
+		if (!$this->preload_collection_object()) {
+			Throw new Exception('You must provide collection object!');
+		}
+		$result = $this->collection_object->merge($this->values, [
+			'flag_delete_row' => $this->process_submit['submit_delete'] ?? false,
+			'optimistic_lock' => $this->optimistic_lock
+		]);
+		if (!$result['success']) {
+			if (!empty($result['error'])) {
+				foreach ($result['error'] as $v) {
+					$this->error('danger', i18n(null, $v));
+				}
+			}
+			if (!empty($result['warning'])) {
+				foreach ($result['warning'] as $v) {
+					$this->error('warning', i18n(null, $v));
+				}
+			}
+		} else {
+			if (!empty($result['deleted'])) {
+				$this->error('success', i18n(null, 'Record has been successfully deleted!'));
+				// we must reset form values
+				$this->values = [];
+			} else if ($result['inserted']) {
+				$this->error('success', i18n(null, 'Record has been successfully created!'));
+			} else {
+				$this->error('success', i18n(null, 'Record has been successfully updated!'));
+			}
+		}
+		return $result['success'];
+	}
+
+	/**
+	 * Preload collection object
+	 *
+	 * @return boolean
+	 */
+	final private function preload_collection_object() {
+		if (empty($this->collection_object)) {
+			$this->collection_object = object_collection::collection_to_model($this->collection);
+			if (empty($this->collection_object)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Load primary key from values
+	 */
+	final public function load_pk() {
+		$this->pk = [];
+		foreach ($this->collection_object->data['pk'] as $v) {
+			if (isset($this->values[$v])) {
+				$temp = object_table_columns::process_single_column_type($v, $this->collection_object->primary_model->columns[$v], $this->values[$v]);
+				if (array_key_exists($v, $temp)) {
+					$this->pk[$v] = $temp[$v];
+				}
+			}
+		}
+		return $this->pk;
+	}
+
+	/**
+	 * Load values from database
+	 *
+	 * @return mixed
+	 */
+	final public function load_values() {
+		// load collection object
+		if (!$this->preload_collection_object()) {
+			return false;
+		}
+		// load primary key
+		$where = $this->load_pk();
+		if (!empty($where)) {
+			return $this->collection_object->get(['where' => $where, 'single_row' => true]);
+		}
+		return false;
 	}
 
 	/**
@@ -126,10 +364,16 @@ class numbers_frontend_html_form_base {
 	private function validate_required() {
 		foreach ($this->fields as $k => $v) {
 			// check if its required field
-			if (isset($v['options']['required']) && $v['options']['required'] == true) {
+			if (isset($v['options']['required']) && $v['options']['required'] === true) {
 				$value = array_key_get($this->values, $v['options']['name']);
-				if ($value . '' == '') {
-					$this->error('danger', i18n(null, 'You must specify ' . strtolower($v['options']['label_name']) . '!'), $k);
+				if ($v['options']['php_type'] == 'integer' || $v['options']['php_type'] == 'float') {
+					if (empty($value)) {
+						$this->error('danger', i18n(null, 'You must specify ' . $v['options']['label_name'] . '!'), $k);
+					}
+				} else {
+					if ($value . '' == '') {
+						$this->error('danger', i18n(null, 'You must specify ' . $v['options']['label_name'] . '!'), $k);
+					}
 				}
 			}
 			// validate data type
@@ -263,9 +507,14 @@ class numbers_frontend_html_form_base {
 			$options['name'] = $element_link;
 			$options['id'] = 'form_' . $this->form_link . '_' . $element_link;
 			// todo: add parent key here
-			// populate value array
-			$value = array_key_get($this->options['input'], $element_link);
-			$this->values[$element_link] = $value;
+			// populate value array but not for buttons
+			if (empty($options['process_submit'])) {
+				$value = array_key_get($this->options['input'], $element_link);
+				$this->values[$element_link] = $value;
+				// process domain & type
+				$temp = object_data_common::process_domains(['options' => $options]);
+				$options = $temp['options'];
+			}
 			// put data into fields array
 			$field = [
 				'id' => $options['id'],
@@ -306,54 +555,99 @@ class numbers_frontend_html_form_base {
 	/**
 	 * Render form
 	 *
-	 * @param string $format
 	 * @return mixed
 	 */
-	public function render($format = 'text/html') {
-		$result = [
-			'success' => false,
-			'error' => [],
-			'data' => []
-		];
+	public function render() {
+		// add actions
+		// new record
+		$mvc = application::get('mvc');
+		if (object_controller::can('record_new')) {
+			$this->actions['form_new'] = ['value' => 'New', 'sort' => -31000, 'icon' => 'file-o', 'href' => $mvc['full']];
+		}
+		// back to list
+		if (object_controller::can('list_view')) {
+			$this->actions['form_back'] = ['value' => 'Back', 'sort' => -32000, 'icon' => 'arrow-left', 'href' => $mvc['controller'] . '/_index'];
+		}
+		// reload button
+		if ($this->values_loaded) {
+			$pk = $this->load_pk();
+			$url = $mvc['full'] . '?' . http_build_query2($pk);
+			$this->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => -30000, 'icon' => 'refresh', 'href' => $url];
+		}
+		// assembling everything into result variable
+		$result = [];
 		// order containers based on order column
 		array_key_sort($this->data, ['order' => SORT_ASC]);
 		foreach ($this->data as $k => $v) {
 			if (!$v['flag_child']) {
 				$temp = $this->render_container($k);
 				if ($temp['success']) {
-					$result['data'][$k] = $temp['data'];
+					$result[$k] = $temp['data'];
 				}
 			}
 		}
 		// formatting data
-		if ($format == 'text/html') {
-			$temp = [];
-			foreach ($result['data'] as $k => $v) {
-				$temp[] = $v['html'];
-			}
-			$result['data'] = implode('', $temp);
-			// messages
-			if (!empty($this->errors['general'])) {
-				$messages = '';
-				foreach ($this->errors['general'] as $k => $v) {
-					$messages.= html::message(['options' => $v, 'type' => $k]);
-				}
-				$result['data'] = $messages . $result['data'];
-			}
-			// if we have form
-			if (empty($this->options['skip_form'])) {
-				$result['data'] = html::form(['name' => $this->form_link, 'value' => $result['data']]);
-			}
-			// if we have segment
-			if (isset($this->options['segment'])) {
-				$temp = is_array($this->options['segment']) ? $this->options['segment'] : [];
-				$temp['value'] = $result['data'];
-				$result['data'] = html::segment($temp);
-			}
-			return $result['data'];
-		} else {
-			Throw new Exception('Format?');
+		$temp = [];
+		foreach ($result as $k => $v) {
+			$temp[] = $v['html'];
 		}
+		$result = implode('', $temp);
+		// rendering actions
+		if (!empty($this->actions)) {
+			$value = '<div style="text-align: right;">' . $this->render_actions() . '</div>';
+			$value.= '<hr class="simple" />';
+			$result = $value . $result;
+		}
+		// messages
+		if (!empty($this->errors['general'])) {
+			$messages = '';
+			foreach ($this->errors['general'] as $k => $v) {
+				$messages.= html::message(['options' => $v, 'type' => $k]);
+			}
+			$result = $messages . $result;
+		}
+		// couple hidden fields
+		$result.= html::hidden(['name' => '__form_submitted', 'value' => 1]);
+		$result.= html::hidden(['name' => '__form_values_loaded', 'value' => $this->values_loaded]);
+		if (!empty($this->optimistic_lock)) {
+			$result.= html::hidden(['name' => $this->optimistic_lock['column'], 'value' => $this->optimistic_lock['value']]);
+		}
+		// if we have form
+		if (empty($this->options['skip_form'])) {
+			$result = html::form([
+				'name' => "form_{$this->form_link}_form",
+				'id' => "form_{$this->form_link}_form",
+				'value' => $result,
+				//'onsubmit' => 'return numbers.frontend_list.submit(this);'
+			]);
+		}
+		// if we have segment
+		if (isset($this->options['segment'])) {
+			$temp = is_array($this->options['segment']) ? $this->options['segment'] : [];
+			$temp['value'] = $result;
+			$result = html::segment($temp);
+		}
+		return $result;
+	}
+
+	/**
+	 * Render actions
+	 *
+	 * @return string
+	 */
+	private function render_actions() {
+		// sorting first
+		array_key_sort($this->actions, ['sort' => SORT_ASC], ['sort' => SORT_NUMERIC]);
+		// looping through data and building html
+		$temp = [];
+		foreach ($this->actions as $k => $v) {
+			$icon = !empty($v['icon']) ? (html::icon(['type' => $v['icon']]) . ' ') : '';
+			$onclick = !empty($v['onclick']) ? $v['onclick'] : '';
+			$value = !empty($v['value']) ? i18n(null, $v['value']) : '';
+			$href = $v['href'] ?? 'javascript:void(0);';
+			$temp[] = html::a(array('value' => $icon . $value, 'href' => $href, 'onclick' => $onclick));
+		}
+		return implode(' ', $temp);
 	}
 
 	/**
@@ -516,7 +810,11 @@ class numbers_frontend_html_form_base {
 	 */
 	private function get_field_value($field) {
 		if (empty($field['options']['empty_value']) && !isset($field['options']['value'])) {
-			return array_key_get($this->values, $field['options']['name']);
+			$value = array_key_get($this->values, $field['options']['name']);
+			if ($field['options']['php_type'] == 'integer' && empty($value)) {
+				$value = '';
+			}
+			return $value;
 		}
 		return null;
 	}
@@ -612,9 +910,8 @@ class numbers_frontend_html_form_base {
 	 */
 	public function render_element_value($options, $value = null) {
 		$result_options = $options['options'];
-		$element_options = array_key_extract_by_prefix($result_options, 'element_');
 		array_key_extract_by_prefix($result_options, 'label_');
-		$element_expand = !empty($element_options['expand']);
+		$element_expand = !empty($result_options['expand']);
 		// unset certain keys
 		unset($result_options['order']);
 
@@ -629,10 +926,8 @@ class numbers_frontend_html_form_base {
 		}
 		*/
 		// processing options
-		if (isset($element_options['options']) && is_array($element_options['options'])) {
-			$result_options['options'] = $element_options['options'];
-		} else if (!empty($element_options['options'])) {
-			$result_options['options'] = html::process_options($element_options['options'], $this);
+		if (!empty($result_options['options_model'])) {
+			$result_options['options'] = object_data_common::process_options($result_options['options_model'], $this);
 		}
 		// different handling for different type
 		switch ($options['type']) {
@@ -672,14 +967,20 @@ class numbers_frontend_html_form_base {
 				$result_options['value'] = $value;
 				break;
 			case 'field':
-				$element_method = $element_options['method'] ?? 'html::input';
+				$element_method = $result_options['method'] ?? 'html::input';
 				if (strpos($element_method, '::') === false) {
 					$element_method = 'html::' . $element_method;
 				}
 				// value in special order
 				$flag_translated = false;
-				if ($element_method == 'html::a') {
+				if (in_array($element_method, ['html::a', 'html::submit', 'html::button', 'html::button2'])) {
+					// translate value
 					$result_options['value'] = i18n($result_options['i18n'] ?? null, $result_options['value']);
+					// process confirm_message
+					$result_options['onclick'] = $result_options['onclick'] ?? '';
+					if (!empty($result_options['confirm_message'])) {
+						$result_options['onclick'].= 'return confirm(\'' . strip_tags(i18n(null, $result_options['confirm_message'])) . '\');';
+					}
 					$flag_translated = true;
 				} else {
 					$result_options['value'] = $value;
@@ -718,11 +1019,6 @@ class numbers_frontend_html_form_base {
 				$temp_method = $temp[0];
 			}
 			// adding value
-			/* todo: fix here   
-			if (!in_array($element_method, ['html::a', 'html::submit', 'html::button', 'html::button2'])) {
-				echo $temp_method;
-			}
-			*/
 			$field_method_object = new $temp_model();
 			return $field_method_object->{$temp_method}($result_options);
 		} else {

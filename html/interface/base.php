@@ -44,6 +44,5 @@ interface numbers_frontend_html_interface_base {
 	public static function button2($options = []);
 	public static function submit($options = []);
 	// special handling function for options
-	public static function process_options($model_and_method, $existing_object = null);
 	public static function render_value_from_options($value, $options);
 }
