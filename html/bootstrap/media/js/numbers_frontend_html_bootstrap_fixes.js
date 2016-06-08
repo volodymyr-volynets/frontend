@@ -7,6 +7,13 @@ $(document).ready(function() {
 		$(window).resize(function() {
 			bootstrap_fix_navbar();
 		});
+		// fix hover
+		$('.navbar-nav-li-level1').hover(function() {
+			$(this).addClass('open');
+		},
+		function() {
+			$(this).removeClass('open');
+		});
 	}
 });
 

@@ -412,7 +412,11 @@ finish:
 				} else if ($k2 == 'offset_number') {
 					$value['value'] = ($this->offset + $counter) . '.';
 				} else if (!empty($v2['options']) && !is_array($v[$k2])) {
-					$value['value'] = $v2['options'][$v[$k2]]['name'];
+					if (isset($v2['options'][$v[$k2]])) {
+						$value['value'] = $v2['options'][$v[$k2]]['name'];
+					} else {
+						$value['value'] = null;
+					}
 				} else if (isset($v[$k2])) {
 					$value['value'] = $v[$k2];
 				} else {

@@ -234,8 +234,10 @@ load_values:
 				continue;
 			}
 			// process domains first
+			if (empty($v['options']['type'])) {
+				$v['options']['type'] = 'varchar';
+			}
 			$data = object_table_columns::process_single_column_type($k, $v['options'], $this->values[$k]);
-			//print_r2($temp);
 			if (array_key_exists($k, $data)) {
 				// validations
 				$error = false;
@@ -300,6 +302,10 @@ load_values:
 				$this->values = [];
 			} else if ($result['inserted']) {
 				$this->error('success', i18n(null, 'Record has been successfully created!'));
+				// we must set primary key
+				if (!empty($result['new_pk'])) {
+					$this->values[$this->collection_object->primary_model->pk[0]] = $result['new_pk'];
+				}
 			} else {
 				$this->error('success', i18n(null, 'Record has been successfully updated!'));
 			}
@@ -665,6 +671,12 @@ load_values:
 				'css' => ''
 			]
 		];
+		// custom renderer
+		if (!empty($this->data[$container_link]['options']['custom_renderer'])) {
+			$temp = explode('::', $this->data[$container_link]['options']['custom_renderer']);
+			$temp[0] = factory::model($temp[0]);
+			return call_user_func_array($temp, [& $this]);
+		}
 		// sorting rows
 		array_key_sort($this->data[$container_link]['rows'], ['order' => SORT_ASC]);
 		// grouping data by row type

@@ -44,7 +44,7 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 	 * see html::input()
 	 */
 	public static function input($options = []) {
-		if (!in_array($options['type'] ?? 'text', ['button', 'submit'])) {
+		if (!in_array($options['type'] ?? 'text', ['button', 'submit']) && empty($options['skip_form_control'])) {
 			$options['class'] = array_add_token($options['class'] ?? [], 'form-control', ' ');
 		}
 		return parent::input($options);
@@ -240,7 +240,8 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 		if (!empty($item['icon'])) {
 			$name = html::icon(['type' => $item['icon']]) . ' ' . $name;
 		}
-		$result = html::a(['href' => $item['url'] ?? 'javascript:void(0);', 'class' => 'dropdown-toggle', 'data-toggle' => 'dropdown', 'value' => $name . $caret]);
+		//'data-toggle' => 'dropdown'
+		$result = html::a(['href' => $item['url'] ?? 'javascript:void(0);', 'class' => 'dropdown-toggle', 'value' => $name . $caret]);
 		$result.= '<ul class="dropdown-menu">';
 			foreach ($item['options'] as $k2 => $v2) {
 				$class = !empty($v2['options']) ? ' class="dropdown-submenu"' : '';

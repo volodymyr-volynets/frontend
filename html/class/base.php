@@ -79,6 +79,9 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	protected static function generate_attributes($options) {
 		$result = [];
 		foreach ($options as $k => $v) {
+			if (in_array($k, ['options'])) {
+				continue;
+			}
 			if (is_array($v)) {
 				$v = implode(' ', $v);
 			}
@@ -745,5 +748,18 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 */
 	public static function modal($options = []) {
 		Throw new Exception('Modal?');
+	}
+
+	/**
+	 * @see html::separator()
+	 */
+	public static function separator($options = []) {
+		$value = $options['value'] ?? null;
+		$icon = $options['icon'] ?? null;
+		$result = '';
+		$result.= '<table width="100%">';
+			$result.= '<tr><td width="50%"><hr/></td><td width="1%" nowrap><b>' . html::name($value, $icon) . '</b></td><td width="50%"><hr/></td></tr>';
+		$result.= '</table>';
+		return $result;
 	}
 }

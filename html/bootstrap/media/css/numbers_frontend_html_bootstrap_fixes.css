@@ -89,3 +89,16 @@ hr.simple {
 	margin-top: 10px !important;
 	margin-bottom: 10px !important;
 }
+
+fieldset {
+	border: 1px solid #ddd;
+	padding: 10px;
+}
+
+legend {
+	margin-left: 20px;
+	border: none;
+	width: auto !important;
+	font-size: inherit !important;
+	margin-bottom: 5px;
+}
