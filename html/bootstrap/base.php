@@ -50,6 +50,11 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 		return parent::input($options);
 	}
 
+	public static function textarea($options = []) {
+		$options['class'] = array_add_token($options['class'] ?? [], 'form-control', ' ');
+		return parent::textarea($options);
+	}
+
 	/**
 	 * @see html::input_group()
 	 */
@@ -400,12 +405,19 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 		if ($options['class'] == 'large') {
 			$options['class'] = 'modal-lg';
 		}
+		$closeable = '';
+		if (!empty($options['close_by_click_disabled'])) {
+			$closeable = ' data-backdrop="static" data-keyboard="false"';
+		}
+		// assembling
 		$result = '';
-		$result.= '<div class="modal fade" id="' . $options['id'] . '" tabindex="-1" role="dialog">';
+		$result.= '<div class="modal fade" id="' . $options['id'] . '" tabindex="-1" role="dialog"' . $closeable . '>';
 			$result.= '<div class="modal-dialog ' . $options['class'] . '">';
 				$result.= '<div class="modal-content">';
 					$result.= '<div class="modal-header">';
-						$result.= '<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>';
+						if (empty($options['no_header_close'])) {
+							$result.= '<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>';
+						}
 						$result.= '<h4 class="modal-title">' . ($options['title'] ?? '') . '</h4>';
 					$result.= '</div>';
 					$result.= '<div class="modal-body">';
@@ -430,5 +442,46 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 		$options['type'] = 'text-' . ($options['type'] ?? 'primary');
 		$options['class'] = array_add_token($options['class'] ?? [], [$options['type']], ' ');
 		return html::tag($options);
+	}
+
+	/**
+	 * @see html::tabs();
+	 */
+	public static function tabs($options = []) {
+		$header = $options['header'] ?? [];
+		$values = $options['options'] ?? [];
+		$id = 'tabs_div_id_' . ($options['id'] ?? 'default');
+		// determine active tab
+		$active_id = $id . '_active_hidden';
+		$active_tab = $options['active_tab'] ?? request::input($active_id);
+		if (empty($active_tab)) {
+			$active_tab = key($header);
+		}
+		$result = '';
+		$result.= '<div id="' . $id . '">';
+			$result.= html::hidden(['name' => $active_id, 'id' => $active_id, 'value' => $active_tab]);
+			$tabs = [];
+			$panels = [];
+			foreach ($header as $k => $v) {
+				$tab_id = $id . '_tab_' . $k;
+				$tabs[$k] = '<li role="presentation" ' . ($k == $active_tab ? 'class="active"' : '') . '><a href="#' . $tab_id . '" tab-data-id="' . $k . '" aria-controls="' . $tab_id .'" role="tab" data-toggle="tab">' . $v . '</a></li>';
+				$panels[$k] = '<div role="tabpanel" class="tab-pane ' . ($k == $active_tab ? 'active' : '') . '" id="' . $tab_id . '">' . $values[$k] . '</div>';
+			}
+			$result.= '<ul class="nav nav-tabs" role="tablist" id="' . $id . '_links' . '">';
+				$result.= implode('', $tabs);
+			$result.= '</ul>';
+			$result.= '<div class="tab-content">';
+				$result.= implode('', $panels);
+			$result.= '</div>';
+		$result.= '</div>';
+		$js = <<<TTT
+			$('#{$id}_links a').click(function(e) {
+				e.preventDefault();
+				$(this).tab('show');
+				$('#{$active_id}').val($(this).attr('tab-data-id'));
+			});
+TTT;
+		layout::onload($js);
+		return $result;
 	}
 }

@@ -751,6 +751,13 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	}
 
 	/**
+	 * @see html::tabs();
+	 */
+	public static function tabs($options = []) {
+		Throw new Exception('Tabs?');
+	}
+
+	/**
 	 * @see html::separator()
 	 */
 	public static function separator($options = []) {
