@@ -52,6 +52,13 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 	public $collection_object;
 
 	/**
+	 * Optional fields settings
+	 *
+	 * @var array
+	 */
+	public $optional_fields;
+
+	/**
 	 * Error messages
 	 *
 	 * @var array
@@ -103,14 +110,20 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 	public $pk;
 
 	/**
+	 * Current tab
+	 *
+	 * @var string
+	 */
+	public $current_tab;
+
+	/**
 	 * Constructor
 	 *
 	 * @param string $form_link
 	 * @param array $options
 	 */
 	public function __construct($form_link, $options = []) {
-		$form_link.= '';
-		$this->form_link = $form_link;
+		$this->form_link = $form_link . '';
 		$this->options = $options;
 		$this->errors['flag_error_in_fields'] = false;
 	}
@@ -119,6 +132,16 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 	 * Process from events
 	 */
 	public function process() {
+		// we need to see if we have optional fields
+		if (!empty($this->optional_fields)) {
+			// add it to collections
+			$this->optional_fields['type'] = '1M';
+			$this->collection['details'][$this->optional_fields['model']] = $this->optional_fields;
+			// we need to manually put values into values
+			$this->values[$this->optional_fields['model']] = $this->options['input'][$this->optional_fields['model']] ?? [];
+			pk(['em_entopt_field_code'], $this->values[$this->optional_fields['model']]);
+			unset($this->values[$this->optional_fields['model']]['']);
+		}
 		// we need to see if form has been submitted
 		$submitted = false;
 		foreach ($this->process_submit as $k => $v) {
@@ -153,6 +176,11 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 				}
 			}
 			$this->validate_required();
+			// optional fields
+			if (!empty($this->optional_fields)) {
+				$optional_wrapper_object = new numbers_frontend_html_form_wrapper_optional();
+				$optional_wrapper_object->validate($this);
+			}
 			// important to do field conversion last
 			$this->process_multiple_columns();
 			// adding general error
@@ -241,6 +269,29 @@ load_values:
 	}
 
 	/**
+	 * Add error to tabs
+	 *
+	 * @param int $counter
+	 */
+	public function error_in_tabs($counter, $record = false) {
+		if (empty($this->current_tab)) {
+			return;
+		}
+		if (!isset($this->errors['tabs'])) {
+			$this->errors['tabs'] = [];
+		}
+		if (!isset($this->errors['records'])) {
+			$this->errors['records'] = [];
+		}
+		$key = $record ? 'records' : 'tabs';
+		$current_value = array_key_get($this->errors[$key], $this->current_tab);
+		if (is_null($current_value)) {
+			$current_value = 0;
+		}
+		array_key_set($this->errors[$key], $this->current_tab, $current_value + $counter);
+	}
+
+	/**
 	 * Process multiple
 	 */
 	final private function process_multiple_columns() {
@@ -288,32 +339,43 @@ load_values:
 	 * @param mixed $in_value
 	 * @param boolean $multiple
 	 */
-	final public function validate_data_types_single_value($k, $v, $in_value, $multiple_key = null) {
+	final public function validate_data_types_single_value($k, $v, $in_value, $multiple_key = null, $error_field = null, $do_not_set_values = false) {
 		$data = object_table_columns::process_single_column_type($k, $v['options'], $in_value);
 		if (array_key_exists($k, $data)) {
+			// we set error field as main key
+			if (empty($error_field)) {
+				$error_field = $k;
+			}
 			// validations
 			$error = false;
 			$value = $in_value;
-			if ($v['options']['php_type'] == 'integer') {
-				if (!empty($value) && $data[$k] == 0) {
-					$this->error('danger', i18n(null, 'Wrong integer value!'), $k);
+			// perform validation
+			if (in_array($v['options']['type'], ['date', 'time', 'datetime'])) { // dates first
+				if (!empty($value) && empty($data[$k . '_strtotime_value'])) {
+					$this->error('danger', i18n(null, 'Invalid date, time or datetime!'), $error_field);
+					$error = true;
+				}
+			} else if ($v['options']['php_type'] == 'integer') {
+				if (!empty($value) && ($data[$k] == 0 || $value . '' != $data[$k] . '')) {
+					$this->error('danger', i18n(null, 'Wrong integer value!'), $error_field);
 					$error = true;
 				}
 			} else if ($v['options']['php_type'] == 'float') {
-				if (!empty($value) && $data[$k] == 0) {
-					$this->error('danger', i18n(null, 'Wrong numeric value!'), $k);
+				if (!empty($value) && ($data[$k] == 0 || $value . '' != $data[$k] . '')) {
+					$this->error('danger', i18n(null, 'Wrong numeric value!'), $error_field);
 					$error = true;
 				}
 			} else if ($v['options']['php_type'] == 'string') {
 				if (!empty($v['options']['length']) && strlen($value) > $v['options']['length']) {
 					$this->error('danger', i18n(null, 'String is too long, should be no longer than [length]!', ['replace' => [
 						'[length]' => $v['options']['length']
-					]]), $k);
+					]]), $error_field);
 					$error = true;
 				}
 			}
+			$data['flag_error'] = $error;
 			// if no error we update the value
-			if (!$error) {
+			if (!$error && !$do_not_set_values) {
 				if ($multiple_key === null) {
 					$this->values[$k] = $data[$k];
 				} else {
@@ -328,6 +390,7 @@ load_values:
 				unset($this->values[$k][$multiple_key]);
 			}
 		}
+		return $data;
 	}
 
 	/**
@@ -363,8 +426,10 @@ load_values:
 			} else if ($result['inserted']) {
 				$this->error('success', i18n(null, 'Record has been successfully created!'));
 				// we must set primary key
-				if (!empty($result['new_pk'])) {
-					$this->values[$this->collection_object->primary_model->pk[0]] = $result['new_pk'];
+				if (strpos($this->collection_object->primary_model->columns[$this->collection_object->primary_model->pk[0]]['type'], 'serial') !== false) {
+					if (!empty($result['new_pk'])) {
+						$this->values[$this->collection_object->primary_model->pk[0]] = $result['new_pk'];
+					}
 				}
 			} else {
 				$this->error('success', i18n(null, 'Record has been successfully updated!'));
@@ -644,6 +709,7 @@ load_values:
 		foreach ($this->data as $k => $v) {
 			if (!$v['flag_child']) {
 				if ($v['type'] == 'fields') {
+					$this->current_tab = null;
 					$temp = $this->render_container($k);
 					if ($temp['success']) {
 						$result[$k] = $temp['data'];
@@ -654,7 +720,11 @@ load_values:
 					// sort rows
 					array_key_sort($v['rows'], ['order' => SORT_ASC]);
 					foreach ($v['rows'] as $k2 => $v2) {
-						$tab_header[$k2] = $v2['options']['label_name'];
+						$this->current_tab = 'form_tabs_' . $this->form_link . '_' . $k . '_' . $k2;
+						$labels = '';
+						$labels.= html::label2(['type' => 'primary', 'style' => 'display: none;', 'value' => 0, 'id' => $this->current_tab . '_record']);
+						$labels.= html::label2(['type' => 'danger', 'style' => 'display: none;', 'value' => 0, 'id' => $this->current_tab . '_error']);
+						$tab_header[$k2] = i18n(null, $v2['options']['label_name']) . $labels;
 						$tab_values[$k2] = '';
 						array_key_sort($v2['elements'], ['order' => SORT_ASC]);
 						foreach ($v2['elements'] as $k3 => $v3) {
@@ -697,6 +767,17 @@ load_values:
 		$result.= html::hidden(['name' => '__form_values_loaded', 'value' => $this->values_loaded]);
 		if (!empty($this->optimistic_lock)) {
 			$result.= html::hidden(['name' => $this->optimistic_lock['column'], 'value' => $this->optimistic_lock['value']]);
+		}
+		// js
+		if (!empty($this->errors['tabs'])) {
+			foreach ($this->errors['tabs'] as $k => $v) {
+				layout::onload("$('#{$k}_error').html($v); $('#{$k}_error').show();");
+			}
+		}
+		if (!empty($this->errors['records'])) {
+			foreach ($this->errors['records'] as $k => $v) {
+				layout::onload("$('#{$k}_record').html($v); $('#{$k}_record').show();");
+			}
 		}
 		// if we have form
 		if (empty($this->options['skip_form'])) {
@@ -869,12 +950,13 @@ load_values:
 	 * @param array $field
 	 * @return mixed
 	 */
-	private function get_field_errors($field) {
+	public function get_field_errors($field) {
 		$existing = array_key_get($this->errors['fields'], $field['options']['name']);
 		if (!empty($existing)) {
 			$result = [
 				'type' => null,
-				'message' => ''
+				'message' => '',
+				'counter' => 0
 			];
 			$types = array_keys($existing);
 			if (in_array('danger', $types)) {
@@ -886,6 +968,9 @@ load_values:
 			// generating text messages
 			foreach ($existing as $k => $v) {
 				foreach ($v as $k2 => $v2) {
+					if ($k == 'danger') {
+						$result['counter']+= 1;
+					}
 					$result['message'].= html::text(['tag' => 'div', 'type' => $k, 'value' => $v2]);
 				}
 			}

@@ -151,7 +151,16 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 			// count number of fields
 			$count_fields = count($v);
 			//$count_class = html::number_to_word($count_fields);
-			$result.= '<div class="row">';
+			// find all row classes
+			$row_class = '';
+			foreach ($v as $k2 => $v2) {
+				foreach ($v2 as $k3 => $v3) {
+					if (!empty($v3['row_class'])) {
+						$row_class.= ' ' . $v3['row_class'];
+					}
+				}
+			}
+			$result.= '<div class="row' . $row_class . '">';
 			// we need to determine if we have label in the row
 			$flag_have_label = false;
 			foreach ($v as $k2 => $v2) {
@@ -441,6 +450,16 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 		$options['tag'] = $options['tag'] ?? 'p';
 		$options['type'] = 'text-' . ($options['type'] ?? 'primary');
 		$options['class'] = array_add_token($options['class'] ?? [], [$options['type']], ' ');
+		return html::tag($options);
+	}
+
+	/**
+	 * @see html::label2()
+	 */
+	public static function label2($options = []) {
+		$options['tag'] = $options['tag'] ?? 'span';
+		$options['type'] = 'label-' . ($options['type'] ?? 'primary');
+		$options['class'] = array_add_token($options['class'] ?? [], [$options['type'], 'label'], ' ');
 		return html::tag($options);
 	}
 

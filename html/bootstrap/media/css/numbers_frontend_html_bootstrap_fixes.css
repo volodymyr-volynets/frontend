@@ -113,3 +113,23 @@ legend {
 	font-size: inherit !important;
 	margin-bottom: 5px;
 }
+/* tabs */
+.tab-content {
+	overflow: hidden;
+}
+/* form group */
+.form-group {
+	margin-bottom: 5px;
+}
+.label {
+	margin-left: 3px;
+}
+.grid_counter_row {
+	/*width: 15px;*/
+}
+.grid_row_even {
+	background-color: rgba(52, 122, 183, 0.1);
+}
+.grid_row_odd {
+	/* nothing */
+}

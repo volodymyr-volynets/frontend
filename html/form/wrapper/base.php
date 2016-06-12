@@ -52,6 +52,13 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 	public $collection;
 
 	/**
+	 * Optional fields
+	 *
+	 * @var array
+	 */
+	public $optional_fields;
+
+	/**
 	 * A list of wraper methods
 	 *
 	 * @var array
@@ -78,8 +85,9 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 		}
 		// step 1: create form object
 		$this->form_object = new numbers_frontend_html_form_base($this->form_link, array_merge_hard($this->options, $options));
-		// add collection
+		// add collection & optional fields
 		$this->form_object->collection = $this->collection;
+		$this->form_object->optional_fields = $this->optional_fields;
 		// step 2: create all containers
 		foreach ($this->containers as $k => $v) {
 			if ($v === null) {
