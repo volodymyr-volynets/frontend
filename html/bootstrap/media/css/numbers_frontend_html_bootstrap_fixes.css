@@ -133,3 +133,8 @@ legend {
 .grid_row_odd {
 	/* nothing */
 }
+
+/* font awesome fixes */
+.fa {
+	min-width: 1em;
+}

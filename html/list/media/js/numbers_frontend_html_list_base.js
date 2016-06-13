@@ -11,23 +11,24 @@ numbers.frontend_list = {
 		var wrapper_id = form_id + '_wrapper';
 		var mask_id = form_id + '_mask';
 		$('#' + mask_id).mask({overlayOpacity: 0.25, delay: 0});
-		// making ajax call to backend
-		var request = $.ajax({
+		$.ajax({
 			url: numbers.controller_full,
-			method: 'POST',
+			method: 'post',
 			data: $('#' + form_id).serialize() + '&__ajax=1',
-			dataType: "json"
-		}).done(function(data) {
-			if (data.success) {
-				$('#' + wrapper_id).html(data.html);
-				eval(data.js);
-				// remove mask after 100 miliseconds to let js to take affect
-				setTimeout(function() {
-					$('#' + mask_id).unmask();
-				}, 100);
+			dataType: 'json',
+			success: function (data) {
+				if (data.success) {
+					$('#' + wrapper_id).html(data.html);
+					eval(data.js);
+					// remove mask after 100 miliseconds to let js to take affect
+					setTimeout(function() {
+						$('#' + mask_id).unmask();
+					}, 100);
+				}
+			},
+			error: function (jqXHR, textStatus, errorThrown) {
+				print_r2(jqXHR.responseText);
 			}
-		}).fail(function(jqXHR, textStatus) {
-			print_r2(textStatus);
 		});
 		return false;
 	}

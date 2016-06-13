@@ -64,7 +64,7 @@ class numbers_frontend_html_list_base {
 	 * @var array
 	 */
 	public $page_sizes = [
-		1 => ['name' => 1],
+		//1 => ['name' => 1],
 		10 => ['name' => 10],
 		20 => ['name' => 20],
 		30 => ['name' => 30],
@@ -333,7 +333,8 @@ finish:
 			'name' => "list_{$this->list_link}_form",
 			'id' => "list_{$this->list_link}_form",
 			'value' => $result,
-			'onsubmit' => 'return numbers.frontend_list.submit(this);'
+			// todo: there are some issues with it on different browsers, so we resubmit for now
+			//'onsubmit' => 'return numbers.frontend_list.submit(this);'
 		]);
 		// if we came from ajax we return as json object
 		if (!empty($this->options['input']['__ajax'])) {

@@ -340,7 +340,7 @@ load_values:
 	 * @param boolean $multiple
 	 */
 	final public function validate_data_types_single_value($k, $v, $in_value, $multiple_key = null, $error_field = null, $do_not_set_values = false) {
-		$data = object_table_columns::process_single_column_type($k, $v['options'], $in_value);
+		$data = object_table_columns::process_single_column_type($k, $v['options'], $in_value, ['process_datetime' => true]);
 		if (array_key_exists($k, $data)) {
 			// we set error field as main key
 			if (empty($error_field)) {
