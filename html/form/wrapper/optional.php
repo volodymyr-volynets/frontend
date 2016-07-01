@@ -11,25 +11,35 @@ class numbers_frontend_html_form_wrapper_optional {
 		$key = $form->optional_fields['model'];
 		$model_code = $form->optional_fields['optional_fields_model_code'];
 		$fields = factory::model('numbers_data_optional_model_fields')->options(['where' => ['of_field_model_code' => $model_code]]);
-		pk(['em_entopt_field_code'], $form->values[$key]);
 		$model = factory::model($form->optional_fields['model']);
+		// we need to fix keys
+		$data = [];
+		if (!empty($form->values[$key])) {
+			foreach ($form->values[$key] as $k => $v) {
+				$data[$model_code . '::' . $v[$model->column_prefix . 'field_code']] = $v;
+			}
+		}
+		$form->values[$key] = $data;
+		//pk([$model->column_prefix . 'field_code'], $form->values[$key]);
 		$types = factory::model('object_data_types')->get();
 		foreach ($form->values[$key] as $k => $v) {
+			$k2 = $v[$model->column_prefix . 'field_code'];
 			// process data types
 			$temp = [
 				'options' => [
-					'type' => $fields[$k]['type'],
-					'php_type' => $types[$fields[$k]['type']]['php_type']
+					'type' => $fields[$k2]['type'],
+					'php_type' => $types[$fields[$k2]['type']]['php_type']
 				]
 			];
-			$name = $key . "[{$k}][" . ($model->column_prefix . 'value') . "]";
+			$name = $key . "[{$k2}][" . ($model->column_prefix . 'value') . "]";
 			$data = $form->validate_data_types_single_value($key, $temp, $v[$model->column_prefix . 'value'] ?? null, $k, $name, true);
 			// check if values are set
 			if (!empty($data['flag_error'])) {
 				continue;
 			}
 			// put new value into values
-			$form->values[$key][$k][$model->column_prefix . 'value'] = $data[$key];
+			$form->values[$key][$k][$model->column_prefix . 'value'] = $data[$key] . ''; // must be string
+			$form->values[$key][$k][$model->column_prefix . 'mandatory'] = (int) $v[$model->column_prefix . 'mandatory'];
 			// validate if we have value
 			if (empty($form->values[$key][$k][$model->column_prefix . 'value'])) {
 				$form->error('danger', i18n(null, object_content_messages::$required_field), $name);
@@ -70,32 +80,32 @@ class numbers_frontend_html_form_wrapper_optional {
 			],
 			'class' => 'grid_counter_row'
 		];
-		$data['options']['__header_row']['em_entopt_field_code']['em_entopt_field_code'] = [
+		$data['options']['__header_row']['field_code']['field_code'] = [
 			'label' => i18n(null, 'Field'),
 			'options' => [
 				'percent' => 25
 			]
 		];
-		$data['options']['__header_row']['em_entopt_mandatory']['em_entopt_mandatory'] = [
+		$data['options']['__header_row']['mandatory']['mandatory'] = [
 			'label' => i18n(null, 'Mandatory'),
 			'options' => [
 				'percent' => 10
 			]
 		];
-		$data['options']['__header_row']['em_entopt_value']['em_entopt_value'] = [
+		$data['options']['__header_row']['value']['value'] = [
 			'label' => i18n(null, 'Value'),
 			'options' => [
 				'percent' => 60
 			]
 		];
 		// we need to add mandatory fields
-		pk(['em_entopt_field_code'], $values);
+		pk([$model->column_prefix . 'field_code'], $values);
 		foreach ($fields as $k => $v) {
 			if (!empty($v['mandatory']) && empty($values[$k])) {
 				$values[$k] = [
-					'em_entopt_field_code' => $k,
-					'em_entopt_mandatory' => $v['mandatory'],
-					'em_entopt_value' => null
+					$model->column_prefix . 'field_code' => $k,
+					$model->column_prefix . 'mandatory' => $v['mandatory'],
+					$model->column_prefix . 'value' => null
 				];
 			}
 		}
@@ -106,38 +116,38 @@ class numbers_frontend_html_form_wrapper_optional {
 				$name = $key . '[' . $row_number . ']';
 				$error_name = $key . "[{$k}][" . ($model->column_prefix . 'value') . "]";
 				$data['options'][$row_number]['row_number']['row_number'] = [
-					'value' => $row_number . '.' . html::hidden(['name' => $name . '[em_entopt_model_code]', 'value' => $model_code]) . html::hidden(['name' => $name . '[em_entopt_mandatory]', 'value' => $fields[$k]['mandatory']]),
+					'value' => $row_number . '.' . html::hidden(['name' => $name . '[' . $model->column_prefix . 'model_code]', 'value' => $model_code]) . html::hidden(['name' => $name . '[' . $model->column_prefix . 'mandatory]', 'value' => $fields[$k]['mandatory']]),
 					'options' => [
 						'percent' => 1
 					],
 					'class' => 'grid_counter_row',
 					'row_class' => $row_number % 2 ? 'grid_row_even' : 'grid_row_odd'
 				];
-				$data['options'][$row_number]['em_entopt_field_code']['em_entopt_field_code'] = [
+				$data['options'][$row_number]['field_code']['field_code'] = [
 					'value' => $form->render_element_value([
 						'type' => 'field',
 						'options' => [
 							'id' => 'optional_fields_field_code_' . $row_number,
-							'name' => $name . '[em_entopt_field_code]',
+							'name' => $name . '[' . $model->column_prefix . 'field_code]',
 							'method' => 'html::select',
 							'options' => $fields
 						]
-					], $v['em_entopt_field_code']),
+					], $v[$model->column_prefix . 'field_code']),
 					'options' => [
 						'percent' => 25
 					]
 				];
-				$data['options'][$row_number]['em_entopt_mandatory']['em_entopt_mandatory'] = [
+				$data['options'][$row_number]['mandatory']['mandatory'] = [
 					'value' => $form->render_element_value([
 						'type' => 'field',
 						'options' => [
 							'id' => 'optional_fields_mandatory_' . $row_number,
-							'name' => $name . '[em_entopt_mandatory]',
+							'name' => $name . '[' . $model->column_prefix . 'mandatory]',
 							'method' => 'html::checkbox',
 							'checked' => $fields[$k]['mandatory'],
 							'disabled' => true
 						]
-					], $v['em_entopt_field_code']),
+					], $v[$model->column_prefix . 'field_code']),
 					'options' => [
 						'percent' => 10
 					]
@@ -152,17 +162,17 @@ class numbers_frontend_html_form_wrapper_optional {
 					$form->error_in_tabs($error['counter']);
 				}
 				$form->error_in_tabs(1, true);
-				$data['options'][$row_number]['em_entopt_value']['em_entopt_value'] = [
+				$data['options'][$row_number]['value']['value'] = [
 					'error' => $error,
 					'value' => $form->render_element_value([
 						'type' => 'field',
 						'options' => [
 							'id' => 'optional_fields_field_code_2sd34' . $row_number,
-							'name' => $name . '[em_entopt_value]',
+							'name' => $name . '[' . $model->column_prefix . 'value]',
 							'method' => 'html::input',
 							'options' => $fields
 						]
-					], $v['em_entopt_value']),
+					], $v[$model->column_prefix . 'value']),
 					'options' => [
 						'percent' => 60
 					]
@@ -175,19 +185,19 @@ class numbers_frontend_html_form_wrapper_optional {
 		for ($row_number = $row_number; $row_number <= $max; $row_number++) {
 			$name = $key . '[' . $row_number . ']';
 			$data['options'][$row_number]['row_number']['row_number'] = [
-				'value' => $row_number . '.' . html::hidden(['name' => $name . '[em_entopt_model_code]', 'value' => $model_code]),
+				'value' => $row_number . '.' . html::hidden(['name' => $name . '[' . $model->column_prefix . 'model_code]', 'value' => $model_code]),
 				'options' => [
 					'percent' => 1
 				],
 				'class' => 'grid_counter_row',
 				'row_class' => $row_number % 2 ? 'grid_row_even' : 'grid_row_odd'
 			];
-			$data['options'][$row_number]['em_entopt_field_code']['em_entopt_field_code'] = [
+			$data['options'][$row_number]['field_code']['field_code'] = [
 				'value' => $form->render_element_value([
 					'type' => 'field',
 					'options' => [
 						'id' => 'optional_fields_field_code_' . $row_number,
-						'name' => $name . '[em_entopt_field_code]',
+						'name' => $name . '[' . $model->column_prefix . 'field_code]',
 						'method' => 'html::select',
 						'options' => $fields
 					]
@@ -196,27 +206,27 @@ class numbers_frontend_html_form_wrapper_optional {
 					'percent' => 25
 				]
 			];
-			$data['options'][$row_number]['em_entopt_mandatory']['em_entopt_mandatory'] = [
+			$data['options'][$row_number]['mandatory']['mandatory'] = [
 				'value' => $form->render_element_value([
 					'type' => 'field',
 					'options' => [
 						'id' => 'optional_fields_mandatory_' . $row_number,
-						'name' => $name . '[em_entopt_mandatory]',
+						'name' => $name . '[' . $model->column_prefix . 'mandatory]',
 						'method' => 'html::checkbox',
 						'checked' => false,
 						'disabled' => true
 					]
-				], $v['em_entopt_field_code']),
+				], null),
 				'options' => [
 					'percent' => 10
 				]
 			];
-			$data['options'][$row_number]['em_entopt_value']['em_entopt_value'] = [
+			$data['options'][$row_number]['value']['value'] = [
 				'value' => $form->render_element_value([
 					'type' => 'field',
 					'options' => [
 						'id' => 'optional_fields_field_code_2sd34' . $row_number,
-						'name' => $name . '[em_entopt_value]',
+						'name' => $name . '[' . $model->column_prefix . 'value]',
 						'method' => 'html::input',
 						'options' => $fields
 					]

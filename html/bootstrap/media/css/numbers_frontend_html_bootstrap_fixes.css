@@ -114,9 +114,14 @@ legend {
 	margin-bottom: 5px;
 }
 /* tabs */
-.tab-content {
-	overflow: hidden;
+.tab-pane>.row {
+	margin-right: -10px;
+	margin-left: -10px;
 }
+.tab-pane {
+	padding-bottom: 10px;
+}
+
 /* form group */
 .form-group {
 	margin-bottom: 5px;
@@ -126,6 +131,12 @@ legend {
 }
 .grid_counter_row {
 	/*width: 15px;*/
+}
+.grid_counter_row_with_labels {
+	border: none;
+	border-radius: 0;
+	box-shadow: none;
+	background-color: inherit !important;
 }
 .grid_row_even {
 	background-color: rgba(52, 122, 183, 0.1);

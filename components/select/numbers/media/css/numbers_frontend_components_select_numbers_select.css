@@ -113,6 +113,6 @@ tr.numbers_select_option_table_tr_hover:hover {
 .numbers_select_replacement {
 	height: auto !important;
 	min-height: 34px;
-	padding-left: 5px;
+	padding-left: 12px;
 	padding-right: 25px;
 }
