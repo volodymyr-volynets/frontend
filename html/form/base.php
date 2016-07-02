@@ -438,6 +438,10 @@ load_values:
 					]]), $error_field);
 					$error = true;
 				}
+				// we need to convert empty string to null
+				if ($data[$k] . '' == '' && !empty($v['options']['null'])) {
+					$data[$k] = null;
+				}
 			}
 			// execute domain validator
 			if (!empty($v['options']['domain']) && !empty(self::$cached_domains[$v['options']['domain']]['validator_method']) && !empty($data[$k])) {

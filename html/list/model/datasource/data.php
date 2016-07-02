@@ -36,8 +36,8 @@ class numbers_frontend_html_list_model_datasource_data extends object_datasource
 			WHERE 1=1
 				{$where}
 			{$options['orderby']}
-			OFFSET {$options['offset']}
 			LIMIT {$options['limit']}
+			OFFSET {$options['offset']}
 TTT;
 	}
 }
