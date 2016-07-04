@@ -155,16 +155,19 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 				if (empty($this->options['input'][$column]) && in_array($navigation_type, ['next', 'previous', 'refresh'])) break;
 				$this->preload_collection_object();
 				$temp = object_table_columns::process_single_column_type($column, $this->collection_object->primary_model->columns[$column], $this->options['input'][$column] ?? null);
-				if (!array_key_exists($column, $temp)) break;
+				$where = [];
+				if (!array_key_exists($column, $temp) && in_array($navigation_type, ['next', 'previous', 'refresh'])) {
+					break;
+				} else {
+					$where[$column] = $temp[$column];
+				}
 				$model = new numbers_frontend_html_form_model_datasource_navigation();
 				$result = $model->get([
 					'model' => $this->collection['model'],
 					'type' => $navigation_type,
 					'column' => $column,
 					'pk' => $this->collection_object->data['pk'][0],
-					'where' => [
-						$column => $temp[$column]
-					]
+					'where' => $where
 				]);
 				// we need to reset input and values
 				$this->options['input'] = $this->values = [];
