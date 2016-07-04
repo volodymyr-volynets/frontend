@@ -146,6 +146,44 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 	 * Process from events
 	 */
 	public function process() {
+		// navigation
+		if (!empty($this->options['input']['navigation'])) {
+			$column = key($this->options['input']['navigation']);
+			do {
+				if (empty($this->fields[$column]['options']['navigation'])) break;
+				$navigation_type = key($this->options['input']['navigation'][$column]);
+				if (empty($this->options['input'][$column]) && in_array($navigation_type, ['next', 'previous', 'refresh'])) break;
+				$this->preload_collection_object();
+				$temp = object_table_columns::process_single_column_type($column, $this->collection_object->primary_model->columns[$column], $this->options['input'][$column] ?? null);
+				if (!array_key_exists($column, $temp)) break;
+				$model = new numbers_frontend_html_form_model_datasource_navigation();
+				$result = $model->get([
+					'model' => $this->collection['model'],
+					'type' => $navigation_type,
+					'column' => $column,
+					'pk' => $this->collection_object->data['pk'][0],
+					'where' => [
+						$column => $temp[$column]
+					]
+				]);
+				// we need to reset input and values
+				$this->options['input'] = $this->values = [];
+				if (!empty($result[0])) {
+					$this->values = $result[0];
+					if (!isset($this->values[$column])) {
+						$this->values[$column] = $temp[$column];
+					}
+				} else {
+					$this->values[$column] = $temp[$column];
+					if ($navigation_type == 'refresh') {
+						$this->error('danger', i18n(null, 'Invalid value!'), $column);
+					} else {
+						$this->error('danger', i18n(null, 'Could not find any values!'), $column);
+					}
+					goto process_errors;
+				}
+			} while(0);
+		}
 		// we need to see if we have optional fields
 		if (!empty($this->optional_fields)) {
 			// add it to collections
@@ -207,6 +245,7 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 			// important to do field conversion last
 			$this->process_multiple_columns();
 			// adding general error
+process_errors:
 			if ($this->errors['flag_error_in_fields']) {
 				$this->errors['general']['danger'][] = i18n(null, 'There was some errors with your submission!');
 			}
@@ -922,7 +961,9 @@ load_values:
 		}
 		// if we have form
 		if (empty($this->options['skip_form'])) {
+			$mvc = application::get('mvc');
 			$result = html::form([
+				'action' => $mvc['full'],
 				'name' => "form_{$this->form_link}_form",
 				'id' => "form_{$this->form_link}_form",
 				'value' => $result,
@@ -1435,7 +1476,7 @@ load_values:
 		array_key_extract_by_prefix($result_options, 'label_');
 		$element_expand = !empty($result_options['expand']);
 		// unset certain keys
-		unset($result_options['order']);
+		unset($result_options['order'], $result_options['required']);
 
 		// if we are in html mode
 		/*
@@ -1533,7 +1574,6 @@ load_values:
 				break;
 			case 'html':
 				$element_method = null;
-				$result_options['value'] = $value;
 				break;
 			default:
 				Throw new Exception('Render detail type: ' . $data['fm_part_type']);
@@ -1550,9 +1590,28 @@ load_values:
 			}
 			// adding value
 			$field_method_object = new $temp_model();
-			return $field_method_object->{$temp_method}($result_options);
-		} else {
-			return $value;
+			$value = $field_method_object->{$temp_method}($result_options);
+			// building navigation
+			if (!empty($result_options['navigation'])) {
+				$name = 'navigation[' . $result_options['name'] . ']';
+				$temp = '<table width="100%">';
+					$temp.= '<tr>';
+						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[first]', 'value' => html::icon(['type' => 'step-backward'])]) . '</td>';
+						$temp.= '<td width="1%">&nbsp;</td>';
+						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[previous]', 'value' => html::icon(['type' => 'caret-left'])]) . '</td>';
+						$temp.= '<td width="1%">&nbsp;</td>';
+						$temp.= '<td width="90%">' . $value . '</td>';
+						$temp.= '<td width="1%">&nbsp;</td>';
+						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[refresh]', 'value' => html::icon(['type' => 'refresh'])]) . '</td>';
+						$temp.= '<td width="1%">&nbsp;</td>';
+						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[next]', 'value' => html::icon(['type' => 'caret-right'])]) . '</td>';
+						$temp.= '<td width="1%">&nbsp;</td>';
+						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[last]', 'value' => html::icon(['type' => 'step-forward'])]) . '</td>';
+					$temp.= '</tr>';
+				$temp.= '</table>';
+				$value = $temp;
+			}
 		}
+		return $value;
 	}
 }
