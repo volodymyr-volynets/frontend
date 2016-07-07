@@ -124,6 +124,13 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 	public $current_tab;
 
 	/**
+	 * If we are making an ajax call to another form
+	 *
+	 * @var boolean
+	 */
+	private $flag_another_ajax_call = false;
+
+	/**
 	 * Cached domains
 	 *
 	 * @var array
@@ -146,6 +153,15 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 	 * Process from events
 	 */
 	public function process() {
+		// ajax requests from other forms are filtered by id
+		if (!empty($this->options['input']['__ajax']) && ($this->options['input']['__ajax_form_id'] ?? '') != "form_{$this->form_link}_form") {
+			// load pk
+			if ($this->preload_collection_object()) {
+				$this->load_pk();
+			}
+			$this->flag_another_ajax_call = true;
+			return;
+		}
 		// navigation
 		if (!empty($this->options['input']['navigation'])) {
 			$column = key($this->options['input']['navigation']);
@@ -214,6 +230,15 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 				$this->process_submit[$k] = true;
 			}
 		}
+		// reset form
+		if (!empty($this->options['input']['submit_hidden_reset'])) {
+			$this->values = [];
+		}
+		// if we submit thought ajax we pass this variable
+		if (!empty($this->options['input']['submit_hidden_submit'])) {
+			$submitted = true;
+			$this->process_submit[self::BUTTON_SUBMIT] = true;
+		}
 		// __form_values_loaded
 		if (!empty($this->options['input']['__form_values_loaded'])) {
 			$this->values_loaded = true;
@@ -279,6 +304,12 @@ process_errors:
 						goto convert_multiple_columns;
 					}
 				}
+				// assuming save has been executed without errors we need to process on_success_js
+				if (empty($this->errors['general']['danger'])) {
+					if (!empty($this->options['on_success_js'])) {
+						layout::onload($this->options['on_success_js']);
+					}
+				}
 			} else {
 convert_multiple_columns:
 				// we need to convert details columns
@@ -320,7 +351,8 @@ load_values:
 				if ($k2 == self::BUTTONS) {
 					// remove delete buttons if we do not have loaded values or do not have permission
 					$record_delete = object_controller::can('record_delete');
-					if (!$this->values_loaded || !$record_delete) {
+					$temp_pk = $this->load_pk();
+					if (!$this->values_loaded || !$record_delete || empty($temp_pk)) {
 						unset($this->data[$k]['rows'][$k2]['elements'][self::BUTTON_SUBMIT_DELETE]);
 					}
 					// we need to check permissions
@@ -584,11 +616,13 @@ load_values:
 	 */
 	final public function load_pk() {
 		$this->pk = [];
-		foreach ($this->collection_object->data['pk'] as $v) {
-			if (isset($this->values[$v])) {
-				$temp = object_table_columns::process_single_column_type($v, $this->collection_object->primary_model->columns[$v], $this->values[$v]);
-				if (array_key_exists($v, $temp)) {
-					$this->pk[$v] = $temp[$v];
+		if (!empty($this->collection_object)) {
+			foreach ($this->collection_object->data['pk'] as $v) {
+				if (isset($this->values[$v])) {
+					$temp = object_table_columns::process_single_column_type($v, $this->collection_object->primary_model->columns[$v], $this->values[$v]);
+					if (array_key_exists($v, $temp)) {
+						$this->pk[$v] = $temp[$v];
+					}
 				}
 			}
 		}
@@ -811,14 +845,14 @@ load_values:
 				} else if (!empty($options['detail_11'])) {
 					$options['name'] = $options['detail_11'] . '[' . $element_link . ']';
 					$options['field_name'] = $element_link;
-					$options['id'] = 'form_' . $this->form_link . '_' . $element_link;
+					$options['id'] = 'form_' . $this->form_link . '_element_' . $element_link;
 					if (empty($options['process_submit'])) {
 						$value = array_key_get($this->options['input'], [$options['detail_11'], $element_link]);
 						$this->values[$options['detail_11']][$element_link] = $value;
 					}
 				} else {
 					$options['name'] = $element_link;
-					$options['id'] = 'form_' . $this->form_link . '_' . $element_link;
+					$options['id'] = 'form_' . $this->form_link . '_element_' . $element_link;
 					// populate value array but not for buttons
 					if (empty($options['process_submit'])) {
 						$value = array_key_get($this->options['input'], $element_link);
@@ -869,8 +903,15 @@ load_values:
 	 * @return mixed
 	 */
 	public function render() {
-		// add actions
-		// new record
+		// ajax requests from another form
+		if ($this->flag_another_ajax_call) {
+			return null;
+		}
+		// css & js
+		layout::add_js('/numbers/media_submodules/numbers_frontend_html_form_base.js', 9000);
+		// load mask
+		numbers_frontend_media_libraries_loadmask_base::add();
+		// new record action
 		$mvc = application::get('mvc');
 		if (object_controller::can('record_new')) {
 			$this->actions['form_new'] = ['value' => 'New', 'sort' => -31000, 'icon' => 'file-o', 'href' => $mvc['full']];
@@ -932,7 +973,7 @@ load_values:
 		}
 		$result = implode('', $temp);
 		// rendering actions
-		if (!empty($this->actions)) {
+		if (!empty($this->actions) && empty($this->options['no_actions'])) {
 			$value = '<div style="text-align: right;">' . $this->render_actions() . '</div>';
 			$value.= '<hr class="simple" />';
 			$result = $value . $result;
@@ -948,8 +989,15 @@ load_values:
 		// couple hidden fields
 		$result.= html::hidden(['name' => '__form_submitted', 'value' => 1]);
 		$result.= html::hidden(['name' => '__form_values_loaded', 'value' => $this->values_loaded]);
+		$result.= html::submit(['name' => 'submit_hidden' , 'value' => 1, 'style' => 'display: none;']);
+		$result.= html::hidden(['name' => 'submit_hidden_submit', 'value' => '']);
 		if (!empty($this->optimistic_lock)) {
 			$result.= html::hidden(['name' => $this->optimistic_lock['column'], 'value' => $this->optimistic_lock['value']]);
+		}
+		if (!empty($this->options['bypass_hidden_values'])) {
+			foreach ($this->options['bypass_hidden_values'] as $k => $v) {
+				$result.= html::hidden(['name' => $k, 'value' => $v]);
+			}
 		}
 		// js
 		if (!empty($this->errors['tabs'])) {
@@ -970,9 +1018,20 @@ load_values:
 				'name' => "form_{$this->form_link}_form",
 				'id' => "form_{$this->form_link}_form",
 				'value' => $result,
-				//'onsubmit' => 'return numbers.frontend_list.submit(this);'
+				'onsubmit' => empty($this->options['no_ajax_form_reload']) ? 'return numbers.frontend_form.on_form_submit(this);' : null
 			]);
 		}
+		// if we came from ajax we return as json object
+		if (!empty($this->options['input']['__ajax'])) {
+			$result = [
+				'success' => true,
+				'error' => [],
+				'html' => $result,
+				'js' => layout::$onload
+			];
+			layout::render_as($result, 'application/json');
+		}
+		$result = "<div id=\"form_{$this->form_link}_form_mask\"><div id=\"form_{$this->form_link}_form_wrapper\">" . $result . '</div></div>';
 		// if we have segment
 		if (isset($this->options['segment'])) {
 			$temp = is_array($this->options['segment']) ? $this->options['segment'] : [];
@@ -1553,6 +1612,14 @@ load_values:
 					$result_options['onclick'] = $result_options['onclick'] ?? '';
 					if (!empty($result_options['confirm_message'])) {
 						$result_options['onclick'].= 'return confirm(\'' . strip_tags(i18n(null, $result_options['confirm_message'])) . '\');';
+					}
+					// processing onclick for buttons
+					if (in_array($element_method, ['html::submit', 'html::button', 'html::button2'])) {
+						if (empty($result_options['onclick'])) {
+							$result_options['onclick'].= 'numbers.frontend_form.trigger_submit_on_button(this); return true;';
+						} else {
+							$result_options['onclick'] = 'numbers.frontend_form.trigger_submit_on_button(this); ' . $result_options['onclick'];
+						}
 					}
 					$flag_translated = true;
 				} else {

@@ -1,5 +1,12 @@
+// special variable to handle buttons
+var numbers_frontend_form_submit_hidden_initiator = null;
 
-numbers.frontend_list = {
+/**
+ * Form
+ *
+ * @type object
+ */
+numbers.frontend_form = {
 
 	/**
 	 * This function would be called when user submits the form
@@ -21,7 +28,7 @@ numbers.frontend_list = {
 		$.ajax({
 			url: numbers.controller_full,
 			method: 'post',
-			data: $('#' + form_id).serialize() + '&__ajax=1',
+			data: $('#' + form_id).serialize() + '&__ajax=1&' + numbers_frontend_form_submit_hidden_initiator + '=1&__ajax_form_id=' + form_id,
 			dataType: 'json',
 			success: function (data) {
 				if (data.success) {
@@ -39,15 +46,34 @@ numbers.frontend_list = {
 				print_r2(jqXHR.responseText);
 			}
 		});
+		// reset initiator variable
+		numbers_frontend_form_submit_hidden_initiator = null;
 		return false;
 	},
 
 	/**
-	 * Trigger submit through submit button
+	 * Trigger submit through hidden submit buttons
 	 *
 	 * @param object form
 	 */
-	trigger_submit: function(form) {
+	trigger_submit: function(form, save, reset) {
+		if (save) {
+			$("[name='submit_hidden_submit']", "#" + $(form).attr('id')).val(1);
+		}
+		if (!reset) {
+			numbers_frontend_form_submit_hidden_initiator = 'submit_hidden';
+		} else {
+			numbers_frontend_form_submit_hidden_initiator = 'submit_hidden_reset';
+		}
 		$("[name='submit_hidden']", "#" + $(form).attr('id')).submit();
+	},
+
+	/**
+	 * Trigger submit through hidden submit buttons
+	 *
+	 * @param object button
+	 */
+	trigger_submit_on_button: function(button) {
+		numbers_frontend_form_submit_hidden_initiator = $(button).attr('name');
 	}
-}
+};

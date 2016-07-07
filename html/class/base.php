@@ -135,6 +135,10 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	public static function a($options = []) {
 		$value = isset($options['value']) ? $options['value'] : '';
 		unset($options['value'], $options['options']);
+		// HTML5 does not support name, we need to convert it to id
+		if (!empty($options['name'])) {
+			$options['id'] = $options['name'];
+		}
 		return '<a ' . self::generate_attributes($options) . '>' . $value . '</a>';
 	}
 
@@ -446,11 +450,16 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 			$options['skip_header'] = true;
 		}
 		$result = [];
+		$first_column = null;
 		// header first
 		if (!empty($header) && empty($options['skip_header'])) {
 			$temp2 = '<thead>';
 				$temp2.= '<tr>';
 					foreach ($header as $k => $v) {
+						// determine first column
+						if ($first_column === null) {
+							$first_column = $k;
+						}
 						if (is_array($v)) {
 							$tag = !empty($v['header_use_td_tag']) ? 'td' : 'th';
 							$temp_value = isset($v['value']) ? $v['value'] : '';
@@ -468,7 +477,13 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		unset($options['options'], $options['header'], $options['skip_header']);
 		// rows second
 		foreach ($rows as $k => $v) {
-			$temp2 = '<tr>';
+			// we need to extract row attributes from first column
+			if (!empty($v[$first_column]) && is_array($v[$first_column])) {
+				$row_options = array_key_extract_by_prefix($v[$first_column], 'row_');
+			} else {
+				$row_options = [];
+			}
+			$temp2 = '<tr ' . self::generate_attributes($row_options) . '>';
 				// important we render based on header array and not on what is in rows
 				$flag_colspan = 0;
 				foreach ($header as $k2 => $v2) {

@@ -29,18 +29,18 @@ class numbers_frontend_html_list_pagination_base implements numbers_frontend_htm
 		$displaying = i18n(null, 'Displaying') . ' ';
 		$page_options = $object->page_sizes;
 		$page_options[PHP_INT_MAX] = ['name' => i18n(null, $page_options[PHP_INT_MAX]['name'])];
-		$displaying.= '<div style="width: 80px; display: inline-block;">' . html::select(['id' => 'page_sizes_' . $type, 'options' => $page_options, 'value' => $object->limit, 'no_choose' => true, 'onchange' => "$('#offset').val(0); $('#limit').val(this.value); this.form.submit();"]) . '</div>';
+		$displaying.= '<div style="width: 80px; display: inline-block;">' . html::select(['id' => 'page_sizes_' . $type, 'options' => $page_options, 'value' => $object->limit, 'no_choose' => true, 'onchange' => "$('#offset').val(0); $('#limit').val(this.value); numbers.frontend_list.trigger_submit(this.form);"]) . '</div>';
 		// navigation
 		$navigation = [];
 		$flag_next_row_exists = false;
 		$flag_last_row_exists = true;
 		$current_page = intval($object->offset / $object->limit);
 		if ($current_page >= 1) {
-			$navigation[]= html::button2(['value' => i18n(null, 'First'), 'onclick' => "$('#offset').val(0); this.form.submit();"]);
+			$navigation[]= html::button2(['value' => i18n(null, 'First'), 'onclick' => "$('#offset').val(0); numbers.frontend_list.trigger_submit(this.form);"]);
 		}
 		if ($current_page >= 2) {
 			$previous = (($current_page - 1) * $object->limit);
-			$navigation[]= html::button2(['value' => i18n(null, 'Previous'), 'onclick' => "$('#offset').val({$previous});this.form.submit();"]);
+			$navigation[]= html::button2(['value' => i18n(null, 'Previous'), 'onclick' => "$('#offset').val({$previous}); numbers.frontend_list.trigger_submit(this.form);"]);
 		}
 		// select with number of pages
 		$pages = ceil($object->total / $object->limit);
@@ -51,7 +51,7 @@ class numbers_frontend_html_list_pagination_base implements numbers_frontend_htm
 			}
 			$navigation2 = i18n(null, 'Page') . ': ';
 			$previous = (($current_page - 1) * $object->limit);
-			$navigation2.= '<div style="width: 100px; display: inline-block;">' . html::select(['id' => 'pages_' . $type, 'options' => $temp, 'value' => $object->offset, 'no_choose' => true, 'onchange' => "$('#offset').val(this.value); this.form.submit();"]) . '</div>';
+			$navigation2.= '<div style="width: 100px; display: inline-block;">' . html::select(['id' => 'pages_' . $type, 'options' => $temp, 'value' => $object->offset, 'no_choose' => true, 'onchange' => "$('#offset').val(this.value); numbers.frontend_list.trigger_submit(this.form);"]) . '</div>';
 			$navigation[] = $navigation2;
 			// checking for next and last pages
 			$flag_next_row_exists = ($pages - $current_page - 2 > 0) ? true : false;
@@ -61,11 +61,11 @@ class numbers_frontend_html_list_pagination_base implements numbers_frontend_htm
 		}
 		if ($flag_next_row_exists) {
 			$next = (($current_page + 1) * $object->limit);
-			$navigation[]= html::button2(['value' => i18n(null, 'Next'), 'onclick' => "$('#offset').val({$next}); this.form.submit();"]);
+			$navigation[]= html::button2(['value' => i18n(null, 'Next'), 'onclick' => "$('#offset').val({$next}); numbers.frontend_list.trigger_submit(this.form);"]);
 		}
 		if ($flag_last_row_exists) {
 			$last = (($pages - 1) * $object->limit);
-			$navigation[]= html::button2(['value' => i18n(null, 'Last'), 'onclick' => "$('#offset').val({$last}); this.form.submit();"]);
+			$navigation[]= html::button2(['value' => i18n(null, 'Last'), 'onclick' => "$('#offset').val({$last}); numbers.frontend_list.trigger_submit(this.form);"]);
 		}
 		// generating grid
 		$grid = [

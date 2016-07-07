@@ -264,7 +264,7 @@ class numbers_frontend_html_list_base {
 	 */
 	final public function render() {
 		$result = '';
-		// css fixes
+		// css & js
 		layout::add_css('/numbers/media_submodules/numbers_frontend_html_list_fixes.css', 9000);
 		layout::add_js('/numbers/media_submodules/numbers_frontend_html_list_base.js', 9000);
 		// load mask
@@ -329,12 +329,14 @@ finish:
 			$value.= '<div style="text-align: right;">' . $this->render_actions() . '</div>';
 			$value.= '<hr class="simple" />';
 		}
+		// we add hidden submit element
+		$result.= html::submit(['name' => 'submit_hidden' , 'value' => 1, 'style' => 'display: none;']);
+		// build a form
 		$value.= html::form([
 			'name' => "list_{$this->list_link}_form",
 			'id' => "list_{$this->list_link}_form",
 			'value' => $result,
-			// todo: there are some issues with it on different browsers, so we resubmit for now
-			//'onsubmit' => 'return numbers.frontend_list.submit(this);'
+			'onsubmit' => 'return numbers.frontend_list.on_form_submit(this);'
 		]);
 		// if we came from ajax we return as json object
 		if (!empty($this->options['input']['__ajax'])) {

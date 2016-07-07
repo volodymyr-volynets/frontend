@@ -432,11 +432,11 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 					$result.= '<div class="modal-body">';
 						$result.= $options['body'] ?? '';
 					$result.= '</div>';
-					$result.= '<div class="modal-footer">';
-						$result.= $options['footer'] ?? '';
-						//<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-						//<button type="button" class="btn btn-primary">Save changes</button>
-					$result.= '</div>';
+					if (!empty($options['footer'])) {
+						$result.= '<div class="modal-footer">';
+							$result.= $options['footer'];
+						$result.= '</div>';
+					}
 				$result.= '</div>';
 			$result.= '</div>';
 		$result.= '</div>';

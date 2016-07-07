@@ -14,7 +14,7 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 	 *
 	 * @var object
 	 */
-	private $form_object;
+	public $form_object;
 
 	/**
 	 * Options
