@@ -124,7 +124,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 					$temp.= ' ' . $k2 . '="' . $v2 . '"';
 				}
 			}
-			$result.= '<option value="' . $k . '"'. $selected . $temp . '>' . $text . '</option>';
+			$result.= '<option value="' . addslashes($k) . '"'. $selected . $temp . '>' . $text . '</option>';
 		}
 		return $result;
 	}
@@ -182,6 +182,11 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 			$options['checked'] = 'checked';
 		} else {
 			unset($options['checked']);
+		}
+		if (!empty($options['multiple'])) {
+			$options['multiple'] = 'multiple';
+		} else {
+			unset($options['multiple']);
 		}
 		if (!empty($options['readonly'])) {
 			$options['readonly'] = 'readonly';
@@ -381,10 +386,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	}
 
 	/**
-	 * Button element
-	 *
-	 * @param array $options
-	 * @return string
+	 * @see html::button()
 	 */
 	public static function button($options = []) {
 		$options['type'] = 'button';
@@ -394,10 +396,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	}
 
 	/**
-	 * Button element 2nd edition
-	 *
-	 * @param array $options
-	 * @return string
+	 * @see html::button2()
 	 */
 	public static function button2($options = []) {
 		$options['type'] = $options['type'] ?? 'submit';

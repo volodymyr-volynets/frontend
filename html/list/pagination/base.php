@@ -33,7 +33,7 @@ class numbers_frontend_html_list_pagination_base implements numbers_frontend_htm
 		// navigation
 		$navigation = [];
 		$flag_next_row_exists = false;
-		$flag_last_row_exists = true;
+		$flag_last_row_exists = false;
 		$current_page = intval($object->offset / $object->limit);
 		if ($current_page >= 1) {
 			$navigation[]= html::button2(['value' => i18n(null, 'First'), 'onclick' => "$('#offset').val(0); numbers.frontend_list.trigger_submit(this.form);"]);

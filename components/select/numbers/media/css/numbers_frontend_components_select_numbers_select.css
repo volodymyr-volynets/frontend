@@ -116,3 +116,6 @@ tr.numbers_select_option_table_tr_hover:hover {
 	padding-left: 12px;
 	padding-right: 25px;
 }
+.numbers_select_not_allowed {
+	cursor: not-allowed !important;
+}

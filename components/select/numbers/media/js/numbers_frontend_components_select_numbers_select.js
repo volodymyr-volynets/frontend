@@ -445,7 +445,7 @@ var numbers_select = function (options) {
 			}
 			for (i = 0; i < this.data.length; i++) {
 				if (this.data[i].disabled) {
-					html+= '<tr class="' + this.table_tr_class + '" search-id="' + i + '">';
+					html+= '<tr class="' + this.table_tr_class + ' numbers_select_not_allowed" search-id="' + i + '">';
 				} else {
 					html+= '<tr onclick="' + this.var_id + '.chosen(' + i + ', this);" class="' + this.table_tr_class + (this.data[i].selected ? ' numbers_select_option_table_checked' : '') + ' numbers_select_option_table_tr_hover" search-id="' + i + '">';
 				}
@@ -484,9 +484,7 @@ var numbers_select = function (options) {
 												break;
 											}
 											if (this.data[k].level < this.data[i].level) {
-												if (j == 0) {
-													hash2[j] = 1;
-												}
+												hash2[j] = 1;
 												status = 'last';
 												break;
 											}

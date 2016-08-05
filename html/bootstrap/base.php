@@ -204,11 +204,13 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 							}
 						}
 						$result.= $v3['value'] ?? '';
-						// todo: add description
-						//$v3['description']
 						// error messages
 						if (!empty($v3['error']['message'])) {
 							$result.= $v3['error']['message'];
+						}
+						// description after error message
+						if (!empty($v3['description'])) {
+							$result.= html::text(['type' => 'muted', 'value' => $v3['description']]);
 						}
 					$result.= '</div>';
 					$index++;

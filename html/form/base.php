@@ -158,6 +158,8 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 			// load pk
 			if ($this->preload_collection_object()) {
 				$this->load_pk();
+				// we need to set this flag so ajax calls can go through
+				$this->values_loaded = true;
 			}
 			$this->flag_another_ajax_call = true;
 			return;
@@ -1374,7 +1376,7 @@ load_values:
 							'error' => $error,
 							'label' => $this->render_element_name($first),
 							'value' => $this->render_element_value($v3, $this->get_field_value($v3)),
-							'description' => null,
+							'description' => $v3['options']['description'] ?? null,
 							'options' => $v3['options']
 						];
 					}
@@ -1666,17 +1668,17 @@ load_values:
 				$name = 'navigation[' . $result_options['name'] . ']';
 				$temp = '<table width="100%">';
 					$temp.= '<tr>';
-						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[first]', 'value' => html::icon(['type' => 'step-backward'])]) . '</td>';
+						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[first]', 'value' => html::icon(['type' => 'step-backward']), 'onclick' => "$('#form_{$this->form_link}_form').attr('no_ajax', 1); return true;"]) . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
-						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[previous]', 'value' => html::icon(['type' => 'caret-left'])]) . '</td>';
+						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[previous]', 'value' => html::icon(['type' => 'caret-left']), 'onclick' => "$('#form_{$this->form_link}_form').attr('no_ajax', 1); return true;"]) . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
 						$temp.= '<td width="90%">' . $value . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
-						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[refresh]', 'value' => html::icon(['type' => 'refresh'])]) . '</td>';
+						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[refresh]', 'value' => html::icon(['type' => 'refresh']), 'onclick' => "$('#form_{$this->form_link}_form').attr('no_ajax', 1); return true;"]) . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
-						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[next]', 'value' => html::icon(['type' => 'caret-right'])]) . '</td>';
+						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[next]', 'value' => html::icon(['type' => 'caret-right']), 'onclick' => "$('#form_{$this->form_link}_form').attr('no_ajax', 1); return true;"]) . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
-						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[last]', 'value' => html::icon(['type' => 'step-forward'])]) . '</td>';
+						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[last]', 'value' => html::icon(['type' => 'step-forward']), 'onclick' => "$('#form_{$this->form_link}_form').attr('no_ajax', 1); return true;"]) . '</td>';
 					$temp.= '</tr>';
 				$temp.= '</table>';
 				$value = $temp;
