@@ -146,6 +146,11 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 	public function __construct($form_link, $options = []) {
 		$this->form_link = $form_link . '';
 		$this->options = $options;
+		// overrides from ini files
+		$overrides = application::get('flag.numbers.frontend.html.form');
+		if (!empty($overrides)) {
+			$this->options = array_merge_hard($this->options, $overrides);
+		}
 		$this->errors['flag_error_in_fields'] = false;
 	}
 
