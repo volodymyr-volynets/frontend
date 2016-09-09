@@ -91,7 +91,7 @@ TTT;
 					'inserted' => ['value' => i18n(null, 'Date & Time'), 'width' => '1%', 'nowrap' => true],
 					'important' => ['value' => i18n(null, 'Important'), 'width' => '1%'],
 					'em_entity_name' => ['value' => i18n(null, 'Entity'), 'width' => '10%'],
-					'value' => i18n(null, 'Comment')
+					'comment_value' => i18n(null, 'Comment')
 				],
 				'options' => []
 			];
@@ -107,7 +107,7 @@ TTT;
 					'inserted' => format::datetime($v['inserted']),
 					'important' => ['value' => $v['important'] ? i18n(null, 'Yes') : ''],
 					'em_entity_name' => ['value' => $v['em_entity_name'], 'width' => '10%', 'nowrap' => true],
-					'value' => nl2br($v['value'])
+					'comment_value' => nl2br($v['comment_value'])
 				];
 				$row_number++;
 			}

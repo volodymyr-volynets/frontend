@@ -539,7 +539,7 @@ var numbers_select = function (options) {
 								}
 								switch (status) {
 									case 'next':
-										html+= '<td class="numbers_select_option_table_level"><span class="numbers_select_option_table_level_next">&nbsp;</span></td>';
+										html+= '<td class="numbers_select_option_table_level"><table class="numbers_select_option_table_level_nextchild" cellpadding="0" cellspacing="0"><tr><td>&nbsp;</td></tr><tr><td>&nbsp;</td></tr></table></td>';
 										break;
 									case 'last':
 										html+= '<td class="numbers_select_option_table_level"><table class="numbers_select_option_table_level_last" cellpadding="0" cellspacing="0"><tr><td class="numbers_select_option_table_level_last_left">&nbsp;</td></tr><tr><td class="numbers_select_option_table_level_last_sep">&nbsp;</td></tr></table></td>';

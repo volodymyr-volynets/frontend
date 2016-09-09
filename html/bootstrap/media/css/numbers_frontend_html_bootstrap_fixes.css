@@ -94,6 +94,10 @@
 	margin-top: 5px;
 	margin-bottom: 10px;
 }
+/* modal */
+.modal-footer {
+	text-align: left;
+}
 /* hr tag */
 hr.simple {
 	margin-top: 10px !important;
@@ -129,23 +133,22 @@ legend {
 .label {
 	margin-left: 3px;
 }
-.grid_counter_row {
-	/*width: 15px;*/
+hr.small {
+	margin-top: 3px;
+	margin-bottom: 3px;
 }
-.grid_counter_row_with_labels {
-	border: none;
-	border-radius: 0;
-	box-shadow: none;
-	background-color: inherit !important;
+
+/* grid */
+.grid_vertical_separator {
+	border: 0;
+	border-left: 1px solid #eee;
 }
-.grid_row_even {
-	background-color: rgba(52, 122, 183, 0.1);
-}
-.grid_row_odd {
-	/* nothing */
+.grid_align_right {
+	text-align: right;
 }
 
 /* font awesome fixes */
 .fa {
 	min-width: 1em;
+	text-align:center;
 }

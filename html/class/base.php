@@ -424,12 +424,14 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		$options['action'] = isset($options['action']) ? $options['action'] : '';
 		$options['accept-charset'] = isset($options['accept-charset']) ? $options['accept-charset'] : 'utf-8';
 		$options['enctype'] = isset($options['enctype']) ? $options['enctype'] : 'multipart/form-data';
-
 		// fragment
 		if (!empty($options['fragment'])) {
 			$options['action'].= '#' . $options['fragment'];
 		}
-
+		// we need to unset onsubmit if empty
+		if (empty($options['onsubmit'])) {
+			unset($options['onsubmit']);
+		}
 		// assembling form
 		$value = $options['value'] ?? '';
 		unset($options['value']);

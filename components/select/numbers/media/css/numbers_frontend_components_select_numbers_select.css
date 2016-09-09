@@ -56,13 +56,6 @@ tr.numbers_select_option_table_tr_hover:hover {
 .numbers_select_option_table_level {
 	width: 2em;
 	height: 2.5em;
-	font-size: 0.5em;
-}
-.numbers_select_option_table_level_next {
-	width: 1em;
-	height: 100%;
-	float: right;
-	border-left: 1px solid #d3d3d3;
 }
 .numbers_select_option_table_level_nextchild {
 	width: 1em;

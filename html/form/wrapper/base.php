@@ -85,6 +85,9 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 		}
 		// step 1: create form object
 		$this->form_object = new numbers_frontend_html_form_base($this->form_link, array_merge_hard($this->options, $options));
+		// class
+		$this->form_object->form_class = get_called_class();
+		$this->form_object->form_parent = & $this;
 		// add collection & optional fields
 		$this->form_object->collection = $this->collection;
 		$this->form_object->optional_fields = $this->optional_fields;
@@ -116,9 +119,9 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 			}
 		}
 		// step 3: methods
-		foreach (['save', 'validate'] as $v) {
+		foreach (['save', 'validate', 'refresh'] as $v) {
 			if (method_exists($this, $v)) {
-				$this->form_object->wrapper_methods[$v]['main'] = [$this, $v];
+				$this->form_object->wrapper_methods[$v]['main'] = [& $this, $v];
 			}
 		}
 		// extensions can have their own verify methods

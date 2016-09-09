@@ -10,6 +10,20 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 	public $form_link;
 
 	/**
+	 * Form class
+	 *
+	 * @var string
+	 */
+	public $form_class;
+
+	/**
+	 * Form parent
+	 *
+	 * @var string
+	 */
+	public $form_parent;
+
+	/**
 	 * Options
 	 *
 	 * @var array
@@ -159,15 +173,34 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 	 */
 	public function process() {
 		// ajax requests from other forms are filtered by id
-		if (!empty($this->options['input']['__ajax']) && ($this->options['input']['__ajax_form_id'] ?? '') != "form_{$this->form_link}_form") {
-			// load pk
-			if ($this->preload_collection_object()) {
-				$this->load_pk();
-				// we need to set this flag so ajax calls can go through
-				$this->values_loaded = true;
+		if (!empty($this->options['input']['__ajax'])) {
+			// if its ajax call to this form
+			if (($this->options['input']['__ajax_form_id'] ?? '') == "form_{$this->form_link}_form") {
+				// it its a call to auto complete
+				if (!empty($this->options['input']['__ajax_autocomplete']['name'])
+					&& !empty($this->fields[$this->options['input']['__ajax_autocomplete']['name']]['options']['method'])
+					&& strpos($this->fields[$this->options['input']['__ajax_autocomplete']['name']]['options']['method'], 'autocomplete') !== false
+				) {
+					$options = $this->fields[$this->options['input']['__ajax_autocomplete']['name']]['options'];
+					$options['__ajax'] = true;
+					$options['__ajax_autocomplete'] = $this->options['input']['__ajax_autocomplete'];
+					$temp = explode('::', $this->fields[$this->options['input']['__ajax_autocomplete']['name']]['options']['method']);
+					if (count($temp) == 1) {
+						return html::{$temp[0]}($options);
+					} else {
+						return factory::model($temp[0])->{$temp[1]}($options);
+					}
+				}
+			} else {
+				// load pk
+				if ($this->preload_collection_object()) {
+					$this->load_pk();
+					// we need to set this flag so ajax calls can go through
+					$this->values_loaded = true;
+				}
+				$this->flag_another_ajax_call = true;
+				return;
 			}
-			$this->flag_another_ajax_call = true;
-			return;
 		}
 		// navigation
 		if (!empty($this->options['input']['navigation'])) {
@@ -218,8 +251,14 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 			// we need to manually put values into values
 			$this->values[$this->optional_fields['model']] = $this->options['input'][$this->optional_fields['model']] ?? [];
 			$temp_model = factory::model($this->optional_fields['model']);
-			pk([$temp_model->column_prefix . 'field_code'], $this->values[$this->optional_fields['model']]);
-			unset($this->values[$this->optional_fields['model']]['']);
+			// converting keys
+			$data = [];
+			foreach ($this->values[$this->optional_fields['model']] as $k => $v) {
+				if (!empty($v['em_entopt_model_code']) && !empty($v['em_entopt_field_code'])) {
+					$data[$v[$temp_model->column_prefix . 'model_code'] . '::' . $v[$temp_model->column_prefix . 'field_code']] = $v;
+				}
+			}
+			$this->values[$this->optional_fields['model']] = $data;
 		}
 		// we need to process details
 		if (!empty($this->detail_fields)) {
@@ -258,9 +297,13 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 			];
 			$this->values[$this->collection_object->primary_model->optimistic_lock_column] = $this->optimistic_lock['value'] . '';
 		}
+		// handling form reload
+		if (!empty($this->wrapper_methods['refresh']['main'])) {
+			call_user_func_array($this->wrapper_methods['refresh']['main'], [& $this]);
+		}
 		// if form has been submitted but not for save
 		if (!empty($this->options['input']['__form_submitted']) && !$submitted) {
-			// nothing for now
+			// nothing
 		} else if ($submitted) { // if form has been submitted
 			$this->validate_data_types();
 			// call attached method to the form
@@ -425,7 +468,7 @@ load_values:
 	/**
 	 * Validate datatypes
 	 */
-	final public function validate_data_types() {
+	final public function validate_data_types($override_values = false) {
 		// regular & multiple fields
 		foreach ($this->fields as $k => $v) {
 			if (!empty($v['options']['process_submit'])) {
@@ -438,16 +481,16 @@ load_values:
 			// if we have multiple values
 			if (!empty($v['options']['multiple_column']) && !empty($this->values[$k])) {
 				foreach ($this->values[$k] as $k2 => $v2) {
-					$this->validate_data_types_single_value($k, $v, $v2, $k2);
+					$this->validate_data_types_single_value($k, $v, $v2, $k2, null, false, $override_values);
 				}
 			} else if (!empty($v['options']['detail_11'])) { // 1 to 1 details
 				$value = array_key_get($this->values, [$v['options']['detail_11'], $v['options']['field_name']]);
-				$temp = $this->validate_data_types_single_value($k, $v, $value, null, $v['options']['name'], true);
+				$temp = $this->validate_data_types_single_value($k, $v, $value, null, $v['options']['name'], true, $override_values);
 				if (empty($temp['flag_error'])) {
 					$this->values[$v['options']['detail_11']][$v['options']['field_name']] = $temp[$k];
 				}
 			} else {
-				$this->validate_data_types_single_value($k, $v, $this->values[$k]);
+				$this->validate_data_types_single_value($k, $v, $this->values[$k], null, null, false, $override_values);
 			}
 		}
 		// details
@@ -464,7 +507,7 @@ load_values:
 					}
 					// validate
 					$name = $v0['options']['details_key'] . "[{$k11}][" . ($k) . "]";
-					$temp = $this->validate_data_types_single_value($k, $v, $v11[$k] ?? null, true, $name, true);
+					$temp = $this->validate_data_types_single_value($k, $v, $v11[$k] ?? null, true, $name, true, $override_values);
 					if (empty($temp['flag_error'])) {
 						$this->values[$v0['options']['details_key']][$k11][$k] = $temp[$k];
 					}
@@ -481,7 +524,7 @@ load_values:
 	 * @param mixed $in_value
 	 * @param boolean $multiple
 	 */
-	final public function validate_data_types_single_value($k, $v, $in_value, $multiple_key = null, $error_field = null, $do_not_set_values = false) {
+	final public function validate_data_types_single_value($k, $v, $in_value, $multiple_key = null, $error_field = null, $do_not_set_values = false, $override_values = false) {
 		// cache domains
 		if (empty(self::$cached_domains)) {
 			self::$cached_domains = factory::model('object_data_domains')->get();
@@ -540,7 +583,7 @@ load_values:
 			}
 			$data['flag_error'] = $error;
 			// if no error we update the value
-			if (!$error && !$do_not_set_values) {
+			if ((!$error && !$do_not_set_values) || $override_values) {
 				if ($multiple_key === null) {
 					$this->values[$k] = $data[$k];
 				} else {
@@ -864,6 +907,10 @@ load_values:
 					if (empty($options['process_submit'])) {
 						$value = array_key_get($this->options['input'], $element_link);
 						$this->values[$element_link] = $value;
+						// detect changes
+						if (!empty($options['detect_changes'])) {
+							$this->values[$element_link . '_detect_changes'] = $this->options['input'][$element_link . '_detect_changes'] ?? null;
+						}
 					}
 				}
 				// process domain & type
@@ -1090,13 +1137,23 @@ load_values:
 		$result = '';
 		$row_max = count($values) + ($options['new_rows'] ?? 0);
 		$row_number = 1;
-		$data = [
-			'options' => []
+		// building table
+		$table = [
+			'header' => [
+				'row_number' => '',
+				'row_data' => '',
+			],
+			'options' => [],
+			'skip_header' => true
 		];
 		// we must sort
 		array_key_sort($rows, ['order' => SORT_ASC]);
 		// looping through existing rows
 		foreach ($values as $k0 => $v0) {
+			// empty data variable
+			$data = [
+				'options' => []
+			];
 			foreach ($rows as $k => $v) {
 				array_key_sort($v['elements'], ['order' => SORT_ASC]);
 				// group by
@@ -1115,63 +1172,53 @@ load_values:
 					} else {
 						$first['prepend_to_field'] = ':';
 						foreach ($v2 as $k3 => $v3) {
-							// system fields
-							if ($k3 == 'row_number') {
-								$data['options'][$row_number . '_' . $k][$k2][$k3] = [
-									'error' => '',
-									'label' => $this->render_element_name(['options' => ['label_name' => ' ']]),
-									'value' => '<div class="form-control grid_counter_row_with_labels">' . $row_number . '.' . '</div>',
-									'description' => null,
-									'options' => [],
-									'row_class' => !($row_number % 2) ? 'grid_row_even' : 'grid_row_odd'
-								];
-							} else { // regular field
-								$name = $options['details_key'] . '[' . $row_number . ']';
-								$id = $options['details_key'] . '_' . $row_number . '_';
-								$error_name = $options['details_key'] . "[{$k0}][" . $k3 . "]";
-								// error
-								$error = $this->get_field_errors([
-									'options' => [
-										'name' => $error_name
-									]
-								]);
-								if ($error['counter'] > 0) {
-									$this->error_in_tabs($error['counter']);
-								}
-								// generate proper element
-								$value_options = $v3;
-								$value_options['options']['id'] = $id . $k3;
-								$value_options['options']['name'] = $name . '[' . $k3 . ']';
-								$value = $this->render_element_value($value_options, $v0[$k3], $v0);
-								// add element to grid
-								$data['options'][$row_number . '_' . $k][$k2][$k3] = [
-									'error' => $error,
-									'label' => $this->render_element_name($first),
-									'value' => $value,
-									'description' => null,
-									'options' => $v3['options'],
-									'row_class' => !($row_number % 2) ? 'grid_row_even' : 'grid_row_odd'
-								];
+							$name = $options['details_key'] . '[' . $row_number . ']';
+							$id = $options['details_key'] . '_' . $row_number . '_';
+							$error_name = $options['details_key'] . "[{$k0}][" . $k3 . "]";
+							// error
+							$error = $this->get_field_errors([
+								'options' => [
+									'name' => $error_name
+								]
+							]);
+							if ($error['counter'] > 0) {
+								$this->error_in_tabs($error['counter']);
 							}
+							// generate proper element
+							$value_options = $v3;
+							$value_options['options']['id'] = $id . $k3;
+							$value_options['options']['name'] = $name . '[' . $k3 . ']';
+							$value = $this->render_element_value($value_options, $v0[$k3], $v0);
+							// add element to grid
+							$data['options'][$row_number . '_' . $k][$k2][$k3] = [
+								'error' => $error,
+								'label' => $this->render_element_name($first),
+								'value' => $value,
+								'description' => null,
+								'options' => $v3['options'],
+								'row_class' => !($row_number % 2) ? 'grid_row_even' : 'grid_row_odd'
+							];
 						}
 					}
 				}
 			}
-			// add separator
-			if ($row_number < $row_max) {
-				$data['options'][$row_number . '_' . $k . '_sep'][$k2][0] = [
-					'value' => html::separator(['value' => null, 'icon' => null]),
-					'separator' => true
-				];
-			}
 			// increase counter
 			$this->error_in_tabs(1, true);
+			// add a row to a table
+			$table['options'][$row_number] = [
+				'row_number' => ['value' => $row_number . '.', 'width' => '1%'],
+				'row_data' => html::grid($data)
+			];
 			$row_number++;
 		}
 		// new rows
 		if (!empty($options['new_rows'])) {
 			$max = $row_number + $options['new_rows'];
 			for ($row_number = $row_number; $row_number < $max; $row_number++) {
+				// empty data variable
+				$data = [
+					'options' => []
+				];
 				foreach ($rows as $k => $v) {
 					array_key_sort($v['elements'], ['order' => SORT_ASC]);
 					// group by
@@ -1190,49 +1237,35 @@ load_values:
 						} else {
 							$first['prepend_to_field'] = ':';
 							foreach ($v2 as $k3 => $v3) {
-								// system fields
-								if ($k3 == 'row_number') {
-									$data['options'][$row_number . '_' . $k][$k2][$k3] = [
-										'error' => '',
-										'label' => $this->render_element_name(['options' => ['label_name' => ' ']]),
-										'value' => '<div class="form-control grid_counter_row_with_labels">' . i18n(null, 'New') . '.' . '</div>',
-										'description' => null,
-										'options' => [],
-										'row_class' => !($row_number % 2) ? 'grid_row_even' : 'grid_row_odd'
-									];
-								} else { // regular field
-									$name = $options['details_key'] . '[' . $row_number . ']';
-									$id = $options['details_key'] . '_' . $row_number . '_';
-									$error_name = $options['details_key'] . "[{$k}][" . $k3 . "]";
-									// generate proper element
-									$value_options = $v3;
-									$value_options['options']['id'] = $id . $k3;
-									$value_options['options']['name'] = $name . '[' . $k3 . ']';
-									$value = $this->render_element_value($value_options, null);
-									// add element to grid
-									$data['options'][$row_number . '_' . $k][$k2][$k3] = [
-										'error' => $this->get_field_errors($v3),
-										'label' => $this->render_element_name($first),
-										'value' => $value,
-										'description' => null,
-										'options' => $v3['options'],
-										'row_class' => !($row_number % 2) ? 'grid_row_even' : 'grid_row_odd'
-									];
-								}
+								$name = $options['details_key'] . '[' . $row_number . ']';
+								$id = $options['details_key'] . '_' . $row_number . '_';
+								$error_name = $options['details_key'] . "[{$k}][" . $k3 . "]";
+								// generate proper element
+								$value_options = $v3;
+								$value_options['options']['id'] = $id . $k3;
+								$value_options['options']['name'] = $name . '[' . $k3 . ']';
+								$value = $this->render_element_value($value_options, null);
+								// add element to grid
+								$data['options'][$row_number . '_' . $k][$k2][$k3] = [
+									'error' => $this->get_field_errors($v3),
+									'label' => $this->render_element_name($first),
+									'value' => $value,
+									'description' => null,
+									'options' => $v3['options'],
+									'row_class' => !($row_number % 2) ? 'grid_row_even' : 'grid_row_odd'
+								];
 							}
 						}
 					}
 				}
-				// add separator
-				if ($row_number < $row_max) {
-					$data['options'][$row_number . '_' . $k . '_sep'][$k2][0] = [
-						'value' => html::separator(['value' => null, 'icon' => null]),
-						'separator' => true
-					];
-				}
+				// add a row to a table
+				$table['options'][$row_number] = [
+					'row_number' => ['value' => $row_number . '.', 'width' => '1%'],
+					'row_data' => html::grid($data)
+				];
 			}
 		}
-		return html::grid($data);
+		return html::table($table);
 	}
 
 	/**
@@ -1273,7 +1306,12 @@ load_values:
 		// custom renderer
 		if (!empty($this->data[$container_link]['options']['custom_renderer'])) {
 			$temp = explode('::', $this->data[$container_link]['options']['custom_renderer']);
-			$temp[0] = factory::model($temp[0]);
+			// important to use $this if its the same class
+			if ($temp[0] == $this->form_class) {
+				$temp[0] = & $this->form_parent;
+			} else {
+				$temp[0] = factory::model($temp[0]);
+			}
 			return call_user_func_array($temp, [& $this]);
 		}
 		// if its details we need to render it differently
@@ -1377,10 +1415,14 @@ load_values:
 						if ($error['counter'] > 0) {
 							$this->error_in_tabs($error['counter']);
 						}
+						// we do not show hidden fields
+						if (($v3['options']['method'] ?? '') == 'hidden') {
+							$v3['options']['style'] = ($v3['options']['style'] ?? '') . 'display: none;';
+						}
 						$data['options'][$k][$k2][$k3] = [
 							'error' => $error,
 							'label' => $this->render_element_name($first),
-							'value' => $this->render_element_value($v3, $this->get_field_value($v3)),
+							'value' => $this->render_element_value($v3, $this->get_field_value($v3), $this->values ?? []),
 							'description' => $v3['options']['description'] ?? null,
 							'options' => $v3['options']
 						];
@@ -1559,14 +1601,26 @@ load_values:
 		*/
 		// processing options
 		if (!empty($result_options['options_model'])) {
-			// depends
-			$depends = [];
+			if (empty($result_options['options_params'])) {
+				$result_options['options_params'] = [];
+			}
+			// options depends
 			if (!empty($options['options']['options_depends'])) {
 				foreach ($options['options']['options_depends'] as $k => $v) {
-					$depends[$k] = $neighbouring_values[$v] ?? null;
+					// important to skip fields with errors
+					if (!empty($this->errors['fields'][$v]['danger'])) {
+						continue;
+					}
+					$result_options['options_params'][$k] = $neighbouring_values[$v] ?? null;
 				}
 			}
-			$result_options['options'] = object_data_common::process_options($result_options['options_model'], $this, $depends);
+			// we do not need options for autocomplete
+			if (strpos($result_options['method'], 'autocomplete') === false) {
+				$result_options['options'] = object_data_common::process_options($result_options['options_model'], $this, $result_options['options_params']);
+			} else {
+				// we need to inject form id into autocomplete
+				$result_options['form_id'] = "form_{$this->form_link}_form";
+			}
 		}
 		// different handling for different type
 		switch ($options['type']) {
@@ -1614,7 +1668,7 @@ load_values:
 				$flag_translated = false;
 				if (in_array($element_method, ['html::a', 'html::submit', 'html::button', 'html::button2'])) {
 					// translate value
-					$result_options['value'] = i18n($result_options['i18n'] ?? null, $result_options['value']);
+					$result_options['value'] = i18n($result_options['i18n'] ?? null, $result_options['value'] ?? null);
 					// process confirm_message
 					$result_options['onclick'] = $result_options['onclick'] ?? '';
 					if (!empty($result_options['confirm_message'])) {
@@ -1687,6 +1741,16 @@ load_values:
 					$temp.= '</tr>';
 				$temp.= '</table>';
 				$value = $temp;
+			}
+		}
+		// handling changes
+		if (!empty($result_options['detect_changes'])) {
+			if (is_array($result_options['value'])) {
+				foreach ($result_options['value'] as $v) {
+					$value.= html::hidden(['name' => $result_options['name'] . '_detect_changes[]', 'value' => $v]);
+				}
+			} else {
+				$value.= html::hidden(['name' => $result_options['name'] . '_detect_changes', 'value' => $result_options['value']]);
 			}
 		}
 		return $value;

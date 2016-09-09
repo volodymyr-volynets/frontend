@@ -65,7 +65,7 @@ numbers.frontend_form = {
 		} else {
 			numbers_frontend_form_submit_hidden_initiator = 'submit_hidden_reset';
 		}
-		$("[name='submit_hidden']", "#" + $(form).attr('id')).submit();
+		$("[name='submit_hidden']", "#" + $(form).attr('id')).click();
 	},
 
 	/**

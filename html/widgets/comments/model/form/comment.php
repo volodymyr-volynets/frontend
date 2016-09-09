@@ -36,7 +36,7 @@ class numbers_frontend_html_widgets_comments_model_form_comment extends numbers_
 		$model = factory::model($form->options['other']['model']);
 		$save = [
 			$model->column_prefix . 'important' => !empty($form->values['important']) ? 1 : 0,
-			$model->column_prefix . 'value' => $form->values['comment'] . '',
+			$model->column_prefix . 'comment_value' => $form->values['comment'] . '',
 			$model->column_prefix . 'who_entity_id' => session::get('numbers.entity.em_entity_id'),
 			$model->column_prefix . 'inserted' => format::now('timestamp')
 		];
