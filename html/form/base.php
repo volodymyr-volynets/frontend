@@ -10,6 +10,13 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 	public $form_link;
 
 	/**
+	 * Title
+	 *
+	 * @var string
+	 */
+	public $title;
+
+	/**
 	 * Form class
 	 *
 	 * @var string
@@ -150,6 +157,13 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 	 * @var array
 	 */
 	public static $cached_domains = null;
+
+	/**
+	 * Misc. Settings
+	 *
+	 * @var array
+	 */
+	public $misc_settings = [];
 
 	/**
 	 * Constructor
@@ -885,6 +899,8 @@ load_values:
 				$this->data[$options['container']]['flag_child'] = true;
 				$type = 'tab';
 				$container = $options['container'];
+				// need to add a container to the tabs
+				$this->misc_settings['tabs'][$container] = $this->data[$container_link]['rows'][$row_link]['options']['label_name'];
 			} else {
 				// name & id
 				if ($this->data[$container_link]['type'] == 'details') {
@@ -946,6 +962,20 @@ load_values:
 				'options' => $options,
 				'order' => $options['order'] ?? 0
 			];
+			// we need to set few misc options
+			if (!empty($options['options_model'])) {
+				$temp = explode('::', $options['options_model']);
+				$name = [];
+				if (isset($this->misc_settings['tabs'][$container_link])) {
+					$name[] = $this->misc_settings['tabs'][$container_link];
+				}
+				$name[] = $options['label_name'];
+				$this->misc_settings['option_models'][$element_link] = [
+					'model' => $temp[0],
+					'field_code' => $element_link,
+					'field_name' => implode(': ', $name)
+				];
+			}
 		} else {
 			$this->data[$container_link]['rows'][$row_link]['elements'][$element_link]['options'] = array_merge_hard($this->data[$container_link]['rows'][$row_link]['elements'][$element_link], $options);
 		}
@@ -1121,9 +1151,180 @@ load_values:
 		// rendering
 		if ($detail_rendering_type == 'grid_with_label') {
 			$result['data']['html'] = $this->render_container_type_details_grid_with_label($this->data[$container_link]['rows'], $data, ['details_key' => $key, 'new_rows' => $detail_new_rows]);
+		} else if ($detail_rendering_type == 'table') {
+			$result['data']['html'] = $this->render_container_type_details_table($this->data[$container_link]['rows'], $data, ['details_key' => $key, 'new_rows' => $detail_new_rows]);
 		}
 		$result['success'] = true;
 		return $result;
+	}
+
+	/**
+	 * Details - render table
+	 *
+	 * @param array $rows
+	 * @param array $values
+	 * @param array $options
+	 */
+	public function render_container_type_details_table($rows, $values, $options = []) {
+		$result = '';
+		$row_max = count($values) + ($options['new_rows'] ?? 0);
+		$row_number = 1;
+		// building table
+		$table = [
+			'header' => [
+				'row_number' => '',
+				'row_data' => '',
+			],
+			'options' => [],
+			'skip_header' => true
+		];
+		// empty data variable
+		$data = [
+			'options' => []
+		];
+		foreach ($rows as $k => $v) {
+			array_key_sort($v['elements'], ['order' => SORT_ASC]);
+			// group by
+			$groupped = [];
+			foreach ($v['elements'] as $k2 => $v2) {
+				$groupped[$v2['options']['label_name'] ?? ''][$k2] = $v2;
+			}
+			foreach ($groupped as $k2 => $v2) {
+				$first = current($v2);
+				$first_key = key($v2);
+				foreach ($v2 as $k3 => $v3) {
+					$data['options'][$k][$k2][$k3] = [
+						'label' => $this->render_element_name($first),
+						'options' => $v3['options'],
+					];
+				}
+			}
+		}
+		// add a row to a table
+		$table['options']['__header'] = [
+			'row_number' => ['value' => '&nbsp;', 'width' => '1%'],
+			'row_data' => html::grid($data)
+		];
+		// we must sort
+		array_key_sort($rows, ['order' => SORT_ASC]);
+		// looping through existing rows
+		foreach ($values as $k0 => $v0) {
+			// empty data variable
+			$data = [
+				'options' => []
+			];
+			foreach ($rows as $k => $v) {
+				array_key_sort($v['elements'], ['order' => SORT_ASC]);
+				// group by
+				$groupped = [];
+				foreach ($v['elements'] as $k2 => $v2) {
+					$groupped[$v2['options']['label_name'] ?? ''][$k2] = $v2;
+				}
+				foreach ($groupped as $k2 => $v2) {
+					$first = current($v2);
+					$first_key = key($v2);
+					if ($first_key == self::SEPARATOR_HORISONTAL) {
+						$data['options'][$row_number . '_' . $k][$k2][0] = [
+							'value' => html::separator(['value' => $first['options']['label_name'], 'icon' => $first['options']['icon'] ?? null]),
+							'separator' => true
+						];
+					} else {
+						$first['prepend_to_field'] = ':';
+						foreach ($v2 as $k3 => $v3) {
+							$name = $options['details_key'] . '[' . $row_number . ']';
+							$id = $options['details_key'] . '_' . $row_number . '_';
+							$error_name = $options['details_key'] . "[{$k0}][" . $k3 . "]";
+							// error
+							$error = $this->get_field_errors([
+								'options' => [
+									'name' => $error_name
+								]
+							]);
+							if ($error['counter'] > 0) {
+								$this->error_in_tabs($error['counter']);
+							}
+							// generate proper element
+							$value_options = $v3;
+							$value_options['options']['id'] = $id . $k3;
+							$value_options['options']['name'] = $name . '[' . $k3 . ']';
+							$value = $this->render_element_value($value_options, $v0[$k3], $v0);
+							// add element to grid
+							$data['options'][$row_number . '_' . $k][$k2][$k3] = [
+								'error' => $error,
+								//'label' => $this->render_element_name($first),
+								'value' => $value,
+								'description' => null,
+								'options' => $v3['options'],
+								'row_class' => !($row_number % 2) ? 'grid_row_even' : 'grid_row_odd'
+							];
+						}
+					}
+				}
+			}
+			// increase counter
+			$this->error_in_tabs(1, true);
+			// add a row to a table
+			$table['options'][$row_number] = [
+				'row_number' => ['value' => $row_number . '.', 'width' => '1%'],
+				'row_data' => html::grid($data)
+			];
+			$row_number++;
+		}
+		// new rows
+		if (!empty($options['new_rows'])) {
+			$max = $row_number + $options['new_rows'];
+			for ($row_number = $row_number; $row_number < $max; $row_number++) {
+				// empty data variable
+				$data = [
+					'options' => []
+				];
+				foreach ($rows as $k => $v) {
+					array_key_sort($v['elements'], ['order' => SORT_ASC]);
+					// group by
+					$groupped = [];
+					foreach ($v['elements'] as $k2 => $v2) {
+						$groupped[$v2['options']['label_name'] ?? ''][$k2] = $v2;
+					}
+					foreach ($groupped as $k2 => $v2) {
+						$first = current($v2);
+						$first_key = key($v2);
+						if ($first_key == self::SEPARATOR_HORISONTAL) {
+							$data['options'][$row_number . '_' . $k][$k2][0] = [
+								'value' => html::separator(['value' => $first['options']['label_name'], 'icon' => $first['options']['icon'] ?? null]),
+								'separator' => true
+							];
+						} else {
+							$first['prepend_to_field'] = ':';
+							foreach ($v2 as $k3 => $v3) {
+								$name = $options['details_key'] . '[' . $row_number . ']';
+								$id = $options['details_key'] . '_' . $row_number . '_';
+								$error_name = $options['details_key'] . "[{$k}][" . $k3 . "]";
+								// generate proper element
+								$value_options = $v3;
+								$value_options['options']['id'] = $id . $k3;
+								$value_options['options']['name'] = $name . '[' . $k3 . ']';
+								$value = $this->render_element_value($value_options, null);
+								// add element to grid
+								$data['options'][$row_number . '_' . $k][$k2][$k3] = [
+									'error' => $this->get_field_errors($v3),
+									//'label' => $this->render_element_name($first),
+									'value' => $value,
+									'description' => null,
+									'options' => $v3['options'],
+									'row_class' => !($row_number % 2) ? 'grid_row_even' : 'grid_row_odd'
+								];
+							}
+						}
+					}
+				}
+				// add a row to a table
+				$table['options'][$row_number] = [
+					'row_number' => ['value' => $row_number . '.', 'width' => '1%'],
+					'row_data' => html::grid($data)
+				];
+			}
+		}
+		return html::table($table);
 	}
 
 	/**
@@ -1687,21 +1888,10 @@ load_values:
 					// we need to fix name for 1 to 1 details
 					$result_options['value'] = $value;
 				}
-				// todo: processing readonly modes
-				/*
-				if ($options['fm_container_mode'] == 'readonly') {
-					$result_options['readonly'] = 'readonly';
-				} else if ($options['fm_container_mode'] == 'html' || $data['fm_part_type'] == 'html') {
-					// special processing for html types
-					if (!empty($result_options['options'])) {
-						$result_options['value'] = html::render_value_from_options($result_options['value'], $result_options['options']);
-						$flag_translated = true;
-					} else if (!$flag_translated && !is_numeric($result_options['value'])) {
-						$result_options['value'] = i18n(null, $result_options['value']);
-						$flag_translated = true;
-					}
+				// processing readonly_if_saved
+				if (!empty($result_options['readonly_if_saved']) && $this->values_loaded) {
+					$result_options['readonly'] = true;
 				}
-				*/
 				break;
 			case 'html':
 				$element_method = null;

@@ -17,6 +17,13 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 	public $form_object;
 
 	/**
+	 * Title
+	 *
+	 * @var string
+	 */
+	public $title;
+
+	/**
 	 * Options
 	 *
 	 * @var array
@@ -91,6 +98,15 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 		// add collection & optional fields
 		$this->form_object->collection = $this->collection;
 		$this->form_object->optional_fields = $this->optional_fields;
+		// title
+		if (!empty($this->title)) {
+			$this->form_object->title = $this->title;
+		} else {
+			// we generate a title based on class name
+			$temp = explode('_model_form_', get_called_class());
+			$temp = explode('_', $temp[1]);
+			$this->title = $this->form_object->title = ucwords(implode(' ', $temp));
+		}
 		// step 2: create all containers
 		foreach ($this->containers as $k => $v) {
 			if ($v === null) {
