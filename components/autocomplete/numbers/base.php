@@ -128,7 +128,7 @@ class numbers_frontend_components_autocomplete_numbers_base implements numbers_f
 			</div>
 TTT;
 		// initialize
-		layout::onload('numbers_autocomplete(' . json_encode(['id' => $options['id'], 'multiple' => !empty($options['multiple']), 'form_id' => $options['form_id'] ?? null, 'values' => $values, 'name' => $options['name']]) . ');');
+		layout::onload('numbers_autocomplete(' . json_encode(['id' => $options['id'], 'multiple' => !empty($options['multiple']), 'form_id' => $options['form_id'] ?? null, 'rn_attrattr_id' => $options['rn_attrattr_id'] ?? null, 'values' => $values, 'name' => $options['name']]) . ');');
 		return $result;
 	}
 
@@ -144,6 +144,7 @@ TTT;
 		// if we have more than 10 rows
 		$flag_more_rows = !empty($data[10]);
 		unset($data[10]);
+		$model = factory::model($options['options_model'], true);
 		// loop though data and generate a table
 		$result.= '<table class="numbers_autocomplete_option_table">';
 			foreach ($data as $k => $v) {
@@ -152,7 +153,7 @@ TTT;
 					$temp[]= $v[$v2];
 				}
 				// adding pk if not present
-				if (!in_array($params['pk'], $params['fields'])) {
+				if (in_array($params['pk'], $model->pk) && !in_array($params['pk'], $params['fields'])) {
 					$temp[]= $v[$params['pk']];
 				}
 				$str = concat_ws_array(', ', $temp);
@@ -187,6 +188,7 @@ TTT;
 		foreach ($data as $k => $v) {
 			$key[] = $k;
 		}
+		$model = factory::model($options['options_model'], true);
 		$datasource = new object_data_autocomplete_values();
 		$datasource->pk = $params['pk'];
 		$params['where'] = [];
@@ -198,7 +200,7 @@ TTT;
 				$temp[]= $v[$v2];
 			}
 			// adding pk if not present
-			if (!in_array($params['pk'], $params['fields'])) {
+			if (in_array($params['pk'], $model->pk) && !in_array($params['pk'], $params['fields'])) {
 				$temp[]= $v[$params['pk']];
 			}
 			$str = concat_ws_array(', ', $temp);

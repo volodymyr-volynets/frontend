@@ -59,13 +59,6 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 	public $collection;
 
 	/**
-	 * Optional fields
-	 *
-	 * @var array
-	 */
-	public $optional_fields;
-
-	/**
 	 * A list of wraper methods
 	 *
 	 * @var array
@@ -95,9 +88,8 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 		// class
 		$this->form_object->form_class = get_called_class();
 		$this->form_object->form_parent = & $this;
-		// add collection & optional fields
+		// add collection
 		$this->form_object->collection = $this->collection;
-		$this->form_object->optional_fields = $this->optional_fields;
 		// title
 		if (!empty($this->title)) {
 			$this->form_object->title = $this->title;

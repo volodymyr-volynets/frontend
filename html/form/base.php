@@ -80,13 +80,6 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 	public $collection_object;
 
 	/**
-	 * Optional fields settings
-	 *
-	 * @var array
-	 */
-	public $optional_fields;
-
-	/**
 	 * Error messages
 	 *
 	 * @var array
@@ -166,6 +159,13 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 	public $misc_settings = [];
 
 	/**
+	 * Whether we have attributes, set automatically when we have __attributes key in tabs and primary collection model has attributes flag set
+	 *
+	 * @var boolean
+	 */
+	public $attributes;
+
+	/**
 	 * Constructor
 	 *
 	 * @param string $form_link
@@ -191,7 +191,9 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 			// if its ajax call to this form
 			if (($this->options['input']['__ajax_form_id'] ?? '') == "form_{$this->form_link}_form") {
 				// it its a call to auto complete
-				if (!empty($this->options['input']['__ajax_autocomplete']['name'])
+				if ($this->attributes && !empty($this->options['input']['__ajax_autocomplete']['rn_attrattr_id'])) {
+					return factory::model('numbers_data_relations_model_attribute_form', true)->autocomplete($this, $this->options['input']);
+				} else if (!empty($this->options['input']['__ajax_autocomplete']['name'])
 					&& !empty($this->fields[$this->options['input']['__ajax_autocomplete']['name']]['options']['method'])
 					&& strpos($this->fields[$this->options['input']['__ajax_autocomplete']['name']]['options']['method'], 'autocomplete') !== false
 				) {
@@ -258,21 +260,8 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 			} while(0);
 		}
 		// we need to see if we have optional fields
-		if (!empty($this->optional_fields)) {
-			// add it to collections
-			$this->optional_fields['type'] = '1M';
-			$this->collection['details'][$this->optional_fields['model']] = $this->optional_fields;
-			// we need to manually put values into values
-			$this->values[$this->optional_fields['model']] = $this->options['input'][$this->optional_fields['model']] ?? [];
-			$temp_model = factory::model($this->optional_fields['model']);
-			// converting keys
-			$data = [];
-			foreach ($this->values[$this->optional_fields['model']] as $k => $v) {
-				if (!empty($v['em_entopt_model_code']) && !empty($v['em_entopt_field_code'])) {
-					$data[$v[$temp_model->column_prefix . 'model_code'] . '::' . $v[$temp_model->column_prefix . 'field_code']] = $v;
-				}
-			}
-			$this->values[$this->optional_fields['model']] = $data;
+		if ($this->attributes) {
+			$this->values[$this->misc_settings['attributes']['values_model']] = $this->options['input'][$this->misc_settings['attributes']['values_model']] ?? [];
 		}
 		// we need to process details
 		if (!empty($this->detail_fields)) {
@@ -329,10 +318,9 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 				}
 			}
 			$this->validate_required();
-			// optional fields
-			if (!empty($this->optional_fields)) {
-				$optional_wrapper_object = new numbers_frontend_html_form_wrapper_optional();
-				$optional_wrapper_object->validate($this);
+			// validate attributes
+			if ($this->attributes) {
+				factory::model('numbers_data_relations_model_attribute_form', true)->validate($this);
 			}
 			// important to do field conversion last
 			$this->process_multiple_columns();
@@ -554,7 +542,7 @@ load_values:
 			$error = false;
 			$value = $in_value;
 			// perform validation
-			if (in_array($v['options']['type'], ['date', 'time', 'datetime'])) { // dates first
+			if (in_array($v['options']['type'], ['date', 'time', 'datetime', 'timestamp'])) { // dates first
 				if (!empty($value) && empty($data[$k . '_strtotime_value'])) {
 					$this->error('danger', i18n(null, 'Invalid date, time or datetime!'), $error_field);
 					$error = true;
@@ -866,6 +854,28 @@ load_values:
 				'options' => $options,
 				'order' => $options['order'] ?? 0
 			];
+			// handling attributes
+			if ($row_link == '__attributes' && $this->data[$container_link]['type'] == 'tabs' && application::get('dep.submodule.numbers.data.relations')) {
+				$this->attributes = factory::model($this->collection['model'])->attributes;
+				if ($this->attributes) {
+					// fix row/element
+					$this->container('__attributes_container', ['default_row_type' => 'grid', 'order' => 999999, 'custom_renderer' => 'numbers_data_relations_model_attribute_form::render']);
+					$this->element($container_link, $row_link, '__attributes', ['container' => '__attributes_container', 'order' => 1]);
+					// add model to the collection
+					$this->misc_settings['attributes']['values_model'] = 'numbers_data_relations_model_attribute_value1';
+					$this->collection['details'][$this->misc_settings['attributes']['values_model']] = [
+						'pk' => ['rn_attrvls_attrmdl_id', 'rn_attrvls_link1_id', 'rn_attrvls_attrattr_id', 'rn_attrvls_group_id'],
+						'type' => '1M',
+						'map' => ['em_entity_id' => 'rn_attrvls_link1_id'],
+						'sql' => [
+							'where' => "rn_attrvls_attrmdl_id = (SELECT rn_attrmdl_id FROM rn_attribute_models WHERE rn_attrmdl_code = '{$this->collection['model']}')"
+						]
+					];
+				} else {
+					// remove it from the tabs
+					unset($this->data[$container_link]['rows'][$row_link]);
+				}
+			}
 		} else {
 			$this->data[$container_link]['rows'][$row_link]['options'] = array_merge_hard($this->data[$container_link]['rows'][$row_link]['options'], $options);
 			if (isset($options['order'])) {
@@ -1511,7 +1521,7 @@ load_values:
 			if ($temp[0] == $this->form_class) {
 				$temp[0] = & $this->form_parent;
 			} else {
-				$temp[0] = factory::model($temp[0]);
+				$temp[0] = factory::model($temp[0], true);
 			}
 			return call_user_func_array($temp, [& $this]);
 		}

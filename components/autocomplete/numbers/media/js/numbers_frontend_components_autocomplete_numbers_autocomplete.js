@@ -19,6 +19,10 @@ var numbers_autocomplete = function (options) {
 	if (options.multiple) {
 		result.multiple = true;
 	}
+	result.rn_attrattr_id = null;
+	if (options.rn_attrattr_id) {
+		result.rn_attrattr_id = options.rn_attrattr_id;
+	}
 	result.values = {};
 	if (options.values) {
 		result.values = options.values;
@@ -85,7 +89,9 @@ var numbers_autocomplete = function (options) {
 			__ajax: true,
 			__ajax_form_id: this.form_id,
 			__ajax_autocomplete: {
+				id: this.id,
 				name: this.name,
+				rn_attrattr_id: this.rn_attrattr_id,
 				text: text
 			}
 		};
