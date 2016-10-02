@@ -235,6 +235,10 @@ class numbers_frontend_html_list_base {
 				$this->columns[$k]['options'] = factory::model($v['options_model'])->options();
 			}
 		}
+		// actions
+		if (!empty($this->options['actions'])) {
+			$this->actions = array_merge($this->actions, $this->options['actions']);
+		}
 	}
 
 	/**

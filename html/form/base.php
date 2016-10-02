@@ -66,6 +66,13 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 	public $values = [];
 
 	/**
+	 * Original values
+	 *
+	 * @var array
+	 */
+	public $original_values = [];
+
+	/**
 	 * Collection, model or array
 	 *
 	 * @var mixed
@@ -180,6 +187,10 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 			$this->options = array_merge_hard($this->options, $overrides);
 		}
 		$this->errors['flag_error_in_fields'] = false;
+		// actions
+		if (!empty($this->options['actions'])) {
+			$this->actions = array_merge($this->actions, $this->options['actions']);
+		}
 	}
 
 	/**
@@ -308,6 +319,7 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 		if (!empty($this->options['input']['__form_submitted']) && !$submitted) {
 			// nothing
 		} else if ($submitted) { // if form has been submitted
+			// validate data types and options values
 			$this->validate_data_types();
 			// call attached method to the form
 			if (method_exists($this, 'validate')) {
@@ -471,19 +483,23 @@ load_values:
 	 * Validate datatypes
 	 */
 	final public function validate_data_types($override_values = false) {
-		// regular & multiple fields
+		$this->misc_settings['options_model'] = [];
+		// regular & multiple fields & single details
 		foreach ($this->fields as $k => $v) {
-			if (!empty($v['options']['process_submit'])) {
-				continue;
-			}
-			// process domains first
+			if (!empty($v['options']['process_submit'])) continue;
+			if ($k == '__separator_horizontal') continue;
+			// default type is varchar
 			if (empty($v['options']['type'])) {
 				$v['options']['type'] = 'varchar';
 			}
 			// if we have multiple values
-			if (!empty($v['options']['multiple_column']) && !empty($this->values[$k])) {
-				foreach ($this->values[$k] as $k2 => $v2) {
-					$this->validate_data_types_single_value($k, $v, $v2, $k2, null, false, $override_values);
+			if (!empty($v['options']['multiple_column'])) {
+				if (!empty($this->values[$k])) {
+					foreach ($this->values[$k] as $k2 => $v2) {
+						$this->validate_data_types_single_value($k, $v, $v2, $k2, null, false, $override_values);
+					}
+				} else {
+					$this->values[$k] = [];
 				}
 			} else if (!empty($v['options']['detail_11'])) { // 1 to 1 details
 				$value = array_key_get($this->values, [$v['options']['detail_11'], $v['options']['field_name']]);
@@ -493,6 +509,20 @@ load_values:
 				}
 			} else {
 				$this->validate_data_types_single_value($k, $v, $this->values[$k], null, null, false, $override_values);
+			}
+			// options_model
+			if (!empty($v['options']['options_model']) && empty($v['options']['options_manual_validation'])) {
+				$params = $v['options']['options_params'] ?? [];
+				if (!empty($v['options']['options_depends'])) {
+					foreach ($v['options']['options_depends'] as $k8 => $v8) {
+						$params[$k8] = $this->values[$v8] ?? null;
+					}
+				}
+				$this->misc_settings['options_model'][$k] = [
+					'options_model' => $v['options']['options_model'],
+					'options_params' => $params,
+					'key' => !empty($v['options']['detail_11']) ? [$v['options']['detail_11'], $k] : [$k]
+				];
 			}
 		}
 		// details
@@ -512,6 +542,20 @@ load_values:
 					$temp = $this->validate_data_types_single_value($k, $v, $v11[$k] ?? null, true, $name, true, $override_values);
 					if (empty($temp['flag_error'])) {
 						$this->values[$v0['options']['details_key']][$k11][$k] = $temp[$k];
+					}
+					// options_model
+					if (!empty($v['options']['options_model']) && empty($v['options']['options_manual_validation'])) {
+						$params = $v['options']['options_params'] ?? [];
+						if (!empty($v['options']['options_depends'])) {
+							foreach ($v['options']['options_depends'] as $k8 => $v8) {
+								$params[$k8] = $this->values[$v0['options']['details_key']][$k11][$v8] ?? null;
+							}
+						}
+						$this->misc_settings['options_model'][$name] = [
+							'options_model' => $v['options']['options_model'],
+							'options_params' => $params,
+							'key' => [$v0['options']['details_key'], $k11, $k]
+						];
 					}
 				}
 			}
@@ -542,7 +586,12 @@ load_values:
 			$error = false;
 			$value = $in_value;
 			// perform validation
-			if (in_array($v['options']['type'], ['date', 'time', 'datetime', 'timestamp'])) { // dates first
+			if ($v['options']['type'] == 'boolean') {
+				if (!empty($value) && ($value . '' != $data[$k] . '')) {
+					$this->error('danger', i18n(null, 'Wrong boolean value!'), $error_field);
+					$error = true;
+				}
+			} else if (in_array($v['options']['type'], ['date', 'time', 'datetime', 'timestamp'])) { // dates first
 				if (!empty($value) && empty($data[$k . '_strtotime_value'])) {
 					$this->error('danger', i18n(null, 'Invalid date, time or datetime!'), $error_field);
 					$error = true;
@@ -552,21 +601,54 @@ load_values:
 					$this->error('danger', i18n(null, 'Wrong integer value!'), $error_field);
 					$error = true;
 				}
-			} else if ($v['options']['php_type'] == 'float') {
-				if (!empty($value) && ($data[$k] == 0 || $value . '' != $data[$k] . '')) {
+			} else if ($v['options']['php_type'] == 'bcnumeric') { // accounting numbers
+				if (!format::read_floatval($value, ['valid_check' => 1])) {
+					$this->error('danger', i18n(null, 'Wrong numeric value!'), $error_field);
+					$error = true;
+				}
+				// precision & scale validations
+				if (!$error) {
+					// validate scale
+					$digits = explode('.', $data[$k] . '');
+					if (!empty($v['options']['scale'])) {
+						if (!empty($digits[1]) && strlen($digits[1]) > $v['options']['scale']) {
+							$this->error('danger', i18n(null, 'Only [digits] fraction digits allowed!', ['replace' => ['[digits]' => $v['options']['scale']]]), $error_field);
+							$error = true;
+						}
+					}
+					// validate precision
+					if (!empty($v['options']['precision'])) {
+						$precision = $v['options']['precision'] - $v['options']['scale'] ?? 0;
+						if (strlen($digits[0]) > $precision) {
+							$this->error('danger', i18n(null, 'Only [digits] digits allowed!', ['replace' => ['[digits]' => $precision]]), $error_field);
+							$error = true;
+						}
+					}
+				}
+			} else if ($v['options']['php_type'] == 'float') { // regular floats
+				if (!empty($value) && $data[$k] == 0) { //  || $value . '' != $data[$k] . ''
 					$this->error('danger', i18n(null, 'Wrong numeric value!'), $error_field);
 					$error = true;
 				}
 			} else if ($v['options']['php_type'] == 'string') {
-				if (!empty($v['options']['length']) && strlen($value) > $v['options']['length']) {
-					$this->error('danger', i18n(null, 'String is too long, should be no longer than [length]!', ['replace' => [
-						'[length]' => $v['options']['length']
-					]]), $error_field);
-					$error = true;
-				}
 				// we need to convert empty string to null
-				if ($data[$k] . '' == '' && !empty($v['options']['null'])) {
+				if ($data[$k] . '' === '' && !empty($v['options']['null'])) {
 					$data[$k] = null;
+				}
+				// validate string length
+				if ($data[$k] . '' !== '') {
+					// validate length
+					if (!empty($v['options']['type']) && $v['options']['type'] == 'char' && strlen($data[$k]) != $v['options']['length']) {  // char
+						$this->error('danger', i18n(null, 'The length must be [length] characters!', ['replace' => ['[length]' => $v['options']['length']]]), $error_field);
+						$error = true;
+					} else if (!empty($v['options']['length']) && strlen($data[$k]) > $v['options']['length']) { // varchar
+						$this->error('danger', i18n(null, 'String is too long, should be no longer than [length]!', ['replace' => ['[length]' => $v['options']['length']]]), $error_field);
+						$error = true;
+					}
+					// validate function
+					if (!empty($v['options']['function'])) {
+						$this->validate_process_function($v['options']['function'], $data[$k], $error_field);
+					}
 				}
 			}
 			// execute domain validator
@@ -615,7 +697,8 @@ load_values:
 		}
 		$result = $this->collection_object->merge($this->values, [
 			'flag_delete_row' => $this->process_submit['submit_delete'] ?? false,
-			'optimistic_lock' => $this->optimistic_lock
+			'optimistic_lock' => $this->optimistic_lock,
+			'options_model' => $this->misc_settings['options_model'] ?? []
 		]);
 		if (!$result['success']) {
 			if (!empty($result['error'])) {
@@ -627,6 +710,12 @@ load_values:
 				foreach ($result['warning'] as $v) {
 					$this->error('warning', i18n(null, $v));
 				}
+			}
+			if (!empty($result['options_model'])) {
+				foreach ($result['options_model'] as $k => $v) {
+					$this->error('danger', i18n(null, object_content_messages::$unknown_value), $k);
+				}
+				$this->errors['general']['danger'][] = i18n(null, 'There was some errors with your submission!');
 			}
 		} else {
 			if (!empty($result['deleted'])) {
@@ -686,7 +775,7 @@ load_values:
 	 *
 	 * @return mixed
 	 */
-	final public function load_values() {
+	final public function load_values($for_update = false) {
 		// load collection object
 		if (!$this->preload_collection_object()) {
 			return false;
@@ -694,7 +783,7 @@ load_values:
 		// load primary key
 		$where = $this->load_pk();
 		if (!empty($where)) {
-			return $this->collection_object->get(['where' => $where, 'single_row' => true]);
+			return $this->collection_object->get(['where' => $where, 'single_row' => true, 'for_update' => $for_update]);
 		}
 		return false;
 	}
@@ -707,16 +796,20 @@ load_values:
 	private function validate_required() {
 		// validate regular fields
 		foreach ($this->fields as $k => $v) {
+			// 1 to 1 details
+			if (!empty($v['options']['detail_11'])) {
+				$value = array_key_get($this->values, [$v['options']['detail_11'], $v['options']['field_name']]);
+			} else {
+				$value = array_key_get($this->values, $v['options']['name']);
+			}
 			// check if its required field
 			if (isset($v['options']['required']) && $v['options']['required'] === true) {
-				// 1 to 1 details
-				if (!empty($v['options']['detail_11'])) {
-					$value = array_key_get($this->values, [$v['options']['detail_11'], $v['options']['field_name']]);
-				} else {
-					$value = array_key_get($this->values, $v['options']['name']);
-				}
 				if ($v['options']['php_type'] == 'integer' || $v['options']['php_type'] == 'float') {
 					if (empty($value)) {
+						$this->error('danger', i18n(null, object_content_messages::$required_field), $k);
+					}
+				} else if ($v['options']['php_type'] == 'bcnumeric') {
+					if (math::compare($value, '0') == 0) {
 						$this->error('danger', i18n(null, object_content_messages::$required_field), $k);
 					}
 				} else {
@@ -734,13 +827,13 @@ load_values:
 					if (!empty($v['options']['process_submit'])) {
 						continue;
 					}
+					$name = $v0['options']['details_key'] . "[{$k11}][" . ($k) . "]";
+					$value = $v11[$k] ?? null;
 					if (isset($v['options']['required']) && $v['options']['required'] === true) {
 						if (empty($v['options']['type'])) {
 							$v['options']['type'] = 'varchar';
 						}
 						// validate
-						$name = $v0['options']['details_key'] . "[{$k11}][" . ($k) . "]";
-						$value = $v11[$k] ?? null;
 						if ($v['options']['php_type'] == 'integer' || $v['options']['php_type'] == 'float') {
 							if (empty($value)) {
 								$this->error('danger', i18n(null, object_content_messages::$required_field), $name);
@@ -753,6 +846,23 @@ load_values:
 					}
 				}
 			}
+		}
+	}
+
+	/**
+	 * Validate function
+	 *
+	 * @param string $function
+	 * @param string $value
+	 * @param string $name
+	 */
+	private function validate_process_function($function, $value, $name) {
+		if ($function == 'strtoupper' && strtoupper($value) != $value) {
+			$this->error('danger', i18n(null, 'The string must be uppercase!'), $name);
+		} else if ($function == 'strtolower' && strtolower($value) != $value) {
+			$this->error('danger', i18n(null, 'The string must be lowercase!'), $name);
+		} else if ($function($value) != $value) {
+			$this->error('danger', i18n(null, 'The string did not pass validation function!'), $name);
 		}
 	}
 
@@ -914,10 +1024,10 @@ load_values:
 			} else {
 				// name & id
 				if ($this->data[$container_link]['type'] == 'details') {
-					$details_key = $this->data[$container_link]['options']['details_key'];
-					$details_pk = $this->data[$container_link]['options']['details_pk'];
 					$options['name'] = $element_link;
 					$options['id'] = $element_link;
+					$options['details_key'] = $this->data[$container_link]['options']['details_key'];
+					$options['details_field_name'] = $element_link;
 				} else if (!empty($options['detail_11'])) {
 					$options['name'] = $options['detail_11'] . '[' . $element_link . ']';
 					$options['field_name'] = $element_link;
@@ -948,12 +1058,14 @@ load_values:
 					'name' => $options['name'],
 					'options' => $options
 				];
+				// we need to put values into fields adn details
 				if ($this->data[$container_link]['type'] == 'details') {
-					array_key_set($this->detail_fields, [$details_key, 'elements', $element_link], $field);
-					array_key_set($this->detail_fields, [$details_key, 'options'], [
-						'details_key' => $details_key,
-						'details_pk' => $details_pk
-					]);
+					array_key_set($this->detail_fields, [$this->data[$container_link]['options']['details_key'], 'elements', $element_link], $field);
+					array_key_set($this->detail_fields, [$this->data[$container_link]['options']['details_key'], 'options'], $this->data[$container_link]['options']);
+					// detail_unique_select
+					if (!empty($field['options']['detail_unique_select'])) {
+						$this->misc_settings['detail_unique_select'][$this->data[$container_link]['options']['details_key']][$element_link] = [];
+					}
 				} else {
 					array_key_set($this->fields, $element_link, $field);
 				}
@@ -1008,17 +1120,17 @@ load_values:
 		// new record action
 		$mvc = application::get('mvc');
 		if (object_controller::can('record_new')) {
-			$this->actions['form_new'] = ['value' => 'New', 'sort' => -31000, 'icon' => 'file-o', 'href' => $mvc['full']];
+			$this->actions['form_new'] = ['value' => 'New', 'sort' => -31000, 'icon' => 'file-o', 'href' => $mvc['full'], 'internal_action' => true];
 		}
 		// back to list
 		if (object_controller::can('list_view')) {
-			$this->actions['form_back'] = ['value' => 'Back', 'sort' => -32000, 'icon' => 'arrow-left', 'href' => $mvc['controller'] . '/_index'];
+			$this->actions['form_back'] = ['value' => 'Back', 'sort' => -32000, 'icon' => 'arrow-left', 'href' => $mvc['controller'] . '/_index', 'internal_action' => true];
 		}
 		// reload button
 		if ($this->values_loaded) {
 			$pk = $this->load_pk();
 			$url = $mvc['full'] . '?' . http_build_query2($pk);
-			$this->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => -30000, 'icon' => 'refresh', 'href' => $url];
+			$this->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => -30000, 'icon' => 'refresh', 'href' => $url, 'internal_action' => true];
 		}
 		// assembling everything into result variable
 		$result = [];
@@ -1066,8 +1178,16 @@ load_values:
 			$temp[] = $v['html'];
 		}
 		$result = implode('', $temp);
+		// we need to skip internal actions
+		if (!empty($this->options['no_actions'])) {
+			foreach ($this->actions as $k0 => $v0) {
+				if (!empty($v0['internal_action'])) {
+					unset($this->actions[$k0]);
+				}
+			}
+		}
 		// rendering actions
-		if (!empty($this->actions) && empty($this->options['no_actions'])) {
+		if (!empty($this->actions)) {
 			$value = '<div style="text-align: right;">' . $this->render_actions() . '</div>';
 			$value.= '<hr class="simple" />';
 			$result = $value . $result;
@@ -1154,15 +1274,25 @@ load_values:
 		// sorting rows
 		array_key_sort($this->data[$container_link]['rows'], ['order' => SORT_ASC]);
 		// get the data
-		$detail_rendering_type = $this->data[$container_link]['options']['detail_rendering_type'] ?? 'grid_with_label';
-		$detail_new_rows = $this->data[$container_link]['options']['detail_new_rows'] ?? 0;
+		$details_rendering_type = $this->data[$container_link]['options']['details_rendering_type'] ?? 'grid_with_label';
+		$details_new_rows = $this->data[$container_link]['options']['details_new_rows'] ?? 0;
 		$key = $this->data[$container_link]['options']['details_key'];
 		$data = $this->values[$key] ?? [];
+		// detail_unique_select
+		if (!empty($this->misc_settings['detail_unique_select'][$key])) {
+			foreach ($this->misc_settings['detail_unique_select'][$key] as $k => $v) {
+				foreach ($data as $k2 => $v2) {
+					if (!empty($v2[$k])) {
+						$this->misc_settings['detail_unique_select'][$key][$k][$v2[$k]] = $v2[$k];
+					}
+				}
+			}
+		}
 		// rendering
-		if ($detail_rendering_type == 'grid_with_label') {
-			$result['data']['html'] = $this->render_container_type_details_grid_with_label($this->data[$container_link]['rows'], $data, ['details_key' => $key, 'new_rows' => $detail_new_rows]);
-		} else if ($detail_rendering_type == 'table') {
-			$result['data']['html'] = $this->render_container_type_details_table($this->data[$container_link]['rows'], $data, ['details_key' => $key, 'new_rows' => $detail_new_rows]);
+		if ($details_rendering_type == 'grid_with_label') {
+			$result['data']['html'] = $this->render_container_type_details_grid_with_label($this->data[$container_link]['rows'], $data, ['details_key' => $key, 'new_rows' => $details_new_rows]);
+		} else if ($details_rendering_type == 'table') {
+			$result['data']['html'] = $this->render_container_type_details_table($this->data[$container_link]['rows'], $data, ['details_key' => $key, 'new_rows' => $details_new_rows]);
 		}
 		$result['success'] = true;
 		return $result;
@@ -1827,7 +1957,11 @@ load_values:
 			}
 			// we do not need options for autocomplete
 			if (strpos($result_options['method'], 'autocomplete') === false) {
-				$result_options['options'] = object_data_common::process_options($result_options['options_model'], $this, $result_options['options_params']);
+				$skip_values = [];
+				if (!empty($options['options']['details_key']) && !empty($this->misc_settings['detail_unique_select'][$options['options']['details_key']][$options['options']['details_field_name']])) {
+					$skip_values = array_keys($this->misc_settings['detail_unique_select'][$options['options']['details_key']][$options['options']['details_field_name']]);
+				}
+				$result_options['options'] = object_data_common::process_options($result_options['options_model'], $this, $result_options['options_params'], $value, $skip_values);
 			} else {
 				// we need to inject form id into autocomplete
 				$result_options['form_id'] = "form_{$this->form_link}_form";
@@ -1895,12 +2029,21 @@ load_values:
 					}
 					$flag_translated = true;
 				} else {
-					// we need to fix name for 1 to 1 details
+					// editable fields
 					$result_options['value'] = $value;
-				}
-				// processing readonly_if_saved
-				if (!empty($result_options['readonly_if_saved']) && $this->values_loaded) {
-					$result_options['readonly'] = true;
+					// format
+					if (!empty($result_options['format']) && empty($this->errors['fields'][$result_options['name']])) {
+						$method = factory::method($result_options['format'], 'format');
+						$result_options['value'] = call_user_func_array([$method[0], $method[1]], [$result_options['value'], $result_options['format_options'] ?? []]);
+					}
+					// align
+					if (!empty($result_options['align'])) {
+						$result_options['style'] = ($result_options['style'] ?? '') . 'text-align:' . $result_options['align'] . ';';
+					}
+					// processing readonly_if_saved
+					if (!empty($result_options['readonly_if_saved']) && $this->values_loaded) {
+						$result_options['readonly'] = true;
+					}
 				}
 				break;
 			case 'html':
@@ -1911,17 +2054,9 @@ load_values:
 		}
 		// handling html_method
 		if (isset($element_method)) {
-			$temp = explode('::', $element_method);
-			if (count($temp) > 1) {
-				$temp_model = $temp[0];
-				$temp_method = $temp[1];
-			} else {
-				$temp_model = 'html';
-				$temp_method = $temp[0];
-			}
-			// adding value
-			$field_method_object = new $temp_model();
-			$value = $field_method_object->{$temp_method}($result_options);
+			$method = factory::method($element_method, 'html');
+			$field_method_object = factory::model($method[0], true);
+			$value = $field_method_object->{$method[1]}($result_options);
 			// building navigation
 			if (!empty($result_options['navigation'])) {
 				$name = 'navigation[' . $result_options['name'] . ']';
