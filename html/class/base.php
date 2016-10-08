@@ -343,10 +343,15 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		if (!empty($options['no_choose'])) {
 			$no_choose = true;
 		}
-		if (!empty($options['readonly']) || !empty($options['disabled'])) {
+		// disabled
+		if (!empty($options['disabled'])) {
 			$options['disabled'] = 'disabled';
 		} else {
-			unset($options['disabled'], $options['readonly']);
+			unset($options['disabled']);
+		}
+		// readonly
+		if (!empty($options['readonly'])) {
+			layout::onload("$('#{$options['id']} option:not(:selected)').prop('disabled', true);");
 		}
 		// options & optgroups
 		$optgroups_array = !empty($options['optgroups']) ? $options['optgroups'] : [];
@@ -756,14 +761,16 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 * @see html::menu()
 	 */
 	public static function menu($options = []) {
-		Throw new Exception('Menu?');
+		//Throw new Exception('Menu?');
+		return;
 	}
 
 	/**
 	 * @see html::modal()
 	 */
 	public static function modal($options = []) {
-		Throw new Exception('Modal?');
+		//Throw new Exception('Modal?');
+		return;
 	}
 
 	/**
@@ -771,6 +778,13 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 */
 	public static function tabs($options = []) {
 		Throw new Exception('Tabs?');
+	}
+
+	/**
+	 * @see html::pills();
+	 */
+	public static function pills($options = []) {
+		Throw new Exception('Pills?');
 	}
 
 	/**

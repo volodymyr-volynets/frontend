@@ -156,6 +156,11 @@ class numbers_frontend_html_list_base {
 		if (empty($this->columns)) {
 			Throw new Exception('List must have columns!');
 		}
+		// process domains
+		foreach ($this->columns as $k => $v) {
+			$temp = object_data_common::process_domains(['options' => $v]);
+			$this->columns[$k] = $temp['options'];
+		}
 		// limit
 		$limit = intval($options['input']['limit'] ?? 0);
 		if ($limit > 0) {
@@ -430,6 +435,10 @@ finish:
 					$value['value'] = null;
 				}
 				// put value into row
+				if (!empty($v2['format'])) {
+					$method = factory::method($v2['format'], 'format');
+					$value['value'] = call_user_func_array([$method[0], $method[1]], [$value['value'], $v2['format_options'] ?? []]);
+				}
 				$row[$k2] = $value;
 			}
 			// put processed columns though user defined function

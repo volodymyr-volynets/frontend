@@ -3,7 +3,7 @@
 class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_base implements numbers_frontend_html_interface_base {
 
 	/**
-	 * see html::segment()
+	 * @see html::segment()
 	 */
 	public static function segment($options = []) {
 		$value = $options['value'] ?? '';
@@ -41,7 +41,7 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 	}
 
 	/**
-	 * see html::input()
+	 * @see html::input()
 	 */
 	public static function input($options = []) {
 		if (!in_array($options['type'] ?? 'text', ['button', 'submit']) && empty($options['skip_form_control'])) {
@@ -50,6 +50,9 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 		return parent::input($options);
 	}
 
+	/**
+	 * @see html::textarea()
+	 */
 	public static function textarea($options = []) {
 		$options['class'] = array_add_token($options['class'] ?? [], 'form-control', ' ');
 		return parent::textarea($options);
@@ -81,7 +84,7 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 	}
 
 	/**
-	 * see html::select()
+	 * @see html::select()
 	 */
 	public static function select($options = []) {
 		$options['class'] = array_add_token($options['class'] ?? [], 'form-control', ' ');
@@ -89,7 +92,7 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 	}
 
 	/**
-	 * see html::form()
+	 * @see html::form()
 	 */
 	public static function form($options = []) {
 		$options['role'] = 'form';
@@ -97,7 +100,7 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 	}
 
 	/**
-	 * see html::button()
+	 * @see html::button()
 	 */
 	public static function button($options = []) {
 		$type = $options['type'] ?? 'default';
@@ -106,7 +109,7 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 	}
 
 	/**
-	 * see html::button2()
+	 * @see html::button2()
 	 */
 	public static function button2($options = []) {
 		$type = $options['type'] ?? 'default';
@@ -115,7 +118,7 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 	}
 
 	/**
-	 * see html::submit()
+	 * @see html::submit()
 	 */
 	public static function submit($options = []) {
 		$type = $options['type'] ?? 'default';
@@ -124,7 +127,7 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 	}
 
 	/**
-	 * see html::table()
+	 * @see html::table()
 	 */
 	public static function table($options = []) {
 		$options['class'] = array_add_token($options['class'] ?? [], 'table table-striped', ' ');
@@ -133,7 +136,7 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 	}
 
 	/**
-	 * see html::grid()
+	 * @see html::grid()
 	 */
 	public static function grid($options = []) {
 		$rows = isset($options['options']) ? $options['options'] : [];
@@ -479,14 +482,15 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 			$active_tab = key($header);
 		}
 		$result = '';
-		$result.= '<div id="' . $id . '">';
+		$result.= '<div id="' . $id . '" class="' . ($options['class'] ?? '') . '">';
 			$result.= html::hidden(['name' => $active_id, 'id' => $active_id, 'value' => $active_tab]);
 			$tabs = [];
 			$panels = [];
 			foreach ($header as $k => $v) {
 				$tab_id = $id . '_tab_' . $k;
-				$tabs[$k] = '<li role="presentation" ' . ($k == $active_tab ? 'class="active"' : '') . '><a href="#' . $tab_id . '" tab-data-id="' . $k . '" aria-controls="' . $tab_id .'" role="tab" data-toggle="tab">' . $v . '</a></li>';
-				$panels[$k] = '<div role="tabpanel" class="tab-pane ' . ($k == $active_tab ? 'active' : '') . '" id="' . $tab_id . '">' . $values[$k] . '</div>';
+				$li_id = $id . '_tab_li_' . $k;
+				$tabs[$k] = '<li id="' . $li_id . '" role="presentation" ' . ($k == $active_tab ? 'class="active"' : '') . ' style="' . (!empty($options['tab_options'][$k]['li_hidden']) ? 'display: none;' : '') . '"><a href="#' . $tab_id . '" tab-data-id="' . $k . '" aria-controls="' . $tab_id .'" role="tab" data-toggle="tab">' . $v . '</a></li>';
+				$panels[$k] = '<div role="tabpanel" class="tab-pane ' . ($k == $active_tab ? 'active' : '') . ' ' . $k . '" id="' . $tab_id . '">' . $values[$k] . '</div>';
 			}
 			$result.= '<ul class="nav nav-tabs" role="tablist" id="' . $id . '_links' . '">';
 				$result.= implode('', $tabs);
@@ -504,5 +508,12 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 TTT;
 		layout::onload($js);
 		return $result;
+	}
+
+	/**
+	 * @see html::pills();
+	 */
+	public static function pills($options = []) {
+		Throw new Exception('Pills?');
 	}
 }

@@ -127,7 +127,7 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 			}
 		}
 		// step 3: methods
-		foreach (['save', 'validate', 'refresh'] as $v) {
+		foreach (['save', 'validate', 'refresh', 'override_field_value', 'disable_subdetail_tabs'] as $v) {
 			if (method_exists($this, $v)) {
 				$this->form_object->wrapper_methods[$v]['main'] = [& $this, $v];
 			}

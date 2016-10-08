@@ -45,9 +45,9 @@ class numbers_frontend_html_widgets_comments_model_form_comment extends numbers_
 		}
 		$save_result = $model->save($save, ['ignore_not_set_fields' => true]);
 		if ($save_result['success']) {
-			$form->error('success', i18n(null, 'Comment has been added successfully!'));
+			$form->error('success', 'Comment has been added successfully!');
 		} else {
-			$form->error('danger', i18n(null, 'Could not add comment!'));
+			$form->error('danger', 'Could not add comment!');
 		}
 	}
 }

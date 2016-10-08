@@ -7,8 +7,10 @@ class numbers_frontend_components_calendar_numbers_base implements numbers_front
 	 */
 	public static function calendar($options = []) {
 		// include js & css files
-		layout::add_js('/numbers/media_submodules/numbers_frontend_components_calendar_numbers_calendar.js');
-		layout::add_css('/numbers/media_submodules/numbers_frontend_components_calendar_numbers_calendar.css');
+		if (empty($options['readonly'])) {
+			layout::add_js('/numbers/media_submodules/numbers_frontend_components_calendar_numbers_calendar.js');
+			layout::add_css('/numbers/media_submodules/numbers_frontend_components_calendar_numbers_calendar.css');
+		}
 		// font awesome icons
 		library::add('fontawesome');
 		// widget parameters
@@ -37,7 +39,11 @@ class numbers_frontend_components_calendar_numbers_base implements numbers_front
 			$position = $options['calendar_icon'];
 			$icon_type = $type == 'time' ? 'clock-o' : 'calendar';
 			unset($options['calendar_icon']);
-			$icon_onclick = 'numbers_calendar_var_' . $options['id'] . '.show();';
+			if (empty($options['readonly'])) {
+				$icon_onclick = 'numbers_calendar_var_' . $options['id'] . '.show();';
+			} else {
+				$icon_onclick = null;
+			}
 			$icon_value = html::span(['onclick' => $icon_onclick, 'class' => 'numbers_calendar_icon numbers_calendar_prevent_selection', 'value' => html::icon(['type' => $icon_type])]);
 			$result = html::input_group(['value' => html::input($options), $position => $icon_value]);
 			$div_id = $options['id'] . '_div_holder';
@@ -46,7 +52,10 @@ class numbers_frontend_components_calendar_numbers_base implements numbers_front
 		} else {
 			$result = html::input($options);
 		}
-		layout::onload('numbers_calendar(' . json_encode($widget_options) . ');');
+		// we do not render a widget if readonly
+		if (empty($options['readonly'])) {
+			layout::onload('numbers_calendar(' . json_encode($widget_options) . ');');
+		}
 		return $result;
 	}
 }

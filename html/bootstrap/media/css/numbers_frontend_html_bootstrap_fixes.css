@@ -125,10 +125,22 @@ legend {
 .tab-pane {
 	padding-bottom: 10px;
 }
+.tabs_subdetails .nav>li>a {
+	padding: 0 15px;
+}
+.tabs_subdetails .tabs_subdetails_none, .tabs_subdetails .tab-content {
+	padding: 0;
+}
+.tabs_subdetails .tab-content {
+	border: none;
+}
 
 /* form group */
 .form-group {
 	margin-bottom: 5px;
+}
+.form-control-button {
+	display: block;
 }
 .label {
 	margin-left: 3px;
