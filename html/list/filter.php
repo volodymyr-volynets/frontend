@@ -72,8 +72,10 @@ class numbers_frontend_html_list_filter {
 			'name' => 'filter[' . $key . ($flag_second ? '2' : '') . ']',
 			'value' => $input['filter'][$key . ($flag_second ? '2' : '')] ?? null
 		];
+		$options = array_merge_hard($field, $options);
 		if (!empty($field['options_model'])) {
-			$options['options'] = factory::model($field['options_model'])->options(['i18n' => true]);
+			$params = $field['options_params'] ?? [];
+			$options['options'] = factory::model($field['options_model'])->options(['where' => $params, 'i18n' => true]);
 		}
 		return call_user_func_array(explode('::', $field['method']), [$options]);
 	}
@@ -145,7 +147,8 @@ class numbers_frontend_html_list_filter {
 				// we need to process arrays
 				if (isset($start[$k]) && is_array($start[$k])) {
 					if (!empty($v['options_model'])) {
-						$start[$k] = array_options_to_string(factory::model($v['options_model'])->options(['i18n' => true]), $start[$k]);
+						$params = $v['options_params'] ?? [];
+						$start[$k] = array_options_to_string(factory::model($v['options_model'])->options(['where' => $params, 'i18n' => true]), $start[$k]);
 					} else {
 						$start[$k] = implode(', ', $start[$k]);
 					}

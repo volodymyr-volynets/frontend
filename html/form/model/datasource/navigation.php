@@ -1,39 +1,58 @@
 <?php
 
 class numbers_frontend_html_form_model_datasource_navigation extends object_datasource {
+	public $db_link;
+	public $db_link_flag;
 	public $pk;
 	public $cache = false;
 	public $cache_tags = [];
 	public $cache_memory = false;
 	public function query($options = []) {
-		$db = factory::model($options['model'])->db_object();
+		$model = factory::model($options['model'], true);
+		$this->db_object = $model->db_object;
+		$column = $options['where']['column_name'];
+		// adjust type based on value
 		$where = null;
-		if (!empty($options['where'])) {
+		if (empty($options['where']['column_value'])) {
 			if ($options['type'] == 'previous') {
-				$options['where'][$options['column'] . ',<'] = $options['where'][$options['column']];
-				unset($options['where'][$options['column']]);
-			} else if ($options['type'] == 'next') {
-				$options['where'][$options['column'] . ',>'] = $options['where'][$options['column']];
-				unset($options['where'][$options['column']]);
+				$options['type'] = 'first';
 			}
-			$where = 'AND ' . $db->prepare_condition($options['where']);
+			if ($options['type'] == 'next') {
+				$options['type'] = 'last';
+			}
+		} else {
+			if ($options['type'] == 'previous') {
+				$where = ' AND ' . $this->db_object->prepare_condition([
+					"{$column},<" => $options['where']['column_value']
+				]);
+			} else if ($options['type'] == 'next') {
+				$where = ' AND ' . $this->db_object->prepare_condition([
+					"{$column},>" => $options['where']['column_value']
+				]);
+			} else if ($options['type'] == 'refresh') {
+				$where = ' AND ' . $this->db_object->prepare_condition([
+					"{$column}" => $options['where']['column_value']
+				]);
+			}
 		}
+		$depends = null;
+		if (!empty($options['where']['depends'])) {
+			$depends = ' AND (' . $this->db_object->prepare_condition($options['where']['depends']) . ')';
+		}
+		$pk = implode(', ', $options['pk']);
+		// generate query based on type
 		switch ($options['type']) {
 			case 'first':
-				return "SELECT {$options['pk']} FROM [table[{$options['model']}]] WHERE {$options['column']} = (SELECT MIN({$options['column']}) new_value FROM [table[{$options['model']}]] WHERE {$options['column']} IS NOT NULL)";
-				break;
+				return "SELECT {$pk} FROM {$model->name} WHERE {$column} = (SELECT MIN({$column}) new_value FROM {$model->name} WHERE {$column} IS NOT NULL {$depends}) {$depends}";
 			case 'previous':
-				return "SELECT {$options['pk']} FROM [table[{$options['model']}]] WHERE 1=1 {$where} ORDER BY {$options['column']} DESC LIMIT 1";
-				break;
+				return "SELECT {$pk} FROM {$model->name} WHERE 1=1 {$where} {$depends} ORDER BY {$column} DESC LIMIT 1";
 			case 'next':
-				return "SELECT {$options['pk']} FROM [table[{$options['model']}]] WHERE 1=1 {$where} ORDER BY {$options['column']} ASC LIMIT 1";
-				break;
+				return "SELECT {$pk} FROM {$model->name} WHERE 1=1 {$where} {$depends} ORDER BY {$column} ASC LIMIT 1";
 			case 'last':
-				return "SELECT {$options['pk']} FROM [table[{$options['model']}]] WHERE {$options['column']} = (SELECT MAX({$options['column']}) new_value FROM [table[{$options['model']}]] WHERE {$options['column']} IS NOT NULL)";
-				break;
+				return "SELECT {$pk} FROM {$model->name} WHERE {$column} = (SELECT MAX({$column}) new_value FROM {$model->name} WHERE {$column} IS NOT NULL {$depends}) {$depends}";
 			case 'refresh':
 			default:
-				return "SELECT {$options['pk']} FROM [table[{$options['model']}]] WHERE 1=1 {$where}";
+				return "SELECT {$pk} FROM {$model->name} WHERE 1=1 {$where} {$depends}";
 		}
 	}
 }

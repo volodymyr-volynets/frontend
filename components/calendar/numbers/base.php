@@ -14,7 +14,7 @@ class numbers_frontend_components_calendar_numbers_base implements numbers_front
 		// font awesome icons
 		library::add('fontawesome');
 		// widget parameters
-		$type = $options['calendar_type'] ?? 'date';
+		$type = $options['calendar_type'] ?? $options['type'] ?? 'date';
 		$widget_options = [
 			'id' => $options['id'],
 			'type' => $type,
@@ -24,16 +24,13 @@ class numbers_frontend_components_calendar_numbers_base implements numbers_front
 			'master_id' => $options['calendar_master_id'] ?? null,
 			'slave_id' => $options['calendar_slave_id'] ?? null
 		];
-		// rendering input
-		if ($type == 'time') {
-			$options['size'] = $options['size'] ?? 11;
-		} else if ($type == 'datetime') {
-			$options['size'] = $options['size'] ?? 22;
-		} else {
-			$options['size'] = $options['size'] ?? 13;
-		}
-		if (!empty($options['calendar_placeholder'])) {
-			$options['placeholder'] = format::get_date_placeholder($widget_options['format']);
+		$options['type'] = 'text';
+		// determine input size
+		$placeholder = format::get_date_placeholder($widget_options['format']);
+		$options['size'] = strlen($placeholder);
+		// set placeholder
+		if (!empty($options['placeholder']) && $options['placeholder'] == 'format::get_date_placeholder') {
+			$options['placeholder'] = $placeholder;
 		}
 		if (isset($options['calendar_icon']) && ($options['calendar_icon'] == 'left' || $options['calendar_icon'] == 'right')) {
 			$position = $options['calendar_icon'];

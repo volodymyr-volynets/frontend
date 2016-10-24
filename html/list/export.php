@@ -61,7 +61,7 @@ class numbers_frontend_html_list_export {
 		$report->add($columns, 'columns');
 		// adding data to report
 		if (empty($object->rows)) {
-			$report->add([['value' => i18n(null, object_content_messages::$no_rows_found)]]);
+			$report->add([['value' => i18n(null, object_content_messages::no_rows_found)]]);
 		} else {
 			$counter = 1;
 			foreach ($object->rows as $k => $v) {

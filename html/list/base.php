@@ -237,7 +237,8 @@ class numbers_frontend_html_list_base {
 		// process options model
 		foreach ($this->columns as $k => $v) {
 			if (!empty($v['options_model'])) {
-				$this->columns[$k]['options'] = factory::model($v['options_model'])->options();
+				$params = $v['options_params'] ?? [];
+				$this->columns[$k]['options'] = factory::model($v['options_model'])->options(['where' => $params]);
 			}
 		}
 		// actions
@@ -316,6 +317,8 @@ class numbers_frontend_html_list_base {
 				goto finish;
 			}
 		}
+		// refresh
+		$this->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => 32000, 'icon' => 'refresh', 'href' => 'javascript:location.reload();', 'internal_action' => true];
 		// pagination top
 		if (!empty($this->pagination['top'])) {
 			$result.= factory::model($this->pagination['top'])->render($this, 'top');
@@ -373,7 +376,7 @@ finish:
 		$result = '';
 		// if we have no rows we display a messsage
 		if ($this->num_rows == 0) {
-			return html::message(['type' => 'warning', 'options' => [i18n(null, object_content_messages::$no_rows_found)]]);
+			return html::message(['type' => 'warning', 'options' => [i18n(null, object_content_messages::no_rows_found)]]);
 		}
 		$counter = 1;
 		$table = [

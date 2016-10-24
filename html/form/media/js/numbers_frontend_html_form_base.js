@@ -6,7 +6,7 @@ var numbers_frontend_form_submit_hidden_initiator = null;
  *
  * @type object
  */
-numbers.frontend_form = {
+numbers.form = {
 
 	/**
 	 * This function would be called when user submits the form
@@ -52,20 +52,18 @@ numbers.frontend_form = {
 	},
 
 	/**
-	 * Trigger submit through hidden submit buttons
+	 * Trigger submit button
 	 *
 	 * @param object form
+	 * @param string button
 	 */
-	trigger_submit: function(form, save, reset) {
-		if (save) {
-			$("[name='submit_hidden_submit']", "#" + $(form).attr('id')).val(1);
+	trigger_submit: function(form, button) {
+		// by default we call refresh
+		if (!button) {
+			button = '__submit_refresh';
 		}
-		if (!reset) {
-			numbers_frontend_form_submit_hidden_initiator = 'submit_hidden';
-		} else {
-			numbers_frontend_form_submit_hidden_initiator = 'submit_hidden_reset';
-		}
-		$("[name='submit_hidden']", "#" + $(form).attr('id')).click();
+		numbers_frontend_form_submit_hidden_initiator = button;
+		$("[name='" + button + "']", "#" + $(form).attr('id')).click();
 	},
 
 	/**
@@ -75,5 +73,18 @@ numbers.frontend_form = {
 	 */
 	trigger_submit_on_button: function(button) {
 		numbers_frontend_form_submit_hidden_initiator = $(button).attr('name');
+	},
+
+	/**
+	 * Details: delete row
+	 *
+	 * @param string row_id
+	 */
+	details_delete_row: function(row_id) {
+		var tr = $('#' + row_id);
+        tr.css("background-color", "lightcoral");
+		tr.find("td").fadeOut(400, function() {
+			tr.remove();
+		});
 	}
 };

@@ -48,6 +48,16 @@
 tr.numbers_select_option_table_tr_hover:hover {
 	background-color: #fafafa;
 }
+.numbers_select_placeholder {
+	color: #aaa;
+}
+.numbers_select_disabled {
+	cursor: not-allowed !important;
+}
+.numbers_select_inactive {
+	color: #a94442;
+	background-color: lightcoral;
+}
 .numbers_select_option_table_td {
 	height: 2.5em;
 	vertical-align: middle;
@@ -108,7 +118,4 @@ tr.numbers_select_option_table_tr_hover:hover {
 	min-height: 34px;
 	padding-left: 12px;
 	padding-right: 25px;
-}
-.numbers_select_not_allowed {
-	cursor: not-allowed !important;
 }

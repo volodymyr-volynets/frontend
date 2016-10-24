@@ -4,6 +4,7 @@
  * @param array options
  *		searchable - whether search is enabled
  *		tree - whether we have multi-level tree
+ *		preset - whether its a preset
  *		color_picker - whether its a color select
  */
 var numbers_select = function (options) {
@@ -12,6 +13,10 @@ var numbers_select = function (options) {
 	result.id = options.id;
 	result.elem = document.getElementById(options.id);
 	result.searchable = options.searchable ? options.searchable : (result.elem.getAttribute('searchable') == 'searchable' ? true : false);
+	result.preset = options.preset ? options.preset : (result.elem.getAttribute('preset') == 'preset' ? true : false);
+	if (result.preset) {
+		result.searchable = true;
+	}
 	result.tree = options.tree ? options.tree : (result.elem.getAttribute('tree') == 'tree' ? true : false);
 	result.color_picker = options.color_picker ? options.color_picker : (result.elem.getAttribute('color_picker') == 'color_picker' ? true : false);
 	result.optgroups = result.elem.getAttribute('optgroups') == 'optgroups' ? true : false;
@@ -26,8 +31,20 @@ var numbers_select = function (options) {
 	var container = document.createElement("div");
 	container.style.position = 'relative';
 	container.style.textAlign = 'left';
-	var temp = '<div class="' + result.elem.className + ' numbers_select_icons numbers_select_prevent_selection" onclick="window[\'' + result.var_id + '\'].show();"><i class="fa fa-caret-down"></i></div>';
-	temp+= '<div class="' + result.elem.className + ' numbers_select_replacement" id="' + result.replacement_div_id + '" onkeyup="window[\'' + result.var_id + '\'].onkeyup(event);" onkeydown="window[\'' + result.var_id + '\'].onkeydown(event);" tabindex="-1"' + (result.searchable ? ' contenteditable="true"' : '') + '></div>';
+	// determining an icon
+	var icon_class = 'fa fa-caret-down';
+	if (result.preset) {
+		icon_class = 'fa fa-th-list';
+	}
+	// tab index
+	result.tabindex = options.tabindex ? options.tabindex : result.elem.getAttribute('tabindex');
+	result.elem.removeAttribute('tabindex');
+	var tabindex = '';
+	if (result.tabindex) {
+		tabindex = ' tabindex="' + result.tabindex + '" ';
+	}
+	var temp = '<div class="' + result.elem.className + ' numbers_select_icons numbers_select_prevent_selection" onclick="window[\'' + result.var_id + '\'].show();"><i class="' + icon_class + '"></i></div>';
+	temp+= '<div class="' + result.elem.className + ' numbers_select_replacement" id="' + result.replacement_div_id + '"' + tabindex + ' onkeyup="window[\'' + result.var_id + '\'].onkeyup(event);" onkeydown="window[\'' + result.var_id + '\'].onkeydown(event);" tabindex="-1"' + (result.searchable ? ' contenteditable="true"' : '') + '></div>';
 	temp+= '<div id="' + result.div_id + '" class="numbers_select_div numbers_select_prevent_selection" tabindex="-1" style="display:none;"></div>';
 	container.innerHTML = temp;
 	result.elem.parentNode.insertBefore(container, result.elem.nextSibling);
@@ -133,9 +150,13 @@ var numbers_select = function (options) {
 	 *
 	 * @returns string
 	 */
-	result.get_search_input = function () {
+	result.get_search_input = function (not_lower) {
 		if (this.replacement_div_elem.lastChild && this.replacement_div_elem.lastChild.nodeType == 3) {
-			return this.replacement_div_elem.lastChild.textContent.toLowerCase().trim();
+			var temp = this.replacement_div_elem.lastChild.textContent.trim();
+			if (!not_lower) {
+				temp = temp.toLowerCase();
+			}
+			return temp;
 		} else {
 			return '';
 		}
@@ -267,7 +288,7 @@ var numbers_select = function (options) {
 						html+= '<span class="numbers_select_option_table_color" style="background-color:#' + this.data[i].value + ';">&nbsp;</span> ';
 					}
 					html+= this.data[i].text;
-					html+= ' <a href="javascript: void(0);" class="numbers_select_option_multiple_item_close" onclick="window[\'' + result.var_id + '\'].unchoose(' + i + ');"><i class="fa fa-times"></i></a> ';
+					html+= ' <a href="javascript: void(0);" class="numbers_select_option_multiple_item_close" onclick="window[\'' + this.var_id + '\'].unchoose(' + i + ');"><i class="fa fa-times"></i></a> ';
 					span.innerHTML = html;
 					span.className = 'numbers_select_multiple_item numbers_select_noneditable_item';
 					span.setAttribute('search-id', i);
@@ -279,16 +300,23 @@ var numbers_select = function (options) {
 			if (text) {
 				this.filter();
 			}
-		} else if (!result.elem.multiple && result.elem.selectedIndex != -1) {
-			var icon_class = this.elem.options[result.elem.selectedIndex].getAttribute('icon_class');
+		} else if (!this.elem.multiple && this.elem.selectedIndex != -1) {
+			var icon_class = this.elem.options[this.elem.selectedIndex].getAttribute('icon_class');
 			if (icon_class) {
 				html+= '<i class="' + icon_class + '"></i> ';
 			}
-			if (this.color_picker && this.elem.options[result.elem.selectedIndex].value != '') {
-				html+= '<span class="numbers_select_option_table_color" style="background-color:#' + this.elem.options[result.elem.selectedIndex].value + ';">&nbsp;</span> ';
+			if (this.color_picker && this.elem.options[this.elem.selectedIndex].value != '') {
+				html+= '<span class="numbers_select_option_table_color" style="background-color:#' + this.elem.options[this.elem.selectedIndex].value + ';">&nbsp;</span> ';
 			}
-			html+= this.elem.options[result.elem.selectedIndex].text;
-			result.replacement_div_elem.innerHTML = html;
+			html+= this.elem.options[this.elem.selectedIndex].text;
+			// placeholder
+			var placeholder = this.elem.options[this.elem.selectedIndex].getAttribute('placeholder');
+			if (!placeholder) {
+				this.replacement_div_elem.className = this.replacement_div_elem.className.replace('numbers_select_placeholder', '');
+			} else {
+				this.replacement_div_elem.className+= ' numbers_select_placeholder';
+			}
+			this.replacement_div_elem.innerHTML = html;
 		}
 	};
 
@@ -330,7 +358,7 @@ var numbers_select = function (options) {
 		} else {
 			this.replacement_div_elem.focus();
 			// handling ediatable div
-			if (this.searchable) {
+			if (this.searchable && !this.preset) {
 				if (!this.elem.multiple) {
 					this.replacement_div_elem.innerHTML = '';
 				}
@@ -347,7 +375,21 @@ var numbers_select = function (options) {
 	 * Close
 	 */
 	result.close = function () {
-		this.render_value();
+		// special handling when we have a preset
+		if (this.preset) {
+			var text = this.get_search_input(true);
+			if (text && !this.elem.value_exists(text)) {
+				var option = document.createElement('option');
+				option.value = option.text = text;
+				this.elem.add(option);
+				this.elem.value = text;
+				// refresh everything
+				this.flag_data_prepered = false;
+				this.flag_skeleton_rendered = false;
+			}
+		} else {
+			this.render_value();
+		}
 		this.div_elem.style.display = 'none';
 		this.replacement_div_elem.blur();
 	};
@@ -366,12 +408,14 @@ var numbers_select = function (options) {
 				text: 'All/None',
 				text_lower: '',
 				disabled: true,
+				inactive: false,
 				selected: false,
 				// optional
 				level: 0,
 				title: '',
 				icon_class: '',
-				text_right: ''
+				text_right: '',
+				placeholder: false
 			};
 		}
 		for (var i = 0; i < this.elem.options.length; i++) {
@@ -384,12 +428,14 @@ var numbers_select = function (options) {
 				text: this.elem.options[i].text,
 				text_lower: this.elem.options[i].text.toLowerCase(),
 				disabled: this.elem.options[i].disabled,
+				inactive: (parseInt(this.elem.options[i].getAttribute('inactive')) > 0) ? true : false,
 				selected: this.elem.options[i].selected,
 				// optional
 				level: level,
 				title: this.elem.options[i].getAttribute('title'),
 				icon_class: this.elem.options[i].getAttribute('icon_class'),
-				text_right: this.elem.options[i].getAttribute('text_right')
+				text_right: this.elem.options[i].getAttribute('text_right'),
+				placeholder: this.elem.options[i].getAttribute('placeholder')
 			};
 			// we need to adjust level for optgroups
 			if (this.optgroups) {
@@ -403,12 +449,14 @@ var numbers_select = function (options) {
 							text: optgroup_label,
 							text_lower: optgroup_label.toLowerCase(),
 							disabled: true,
+							inactive: false,
 							selected: false,
 							// optional
 							level: 0,
 							title: '',
 							icon_class: '',
-							text_right: ''
+							text_right: '',
+							placeholder: false
 						};
 						hash[optgroup_label] = index;
 						index++;
@@ -433,7 +481,7 @@ var numbers_select = function (options) {
 			this.refresh_data();
 			this.flag_data_prepered = true;
 		}
-		var i, j, k, colspan, status = '', hash = {}, hash2 = {};
+		var i, j, k, title, placeholder_class, inactive_class, colspan, status = '', hash = {}, hash2 = {};
 		var html = '<table id="' + this.table_id + '" class="numbers_select_option_table" width="100%" cellpadding="0" cellspacing="0">';
 			// select/deselect
 			if (-1 in this.data) {
@@ -444,10 +492,18 @@ var numbers_select = function (options) {
 				html+= '</tr>';
 			}
 			for (i = 0; i < this.data.length; i++) {
+				// inactive
+				inactive_class = '';
+				if (this.data[i].inactive) {
+					inactive_class = ' numbers_select_inactive ';
+				}
+				// if disabled
 				if (this.data[i].disabled) {
-					html+= '<tr class="' + this.table_tr_class + ' numbers_select_not_allowed" search-id="' + i + '">';
+					html+= '<tr class="' + this.table_tr_class + inactive_class + ' numbers_select_disabled" search-id="' + i + '">';
 				} else {
-					html+= '<tr onclick="' + this.var_id + '.chosen(' + i + ', this);" class="' + this.table_tr_class + (this.data[i].selected ? ' numbers_select_option_table_checked' : '') + ' numbers_select_option_table_tr_hover" search-id="' + i + '">';
+					title = this.data[i].title ? this.data[i].title : '';
+					placeholder_class = this.data[i].placeholder ? ' numbers_select_placeholder ' : '';
+					html+= '<tr onclick="' + this.var_id + '.chosen(' + i + ', this);" class="' + this.table_tr_class + (this.data[i].selected ? ' numbers_select_option_table_checked' : '') + placeholder_class + inactive_class + ' numbers_select_option_table_tr_hover" search-id="' + i + '" title="' + title + '">';
 				}
 					if (this.data[i].level == 0) {
 						hash2 = {};

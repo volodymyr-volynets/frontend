@@ -118,6 +118,17 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 	}
 
 	/**
+	 * @see html::a()
+	 */
+	public static function a($options = []) {
+		if (isset($options['type'])) {
+			$type = $options['type'] ?? 'default';
+			$options['class'] = array_add_token($options['class'] ?? [], 'btn btn-' . $type, ' ');
+		}
+		return parent::a($options);
+	}
+
+	/**
 	 * @see html::submit()
 	 */
 	public static function submit($options = []) {
@@ -130,7 +141,9 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 	 * @see html::table()
 	 */
 	public static function table($options = []) {
-		$options['class'] = array_add_token($options['class'] ?? [], 'table table-striped', ' ');
+		if (empty($options['class'])) {
+			$options['class'] = array_add_token($options['class'] ?? [], 'table table-striped', ' ');
+		}
 		//'<div class="table-responsive">' . parent::table($options) . '</div>';
 		return parent::table($options);
 	}
@@ -221,7 +234,7 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 			}
 			$result.= '</div>';
 		}
-		return $result;
+		return '<div class="container-fluid">' . $result . '</div>';
 	}
 
 	/**
@@ -474,7 +487,7 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 	public static function tabs($options = []) {
 		$header = $options['header'] ?? [];
 		$values = $options['options'] ?? [];
-		$id = 'tabs_div_id_' . ($options['id'] ?? 'default');
+		$id = $options['id'] ?? 'tabs_default';
 		// determine active tab
 		$active_id = $id . '_active_hidden';
 		$active_tab = $options['active_tab'] ?? request::input($active_id);
@@ -486,11 +499,23 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 			$result.= html::hidden(['name' => $active_id, 'id' => $active_id, 'value' => $active_tab]);
 			$tabs = [];
 			$panels = [];
+			$class = $li_class = $id . '_tab_li';
 			foreach ($header as $k => $v) {
-				$tab_id = $id . '_tab_' . $k;
 				$li_id = $id . '_tab_li_' . $k;
-				$tabs[$k] = '<li id="' . $li_id . '" role="presentation" ' . ($k == $active_tab ? 'class="active"' : '') . ' style="' . (!empty($options['tab_options'][$k]['li_hidden']) ? 'display: none;' : '') . '"><a href="#' . $tab_id . '" tab-data-id="' . $k . '" aria-controls="' . $tab_id .'" role="tab" data-toggle="tab">' . $v . '</a></li>';
-				$panels[$k] = '<div role="tabpanel" class="tab-pane ' . ($k == $active_tab ? 'active' : '') . ' ' . $k . '" id="' . $tab_id . '">' . $values[$k] . '</div>';
+				$content_id = $id . '_tab_content_' . $k;
+				$class2 = $class;
+				if ($k == $active_tab) {
+					$class2.= ' active';
+				}
+				if (!empty($options['tab_options'][$k]['hidden'])) {
+					$class2.= ' hidden';
+				}
+				$tabindex = '';
+				if (!empty($options['tab_options'][$k]['tabindex'])) {
+					$tabindex = ' tabindex="' . $options['tab_options'][$k]['tabindex'] . '" ';
+				}
+				$tabs[$k] = '<li id="' . $li_id . '" class="' . $class2 . '"' . $tabindex . ' role="presentation"><a href="#' . $content_id . '" tab-data-id="' . $k . '" aria-controls="' . $content_id .'" role="tab" data-toggle="tab">' . $v . '</a></li>';
+				$panels[$k] = '<div role="tabpanel" class="tab-pane ' . ($k == $active_tab ? 'active' : '') . ' ' . $k . '" id="' . $content_id . '">' . $values[$k] . '</div>';
 			}
 			$result.= '<ul class="nav nav-tabs" role="tablist" id="' . $id . '_links' . '">';
 				$result.= implode('', $tabs);
@@ -504,6 +529,24 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 				e.preventDefault();
 				$(this).tab('show');
 				$('#{$active_id}').val($(this).attr('tab-data-id'));
+			});
+			$('.{$li_class}').mousedown(function(e) {
+				var that = $(this);
+				if (!that.is(':focus')) {
+					that.data('mousedown', true);
+				}
+			});
+			$('.{$li_class}').focus(function(e) {
+				e.preventDefault();
+				var mousedown = $(this).data('mousedown'), tabindex = parseInt($(this).attr('tabindex'));
+				$(this).removeData('mousedown');
+				$(this).find('a:first').click();
+				if (!mousedown && tabindex > 0) {
+					$("[tabindex='" + (tabindex + 1) + "']").focus();
+				} else if (mousedown) {
+					$(this).blur();
+				}
+				e.preventDefault();
 			});
 TTT;
 		layout::onload($js);

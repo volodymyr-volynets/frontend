@@ -118,7 +118,7 @@ TTT;
 				$result_list.= '<div style="text-align: right;">' . html::a(['href' => 'javascript:void(0);', 'value' => i18n(null, '[count] comment(s) are hidden. Show all comments.', ['replace' => ['[count]' => ($total_comments - 10)]]), 'onclick' => "$('.widgets_comments_{$this->widget_link}_list_hiden').show(); $(this).hide();"]) . '</div>';
 			}
 		} else {
-			$result_list = html::message(['type' => 'warning', 'options' => [i18n(null, object_content_messages::$no_rows_found)]]);
+			$result_list = html::message(['type' => 'warning', 'options' => [i18n(null, object_content_messages::no_rows_found)]]);
 		}
 		// if we are making an ajax call
 		if (!empty($this->options['input']['__ajax']) && ($this->options['input']['__ajax_form_id'] ?? '') == "widgets_comments_{$this->widget_link}_list") {

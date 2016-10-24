@@ -43,6 +43,9 @@
     -moz-border-radius: 6px 0 6px 6px;
     border-radius: 6px 0 6px 6px;
 }
+.navbar-nav {
+	direction: ltr;
+}
 
 @media screen and (min-width:768px) {
 	.navbar-nav {
@@ -142,6 +145,16 @@ legend {
 .form-control-button {
 	display: block;
 }
+.form-control-no-border {
+	border: none !important;
+	background-color: inherit !important;
+	background-image: none;
+	box-shadow: none;
+	transition: none;
+}
+.form-tabs {
+	padding-bottom: 10px;
+}
 .label {
 	margin-left: 3px;
 }
@@ -151,6 +164,9 @@ hr.small {
 }
 
 /* grid */
+.container-fluid {
+	padding: 0;
+}
 .grid_vertical_separator {
 	border: 0;
 	border-left: 1px solid #eee;
@@ -158,9 +174,29 @@ hr.small {
 .grid_align_right {
 	text-align: right;
 }
+.grid_row_hidden {
+	display: none;
+}
+.grid_row_hidden_testing {
+	background-color: lightcoral;
+}
 
 /* font awesome fixes */
 .fa {
 	min-width: 1em;
 	text-align:center;
+}
+
+/* placeholders */
+*::-webkit-input-placeholder {
+	font-style: italic !important;
+}
+*:-moz-placeholder {
+	font-style: italic !important;
+}
+*::-moz-placeholder {
+	font-style: italic !important;
+}
+*:-ms-input-placeholder {
+	font-style: italic !important;
 }

@@ -83,6 +83,9 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 				continue;
 			}
 			if (is_array($v)) {
+				if (array_values($v) !== $v) {
+					continue;
+				}
 				$v = implode(' ', $v);
 			}
 			$result[] = $k . '="' . addcslashes($v, '"') . '"';
@@ -177,7 +180,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 * @see html::input()
 	 */
 	public static function input($options = []) {
-		$options['type'] = isset($options['type']) ? $options['type'] : 'text';
+		$options['type'] = $options['input_type'] ?? $options['type'] ?? 'text';
 		if (!empty($options['checked'])) {
 			$options['checked'] = 'checked';
 		} else {
@@ -361,7 +364,8 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		// assembling
 		$result = '';
 		if (!$no_choose) {
-			$result.= '<option value=""></option>';
+			$placeholder = $options['placeholder'] ?? '';
+			$result.= '<option value="" placeholder="' . ($placeholder ? 1 : '') . '">' . $placeholder . '</option>';
 		}
 		// options first
 		if (!empty($options_array)) {
@@ -394,7 +398,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 * @see html::button()
 	 */
 	public static function button($options = []) {
-		$options['type'] = 'button';
+		$options['type'] = $options['input_type'] ?? $options['type'] ?? 'button';
 		$options['value'] = $options['value'] ?? strip_tags(i18n(null, 'Submit'));
 		$options['class'] = $options['class'] ?? 'button';
 		return html::input($options);
@@ -404,7 +408,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 * @see html::button2()
 	 */
 	public static function button2($options = []) {
-		$options['type'] = $options['type'] ?? 'submit';
+		$options['type'] = $options['input_type'] ?? $options['type'] ?? 'submit';
 		$value = $options['value'] ?? strip_tags(i18n(null, 'Submit'));
 		$options['class'] = $options['class'] ?? 'button';
 		$options['value'] = 1;
@@ -484,10 +488,11 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		// rows second
 		foreach ($rows as $k => $v) {
 			// we need to extract row attributes from first column
-			if (!empty($v[$first_column]) && is_array($v[$first_column])) {
-				$row_options = array_key_extract_by_prefix($v[$first_column], 'row_');
-			} else {
-				$row_options = [];
+			$row_options = [];
+			foreach ($header as $k2 => $v2) {
+				if (isset($v[$k2]) && is_array($v[$k2])) {
+					$row_options = array_merge_hard($row_options, array_key_extract_by_prefix($v[$k2], 'row_'));
+				}
 			}
 			$temp2 = '<tr ' . self::generate_attributes($row_options) . '>';
 				// important we render based on header array and not on what is in rows

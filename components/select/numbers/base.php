@@ -13,7 +13,7 @@ class numbers_frontend_components_select_numbers_base implements numbers_fronten
 			layout::add_css('/numbers/media_submodules/numbers_frontend_components_select_numbers_select.css', 10000);
 			// font awesome icons
 			library::add('fontawesome');
-			// preset id with name
+			// id with name
 			if (empty($options['id']) && !empty($options['name'])) {
 				$options['id'] = $options['name'];
 			}

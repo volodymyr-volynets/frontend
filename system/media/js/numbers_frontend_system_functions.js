@@ -436,3 +436,18 @@ function strip_tags(str, allowable_tags) {
 		return allowable_tags.indexOf('<' + $1.toLowerCase() + '>') > -1 ? $0 : '';
 	});
 }
+
+/**
+ * Contains method to determine if value exists in select
+ *
+ * @param string value
+ * @returns boolean
+ */
+HTMLSelectElement.prototype.value_exists = function(value) {
+    for (var i = 0, l = this.options.length; i < l; i++) {
+        if (this.options[i].value == value) {
+            return true;
+        }
+    }
+    return false;
+}

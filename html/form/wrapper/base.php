@@ -66,6 +66,13 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 	public $wrapper_methods = [];
 
 	/**
+	 * Master options
+	 *
+	 * @var array
+	 */
+	public $master_options = [];
+
+	/**
 	 * Constructor
 	 *
 	 * @param array $options
@@ -81,7 +88,14 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 		parent::override_handle($this);
 		// step 0: apply data fixes
 		if (method_exists($this, 'overrides')) {
-			$this->overrides();
+			$this->overrides($this);
+		}
+		// we need to merge override input
+		if (!empty($this->values)) {
+			$options['input'] = array_merge_hard($options['input'] ?? [], $this->values);
+		}
+		if (isset($options['form_link'])) {
+			$this->form_link = $options['form_link'];
 		}
 		// step 1: create form object
 		$this->form_object = new numbers_frontend_html_form_base($this->form_link, array_merge_hard($this->options, $options));
@@ -90,6 +104,12 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 		$this->form_object->form_parent = & $this;
 		// add collection
 		$this->form_object->collection = $this->collection;
+		$this->form_object->preload_collection_object(); // must initialize it before calls to container/row/element
+		// master object
+		if (!empty($this->master_options['model'])) {
+			$this->form_object->master_options = $this->master_options;
+			$this->form_object->master_object = factory::model($this->master_options['model'], true);
+		}
 		// title
 		if (!empty($this->title)) {
 			$this->form_object->title = $this->title;
@@ -127,7 +147,7 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 			}
 		}
 		// step 3: methods
-		foreach (['save', 'validate', 'refresh', 'override_field_value', 'disable_subdetail_tabs'] as $v) {
+		foreach (['save', 'validate', 'refresh', 'pre_render', 'override_field_value', 'override_tabs'] as $v) {
 			if (method_exists($this, $v)) {
 				$this->form_object->wrapper_methods[$v]['main'] = [& $this, $v];
 			}

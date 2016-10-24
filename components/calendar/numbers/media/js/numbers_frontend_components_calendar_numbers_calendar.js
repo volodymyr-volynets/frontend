@@ -51,7 +51,6 @@ var numbers_calendar = function (options) {
 	div.onmouseout = function () {
 		document.body.style.overflow = 'auto';
 	};
-
 	// appending to holder if present
 	if (options.holder_div_id) {
 		document.getElementById(options.holder_div_id).appendChild(div);
@@ -378,6 +377,8 @@ var numbers_calendar = function (options) {
 	result.update_input_element = function (date_object) {
 		var value = numbers.format.date_format(date_object, this.type, {format: this.format});
 		this.elem.value = value;
+		// we need to trigger onchange event
+		this.elem.dispatchEvent(new Event('change', {bubbles: true}));
 	};
 
 	/**
