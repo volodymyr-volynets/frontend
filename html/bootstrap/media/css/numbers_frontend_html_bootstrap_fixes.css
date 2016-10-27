@@ -190,13 +190,26 @@ hr.small {
 /* placeholders */
 *::-webkit-input-placeholder {
 	font-style: italic !important;
+	color: #999 !important;
 }
 *:-moz-placeholder {
 	font-style: italic !important;
+	color: #999 !important;
 }
 *::-moz-placeholder {
 	font-style: italic !important;
+	color: #999 !important;
 }
 *:-ms-input-placeholder {
 	font-style: italic !important;
+	color: #999 !important;
+}
+[data-placeholder]:not([data-placeholder=""]):empty:not(:focus):before {
+	content: attr(data-placeholder);
+	font-style: italic !important;
+	color: #999 !important;
+}
+div.placeholder, span.placeholder {
+	font-style: italic !important;
+	color: #999 !important;
 }

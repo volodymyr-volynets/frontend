@@ -48,9 +48,6 @@
 tr.numbers_select_option_table_tr_hover:hover {
 	background-color: #fafafa;
 }
-.numbers_select_placeholder {
-	color: #aaa;
-}
 .numbers_select_disabled {
 	cursor: not-allowed !important;
 }

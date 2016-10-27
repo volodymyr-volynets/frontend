@@ -119,37 +119,4 @@ class numbers_frontend_html_form_wrapper_parent extends object_override_data {
 		self::button_submit_reset => self::button_submit_reset_data,
 		self::button_submit_delete => self::button_submit_delete_data
 	];
-
-	/**
-	 * Entry attributes
-	 */
-	const attributes = '__attributes_entries';
-	const attribute_data = ['order' => PHP_INT_MAX - 1000, 'label_name' => 'Attributes'];
-
-	/**
-	 * Details attributes
-	 */
-	const attribute_details = '__attributes_deatils';
-	const attribute_details_data = [
-		'label_name' => 'Attributes',
-		'type' => 'subdetails',
-		'details_rendering_type' => 'table',
-		'details_new_rows' => 3,
-		'details_parent_key' => null,
-		'details_key' => null,
-		'details_pk' => null,
-		'order' => PHP_INT_MAX - 1000,
-		'required' => false
-	];
-
-	/**
-	 * Addresses
-	 */
-	const addresses = '__widget_addresses';
-	const addresses_data = ['order' => PHP_INT_MAX - 2000, 'label_name' => 'Addresses'];
-
-	/**
-	 * All available widgets
-	 */
-	const widgets = [self::attributes, self::addresses];
 }

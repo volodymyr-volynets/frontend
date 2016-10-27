@@ -323,9 +323,11 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 	 * @param string $error_name
 	 * @param array $options
 	 */
-	private function validate_required_one_field(& $value, $error_name, $options) {
+	public function validate_required_one_field(& $value, $error_name, $options) {
+		// if we have type errors we skip required validation
+		if ($this->has_errors($error_name)) return;
 		// check if its required field
-		if (isset($options['options']['required']) && ($options['options']['required'] === true || $options['options']['required'] === 1 || $options['options']['required'] === '1')) {
+		if (isset($options['options']['required']) && ($options['options']['required'] === true || ($options['options']['required'] . '') === '1')) {
 			if ($options['options']['php_type'] == 'integer' || $options['options']['php_type'] == 'float') {
 				if (empty($value)) {
 					$this->error('danger', object_content_messages::required_field, $error_name);
@@ -361,6 +363,82 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 				}
 			} else if (!empty($temp['data'])) {
 				$value = $temp['data'];
+			}
+		}
+	}
+
+	/**
+	 * Convert parent keys to error name
+	 *
+	 * @param mixed $parent_keys
+	 * @return string
+	 */
+	public function parent_keys_to_error_name($parent_keys) {
+		$result = [];
+		if (!is_array($parent_keys)) {
+			$parent_keys = [$parent_keys];
+		}
+		foreach ($parent_keys as $v) {
+			if (empty($result)) {
+				$result[] = $v;
+			} else {
+				$result[] = '[' . $v . ']';
+			}
+		}
+		return implode('', $result);
+	}
+
+	/**
+	 * Helper to handle detail key generation
+	 *
+	 * @param array $holder
+	 * @param string $type
+	 * @param array $values
+	 * @param array $parent_keys
+	 * @param array $options
+	 */
+	public function generate_details_primary_key(& $holder, $type = 'reset', $values = null, $parent_keys = null, $options = []) {
+		// generate holder
+		if ($type == 'reset') {
+			$holder = [
+				'collection' => array_key_get($this->collection_object->data, $options['options']['details_collection_key']),
+				'parent_pks' => [],
+				'new_pk_counter' => 1,
+				'new_pk_locks' => [],
+				'error_name' => null,
+				'pk' => null
+			];
+			// populate parent pks
+			foreach ($holder['collection']['map'] as $k12 => $v12) {
+				if (isset($values[$k12])) {
+					$holder['parent_pks'][$v12] = $values[$k12]; // $holder['parent_pks'][$k12]
+				}
+			}
+		}
+		// generate new pk
+		if ($type == 'pk') {
+			$new_pk = [];
+			foreach ($holder['collection']['pk'] as $v) {
+				if (isset($holder['parent_pks'][$v])) {
+					$new_pk[] = $holder['parent_pks'][$v];
+				} else if (!empty($values[$v])) {
+					$new_pk[] = $values[$v];
+				} else {
+					$new_pk[] = '__new_key_' . $holder['new_pk_counter'];
+					$holder['new_pk_counter']++;
+				}
+			}
+			$holder['pk'] = implode('::', $new_pk);
+			if (!empty($holder['new_pk_locks'][$holder['pk']])) {
+				$holder['pk'] = '__duplicate_key_' . $holder['new_pk_counter'];
+				$holder['new_pk_counter']++;
+				$holder['error_name'] = $this->parent_keys_to_error_name(array_merge($parent_keys, [$holder['pk']]));
+				foreach ($options['options']['details_pk'] as $v) {
+					$this->error('danger', object_content_messages::duplicate_value, "{$holder['error_name']}[{$v}]");
+				}
+			} else {
+				$holder['error_name'] = $this->parent_keys_to_error_name(array_merge($parent_keys, [$holder['pk']]));
+				$holder['new_pk_locks'][$holder['pk']] = true;
 			}
 		}
 	}
@@ -482,41 +560,28 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 				$details = $input[$k] ?? [];
 				// sort fields
 				$fields = $this->sort_fields_for_processing($v['elements']);
-				// we we have custom data processor
+				// if we have custom data processor
 				if (!empty($v['options']['details_process_widget_data'])) {
-					Throw new Exception('details_process_widget_data');
+					$widget_model = factory::model($k, true);
+					$v['validate_required'] = $options['validate_required'] ?? false;
+					$this->values[$k] = $widget_model->process_widget_data($this, [$k], $details, $this->values, $fields, $v);
 					continue;
 				}
+				// start processing of keys
+				$detail_key_holder = [];
+				$this->generate_details_primary_key($detail_key_holder, 'reset', $this->values, [$k], $v);
 				// process details one by one
 				$autoincrement = $v['options']['details_autoincrement'];
 				$counter = 1;
-				$new_pk_counter = 1;
-				$new_pk_locks = [];
 				foreach ($details as $k2 => $v2) {
-					$flag_change_detected = false;
-					// we need to convert keys from new rows
-					$new_pk = [];
-					foreach ($v['options']['details_pk'] as $v8) {
-						if (!empty($v2[$v8])) {
-							$new_pk[] = $v2[$v8];
-						} else {
-							$new_pk[] = '__new_key_' . $new_pk_counter;
-							$new_pk_counter++;
-						}
-					}
-					$k2 = implode('::', $new_pk);
-					if (!empty($new_pk_locks[$k2])) {
-						$k2 = '__duplicate_key_' . $new_pk_counter;
-						$new_pk_counter++;
-						foreach ($v['options']['details_pk'] as $v8) {
-							$this->error('danger', object_content_messages::duplicate_value, "{$v3['options']['details_key']}[{$k2}][{$v8}]");
-						}
-					} else {
-						$new_pk_locks[$k2] = true;
-					}
 					$detail = [];
+					$flag_change_detected = false;
+					// process pk
+					$this->generate_details_primary_key($detail_key_holder, 'pk', $v2, [$k], $v);
+					$error_name = $detail_key_holder['error_name'];
+					$k2 = $detail_key_holder['pk'];
+					// process fields
 					foreach ($fields as $k3 => $v3) {
-						$error_name = "{$v3['options']['details_key']}[{$k2}]";
 						// skip certain values
 						if (!empty($v3['options']['process_submit'])) continue;
 						if ($k3 == $this::separator_horisontal || $k3 == $this::separator_vertical) continue;
@@ -529,7 +594,7 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 						// validate data type
 						$temp = $this->validate_data_types_single_value($k3, $v3, $value, "{$error_name}[{$k3}]");
 						if (empty($temp['flag_error'])) {
-							if (empty($temp[$k3]) && !empty($temp[$k . '_is_serial'])) {
+							if (empty($temp[$k3]) && !empty($temp[$k3 . '_is_serial'])) {
 								// we do not create empty serial keys
 								continue;
 							} else {
@@ -537,7 +602,6 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 							}
 						}
 						// persistent
-						// todo test
 						if ($this->values_loaded && !empty($this->misc_settings['persistent']['details'][$k][$k3]) && isset($this->original_values[$k][$k2][$k3])) {
 							if (is_null($value)) {
 								$value = $this->original_values[$k][$k2][$k3];
@@ -558,6 +622,43 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 							$flag_change_detected = true;
 						}
 						$detail[$k3] = $value;
+					}
+					// put pk back into detail
+					$detail = array_merge_hard($detail, $detail_key_holder['parent_pks']);
+					// process subdetails, first to detect change
+					if (!empty($v['subdetails'])) {
+						foreach ($v['subdetails'] as $k0 => $v0) {
+							// make empty array
+							$detail[$k0] = [];
+							// sort fields
+							$subdetail_fields = $this->sort_fields_for_processing($v0['elements']);
+							// if we have custom data processor
+							if (!empty($v0['options']['details_process_widget_data'])) {
+								$widget_model = factory::model($k0, true);
+								$v0['validate_required'] = $options['validate_required'] ?? false;
+								$detail[$k0] = $widget_model->process_widget_data($this, [$k, $k2, $k0], $v2[$k0] ?? [], $detail, $subdetail_fields, $v0);
+								// change detected
+								if (!empty($detail[$k0])) {
+									$flag_change_detected = true;
+								}
+								continue;
+							}
+							
+							
+							
+							
+							Throw new Exception('subdetails');
+
+
+
+							// todo process subdetails   
+							
+							
+							
+							
+							
+							
+						}
 					}
 					// if we have changes we puth them into values
 					if ($flag_change_detected) {
@@ -729,6 +830,7 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 		}
 		// load original values
 		$this->get_original_values($this->options['input'] ?? [], $this->transaction);
+		//print_r2($this->original_values);
 		// validate submits
 		if ($this->submitted) {
 			if (!$this->validate_submit_buttons()) {
@@ -896,6 +998,7 @@ convert_multiple_columns:
 	 * Convert multiple columns
 	 */
 	private function convert_multiple_columns(& $values) {
+		// regular fields
 		foreach ($this->fields as $k => $v) {
 			if (!empty($v['options']['multiple_column'])) {
 				if (!empty($v['options']['detail_11'])) {
@@ -906,6 +1009,24 @@ convert_multiple_columns:
 				$temp = array_key_get($values, $value_key);
 				if (!empty($temp)) {
 					array_key_set($values, $value_key, array_keys($temp));
+				}
+			}
+		}
+		// details
+		foreach ($this->detail_fields as $k => $v) {
+			if (!empty($v['options']['details_convert_multiple_columns'])) {
+				$widget_model = factory::model($k, true);
+				$widget_model->convert_multiple_columns($this, $values[$k]);
+			}
+			// subdetails
+			if (!empty($v['subdetails'])) {
+				foreach ($values[$k] as $k11 => $v11) {
+					foreach ($v['subdetails'] as $k0 => $v0) {
+						if (!empty($v0['options']['details_convert_multiple_columns'])) {
+							$widget_model = factory::model($k0, true);
+							$widget_model->convert_multiple_columns($this, $values[$k][$k11][$k0]);
+						}
+					}
 				}
 			}
 		}
@@ -1080,7 +1201,10 @@ convert_multiple_columns:
 					$error = true;
 				}
 			} else if ($v['options']['php_type'] == 'integer') {
-				if (!empty($value) && ($data[$k] == 0 || ($value . '' !== $data[$k] . ''))) {
+				// we need to convert empty string to null
+				if (empty($value) && $data[$k] == 0 && !empty($v['options']['null'])) {
+					$data[$k] = null;
+				} else if (!empty($value) && ($data[$k] == 0 || ($value . '' !== $data[$k] . ''))) {
 					$this->error('danger', 'Wrong integer value!', $error_field);
 					$error = true;
 				}
@@ -1258,98 +1382,7 @@ convert_multiple_columns:
 	}
 
 	/**
-	 * Validate required fields
-	 *
-	 * @return boolean
-	 */
-	private function validate_required() {
-		// validate details
-		foreach ($this->detail_fields as $k0 => $v0) {
-			$data = $this->values[$v0['options']['details_key']] ?? [];
-			foreach ($data as $k11 => $v11) {
-				foreach ($v0['elements'] as $k => $v) {
-					// skip buttons
-					if (!empty($v['options']['process_submit'])) {
-						continue;
-					}
-					$name = $v0['options']['details_key'] . "[{$k11}][" . ($k) . "]";
-					$value = $v11[$k] ?? null;
-					if (isset($v['options']['required']) && $v['options']['required'] === true) {
-						if (empty($v['options']['type'])) {
-							$v['options']['type'] = 'varchar';
-						}
-						// validate
-						if ($v['options']['php_type'] == 'integer' || $v['options']['php_type'] == 'float') {
-							if (empty($value)) {
-								$this->error('danger', object_content_messages::required_field, $name);
-							}
-						} else if ($v['options']['php_type'] == 'bcnumeric') { // accounting numbers
-							if (math::compare($value, '0') == 0) {
-								$this->error('danger', object_content_messages::required_field, $name);
-							}
-						} else {
-							if ($value . '' == '') {
-								$this->error('danger', object_content_messages::required_field, $name);
-							}
-						}
-					}
-				}
-				// subdetails
-				if (!empty($v0['subdetails'])) {
-					foreach ($v0['subdetails'] as $k20 => $v20) {
-						foreach ($v11[$k20] as $k21 => $v21) {
-							foreach ($v20['elements'] as $k22 => $v22) {
-								// skip submit buttons
-								if (!empty($v22['options']['process_submit'])) continue;
-								// validate
-								$name = "{$v22['options']['details_parent_key']}[{$k11}][{$v22['options']['details_key']}][{$k21}][{$k22}]";
-								$value = $v21[$k22] ?? null;
-								if (isset($v22['options']['required']) && $v22['options']['required'] === true) {
-									if (empty($v22['options']['type'])) {
-										$v22['options']['type'] = 'varchar';
-									}
-									// validate
-									if ($v22['options']['php_type'] == 'integer' || $v22['options']['php_type'] == 'float') {
-										if (empty($value)) {
-											$this->error('danger', object_content_messages::required_field, $name);
-										}
-									} else if ($v22['options']['php_type'] == 'bcnumeric') { // accounting numbers
-										if (math::compare($value, '0') == 0) {
-											$this->error('danger', object_content_messages::required_field, $name);
-										}
-									} else {
-										if ($value . '' == '') {
-											$this->error('danger', object_content_messages::required_field, $name);
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	/**
-	 * Validate function
-	 *
-	 * @param string $function
-	 * @param string $value
-	 * @param string $name
-	 */
-	private function validate_process_function($function, $value, $name) {
-		if ($function == 'strtoupper' && strtoupper($value) !== $value) {
-			$this->error('danger', object_content_messages::string_uppercase, $name);
-		} else if ($function == 'strtolower' && strtolower($value) !== $value) {
-			$this->error('danger', object_content_messages::string_lowercase, $name);
-		} else if ($function($value) !== $value) {
-			$this->error('danger', object_content_messages::string_function, $name);
-		}
-	}
-
-	/**
-	 * Add error  to the form
+	 * Add error to the form
 	 *
 	 * @param string $type
 	 *		muted
@@ -1444,101 +1477,23 @@ convert_multiple_columns:
 	}
 
 	/**
-	 * Process attributes
-	 *
-	 * @param array $options
-	 * @param string $type
-	 */
-	/*
-	private function process_attributes(& $options, $type) {
-		if ($type == $this::attributes) {
-			// see if model supports attributes
-			if (!empty($this->collection_object->primary_model->attributes)) {
-				$object = factory::model($this->collection_object->primary_model->attributes_model, true);
-				$collection_key = [$this->collection_object->primary_model->attributes_model];
-				$details_key = $this->collection_object->primary_model->attributes_model;
-				$model_name = get_class($this->collection_object->primary_model);
-			}
-		} else if ($type == $this::attribute_details && !empty($options['details_parent_key'])) {
-			$temp = factory::model($options['details_parent_key'], true);
-			if ($temp->attributes) {
-				$object = factory::model($temp->attributes_model, true);
-				$collection_key = [$options['details_parent_key'], 'details', $temp->attributes_model];
-				$details_key = $temp->attributes_model;
-				$model_name = $options['details_parent_key'];
-			}
-		}
-		// if we can continue
-		if (empty($object)) {
-			return false;
-		}
-		// generate collection object
-		$collection = [
-			'pk' => $object->pk,
-			'type' => '1M',
-			'map' => $object->attribute_map,
-			'attributes' => true
-		];
-		array_key_set($this->collection['details'], $collection_key, $collection);
-		// put everything into options
-		$options['details_key'] = $details_key;
-		$options['details_pk'] = $object->attribute_pk;
-		$options['details_column_prefix'] = $object->column_prefix;
-		$options['details_attribute_model'] = $model_name;
-		// create containers
-		if ($type == $this::attributes) {
-			$options['details_attribute_model'] = $model_name;
-			$this->container('__attributes_entries_container', [
-				'label_name' => 'Attributes',
-				'type' => 'details',
-				'details_rendering_type' => 'table',
-				'details_new_rows' => 5,
-				'details_key' => $details_key,
-				'details_pk' => $object->attribute_pk,
-				'details_column_prefix' => $object->column_prefix,
-				'order' => PHP_INT_MAX
-			]);
-			// link containers
-			$this->element($options['container_link'], $this::attributes, '__attributes', ['container' => '__attributes_entries_container', 'order' => 1]);
-			$this->process_attribute_elements('__attributes_entries_container', $options);
-		}
-		return true;
-	}
-	*/
-
-	/**
-	 * 
-	 * @param string $container_link
-	 * @param array $options
-	 */
-	/*
-	private function process_attribute_elements($container_link, $options) {
-		$this->element($container_link, 'row0', 'rn_attrdata_attrattr_id', [
-			'order' => 1,
-			'label_name' => 'Attribute',
-			'domain' => 'group_id',
-			'required' => true,
-			'percent' => 35,
-			'method'=> 'select',
-			'options_model' => 'numbers_data_relations_model_datasource_attribute_availattrs::options_active',
-			'options_params' => [
-				'rn_attrmdl_code' => $options['details_attribute_model']
-			]
-		]);
-	}
-	*/
-
-	/**
 	 * Process widget
 	 *
 	 * @param array $options
 	 * @return boolean
 	 */
 	private function process_widget($options) {
-		$property = str_replace('__widget_', '', $options['row_link']);
-		if (empty($this->collection_object->primary_model->{$property})) return false;
-		$object = factory::model($this->collection_object->primary_model->{"{$property}_model"}, true);
-		return $object->process_widget($this, $options);
+		$property = str_replace('detail_', '', $options['widget']);
+		// determine object
+		if ($options['type'] == 'tabs' || $options['type'] == 'fields') {
+			$object = & $this->collection_object->primary_model;
+		} else if ($options['type'] == 'subdetails') {
+			$object = factory::model($options['details_parent_key'], true);
+		}
+		if (!empty($object->{$property})) {
+			return factory::model($object->{"{$property}_model"}, true)->process_widget($this, $options);
+		}
+		return false;
 	}
 
 	/**
@@ -1550,21 +1505,25 @@ convert_multiple_columns:
 	public function container($container_link, $options = []) {
 		if (!isset($this->data[$container_link])) {
 			$options['container_link'] = $container_link;
+			$type = $options['type'] = $options['type'] ?? 'fields';
 			// make hidden container last
 			if ($container_link == $this::hidden) {
 				$options['order'] = PHP_INT_MAX - 1000;
 			}
-			// see if we have attributes
-//			if (isset($options[$this::attribute_details])) {
-//				$temp = $options[$this::attribute_details];
-//				unset($options[$this::attribute_details]);
-//				$options = array_merge_hard($temp, $options);
-//				$options['attributes'] = true;
-//				if (!$this->process_attributes($options, $this::attribute_details)) {
-//					return;
-//				}
-//			}
-			$type = $options['type'] ?? 'fields';
+			// see if we adding a widget
+			if (!empty($options['widget'])) {
+				// we skip if widgets are not enabled
+				if (!object_widgets::enabled(str_replace('detail_', '', $options['widget']))) return;
+				// process default widget options
+				$widget = constant('object_widgets::'. $options['widget']);
+				$widget_data = constant('object_widgets::'. $options['widget'] . '_data');
+				$options = array_merge_hard($widget_data, $options);
+				if (isset($widget_data['type'])) {
+					$options['type'] = $widget_data['type'];
+				}
+				// handling widgets
+				return $this->process_widget($options);
+			}
 			// processing details
 			if ($type == 'details') {
 				if (empty($options['details_key']) || empty($options['details_pk'])) {
@@ -1593,7 +1552,7 @@ convert_multiple_columns:
 				$model = factory::model($options['details_key'], true);
 				// if we have relation
 				if (!empty($model->relation['field']) && !in_array($model->relation['field'], $model->pk)) {
-					$this->element($container_link, $this::hidden, $model->relation['field'], ['label_name' => 'Relation #', 'domain' => 'relation_id_sequence', 'method'=> 'hidden', 'persistent' => true]);
+					$this->element($container_link, $this::hidden, $model->relation['field'], ['label_name' => 'Relation #', 'domain' => 'relation_id_sequence', 'method'=> 'input', 'persistent' => true]);
 				}
 			}
 			if ($type == 'details' || $type == 'subdetails') {
@@ -1605,10 +1564,6 @@ convert_multiple_columns:
 					}
 				}
 			}
-			// add attribute elements
-//			if (!empty($options['attributes'])) {
-//				$this->process_attribute_elements($container_link, $options);
-//			}
 		} else {
 			$this->data[$container_link]['options'] = array_merge_hard($this->data[$container_link]['options'], $options);
 			if (isset($options['order'])) {
@@ -1646,11 +1601,12 @@ convert_multiple_columns:
 				'order' => $options['order'] ?? 0
 			];
 			// handling widgets
-			if ($this->data[$container_link]['type'] == 'tabs') {
-				if (in_array($row_link, $this::widgets)) {
-					if (!$this->process_widget($options)) {
-						unset($this->data[$container_link]['rows'][$row_link]);
-					}
+			if ($this->data[$container_link]['type'] == 'tabs' && !empty($options['widget'])) {
+				$options['type'] = 'tabs';
+				// we skip if widgets are not enabled
+				if (!object_widgets::enabled($options['widget']) || !$this->process_widget($options)) {
+					unset($this->data[$container_link]['rows'][$row_link]);
+					return;
 				}
 			}
 		} else {
@@ -1702,7 +1658,8 @@ convert_multiple_columns:
 					$options['id'] = "form_{$this->form_link}_element_{$element_link}";
 					$options['values_key'] = [$options['detail_11'], $element_link];
 				} else { // regular fields
-					$options['values_key'] = $options['error_name'] = $options['name'] = $element_link;
+					$options['error_name'] = $options['name'] = $element_link;
+					$options['values_key'] = [$element_link];
 					$options['id'] = "form_{$this->form_link}_element_{$element_link}";
 					// we do not validate preset fields
 					if (!empty($options['preset'])) {
@@ -2035,7 +1992,15 @@ convert_multiple_columns:
 			}
 		}
 		// rendering
-		$result['data']['html'] = $this->render_container_type_details_rows($this->data[$container_link]['rows'], $data, ['details_key' => $key, 'details_parent_key' => $parent_key, '__parent_row_number' => $options['__parent_row_number'], 'new_rows' => $details_new_rows, 'empty_warning_message' => $details_empty_warning_message, 'details_rendering_type' => $this->data[$container_link]['options']['details_rendering_type'] ?? 'grid_with_label']);
+		$result['data']['html'] = $this->render_container_type_details_rows($this->data[$container_link]['rows'], $data, [
+			'details_key' => $key,
+			'details_parent_key' => $parent_key,
+			'__parent_row_number' => $options['__parent_row_number'],
+			'__parent_key' => $options['__parent_key'],
+			'new_rows' => $details_new_rows,
+			'empty_warning_message' => $details_empty_warning_message,
+			'details_rendering_type' => $this->data[$container_link]['options']['details_rendering_type'] ?? 'grid_with_label',
+		]);
 		$result['success'] = true;
 		return $result;
 	}
@@ -2165,10 +2130,8 @@ convert_multiple_columns:
 							} else {
 								$name = "{$options['details_parent_key']}[{$options['__parent_row_number']}][{$options['details_key']}][{$k0}][{$k3}]";
 								$id = "form_{$this->form_link}_subdetails_{$options['details_parent_key']}_{$options['__parent_row_number']}_{$options['details_key']}_{$row_number}_{$k3}";
-								$error_name = "{$options['details_parent_key']}[{$options['__parent_row_number']}][{$options['details_key']}][{$k0}][{$k3}]";
-								// todo
-								$values_key = [];
-								//$values_key = [$options['details_key'], $k0, $k3];
+								$error_name = "{$options['details_parent_key']}[{$options['__parent_key']}][{$options['details_key']}][{$k0}][{$k3}]";
+								$values_key = [$options['details_parent_key'], $options['__parent_key'], $options['details_key'], $k0, $k3];
 							}
 							// error
 							$error = $this->get_field_errors([
@@ -2193,6 +2156,7 @@ convert_multiple_columns:
 							$value_options['options']['details_parent_key'] = $options['details_parent_key'] ?? null;
 							$value_options['options']['__parent_row_number'] = $options['__parent_row_number'] ?? null;
 							$value_options['options']['__row_number'] = $row_number;
+							$value_options['options']['__new_row'] = !$processing_values;
 							// need to set values_key
 							$value_options['options']['values_key'] = $values_key;
 							// tabindex but not for subdetails
@@ -2212,7 +2176,7 @@ convert_multiple_columns:
 								'value' => $this->render_element_value($value_options, $v0[$k3] ?? null, $v0),
 								'description' => null,
 								'options' => $v3['options'],
-								'row_class' => ($v3['options']['row_class'] ?? '') . (!($row_number % 2) ? ' grid_row_even' : ' grid_row_odd')
+								'row_class' => ($value_options['options']['row_class'] ?? '') . (!($row_number % 2) ? ' grid_row_even' : ' grid_row_odd')
 							];
 						}
 					}
@@ -2264,6 +2228,7 @@ convert_multiple_columns:
 					}
 					$v10['__values'] = $v0[$v10['options']['details_key']] ?? [];
 					$v10['__parent_row_number'] = $row_number;
+					$v10['__parent_key'] = $k0;
 					$temp = $this->render_container_type_subdetails($v10['options']['container_link'], $v10);
 					if ($temp['success']) {
 						$tab_values[$k10].= $temp['data']['html'];
@@ -2295,7 +2260,7 @@ convert_multiple_columns:
 				];
 			}
 			// delete link
-			$link = html::a(['href' => 'javascript:void(0);', 'value' => '<i class="fa fa-trash-o"></i>', 'onclick' => "if (confirm('" . strip_tags(i18n(null, object_content_messages::confirm_delete)) . "')) { numbers.form.details_delete_row('{$row_id}'); } return false;"]);
+			$link = html::a(['href' => 'javascript:void(0);', 'value' => '<i class="fa fa-trash-o"></i>', 'onclick' => "if (confirm('" . strip_tags(i18n(null, object_content_messages::confirm_delete)) . "')) { numbers.form.details_delete_row('form_{$this->form_link}_form', '{$row_id}'); } return false;"]);
 			// add a row to a table
 			$table['options'][$row_number] = [
 				'row_number' => ['value' => $row_number . '.', 'width' => '1%', 'row_id' => $row_id],
@@ -2348,12 +2313,12 @@ convert_multiple_columns:
 		];
 		// custom renderer
 		if (!empty($this->data[$container_link]['options']['custom_renderer'])) {
-			$temp = explode('::', $this->data[$container_link]['options']['custom_renderer']);
+			$method = factory::method($this->data[$container_link]['options']['custom_renderer']);
 			// important to use $this if its the same class
-			if ($temp[0] == $this->form_class) {
-				$temp[0] = & $this->form_parent;
+			if ($method[0] == $this->form_class) {
+				$method[0] = & $this->form_parent;
 			} else {
-				$temp[0] = factory::model($temp[0], true);
+				$method[0] = factory::model($temp[0], true);
 			}
 			return call_user_func_array($temp, [& $this]);
 		}
@@ -2698,6 +2663,12 @@ convert_multiple_columns:
 	 * @throws Exception
 	 */
 	public function render_element_value(& $options, $value = null, & $neighbouring_values = []) {
+		// custom renderer
+		if (!empty($options['options']['custom_renderer'])) {
+			$method = factory::method($options['options']['custom_renderer'], null, true);
+			$options_custom_renderer = $options;
+			call_user_func_array($method, [& $this, & $options, & $value, & $neighbouring_values]);
+		}
 		// handling override_field_value method
 		if (!empty($this->wrapper_methods['override_field_value']['main'])) {
 			call_user_func_array($this->wrapper_methods['override_field_value']['main'], [& $this, & $options, & $value, & $neighbouring_values]);
@@ -2853,9 +2824,18 @@ convert_multiple_columns:
 						$result_options['style'] = ($result_options['style'] ?? '') . 'text-align:' . $result_options['align'] . ';';
 					}
 					// processing persistent
-					$old_value = array_key_get($this->original_values, $result_options['values_key']);
-					if (!empty($result_options['persistent']) && !empty($old_value)) {
-						$result_options['readonly'] = true;
+					if (!empty($result_options['persistent']) && $this->values_loaded) {
+						// parent record
+						if (count($result_options['values_key']) == 1) {
+							$result_options['readonly'] = true;
+						} else if (empty($result_options['__new_row'])) { // details
+							$temp = $result_options['values_key'];
+							array_pop($temp);
+							$detail = array_key_get($this->original_values, $temp);
+							if (!empty($detail)) {
+								$result_options['readonly'] = true;
+							}
+						}
 					}
 					// maxlength
 					if (in_array($result_options['type'] ?? '', ['char', 'varchar']) && !empty($result_options['length'])) {
@@ -2930,6 +2910,10 @@ convert_multiple_columns:
 			$value.= html::a(['href' => 'javascript:void(0);', 'onclick' => "$('#{$id_modified}').toggle();", 'value' => html::label2(['type' => 'warning', 'value' => count($result_options)])]);
 			$value.= '<div id="' . $id_original . '" style="display:none; position: absolute; text-align: left; width: 500px; z-index: 32000;">' . print_r2($options['options'], true) . '</div>';
 			$value.= '<div id="' . $id_modified . '" style="display:none; position: absolute; text-align: left; width: 500px; z-index: 32000;">' . print_r2($result_options, true) . '</div>';
+		}
+		// we need to put original options back
+		if (!empty($options['options']['custom_renderer'])) {
+			$options = $options_custom_renderer;
 		}
 		return $value;
 	}

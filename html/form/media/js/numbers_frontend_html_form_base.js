@@ -80,11 +80,12 @@ numbers.form = {
 	 *
 	 * @param string row_id
 	 */
-	details_delete_row: function(row_id) {
-		var tr = $('#' + row_id);
+	details_delete_row: function(form_id, row_id) {
+		var tr = $('#' + row_id), that = this, form = $('#' + form_id);
         tr.css("background-color", "lightcoral");
 		tr.find("td").fadeOut(400, function() {
 			tr.remove();
+			that.trigger_submit(form)
 		});
 	}
 };
