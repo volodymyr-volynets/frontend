@@ -44,12 +44,9 @@ var numbers_select = function (options) {
 		tabindex = ' tabindex="' + result.tabindex + '" ';
 	}
 	// placeholder
-	var placeholder = '';
-	if (result.elem.multiple) {
-		placeholder = result.elem.getAttribute('placeholder');
-		if (placeholder) {
-			placeholder = ' data-placeholder="' + placeholder + '" ';
-		}
+	placeholder = result.elem.getAttribute('placeholder');
+	if (placeholder) {
+		placeholder = ' data-placeholder="' + placeholder + '" ';
 	}
 	var temp = '<div class="' + result.elem.className + ' numbers_select_icons numbers_select_prevent_selection" onclick="window[\'' + result.var_id + '\'].show();"><i class="' + icon_class + '"></i></div>';
 	temp+= '<div class="' + result.elem.className + ' numbers_select_replacement" id="' + result.replacement_div_id + '"' + tabindex + placeholder + ' onkeyup="window[\'' + result.var_id + '\'].onkeyup(event);" onkeydown="window[\'' + result.var_id + '\'].onkeydown(event);" tabindex="-1"' + (result.searchable ? ' contenteditable="true"' : '') + '></div>';
@@ -317,13 +314,6 @@ var numbers_select = function (options) {
 				html+= '<span class="numbers_select_option_table_color" style="background-color:#' + this.elem.options[this.elem.selectedIndex].value + ';">&nbsp;</span> ';
 			}
 			html+= this.elem.options[this.elem.selectedIndex].text;
-			// placeholder
-			var placeholder = this.elem.options[this.elem.selectedIndex].getAttribute('placeholder');
-			if (!placeholder) {
-				this.replacement_div_elem.classList.remove('placeholder');
-			} else {
-				this.replacement_div_elem.classList.add('placeholder');
-			}
 			this.replacement_div_elem.innerHTML = html;
 		}
 	};
@@ -422,8 +412,7 @@ var numbers_select = function (options) {
 				level: 0,
 				title: '',
 				icon_class: '',
-				text_right: '',
-				placeholder: false
+				text_right: ''
 			};
 		}
 		for (var i = 0; i < this.elem.options.length; i++) {
@@ -442,8 +431,7 @@ var numbers_select = function (options) {
 				level: level,
 				title: this.elem.options[i].getAttribute('title'),
 				icon_class: this.elem.options[i].getAttribute('icon_class'),
-				text_right: this.elem.options[i].getAttribute('text_right'),
-				placeholder: this.elem.options[i].getAttribute('placeholder')
+				text_right: this.elem.options[i].getAttribute('text_right')
 			};
 			// we need to adjust level for optgroups
 			if (this.optgroups) {
@@ -463,8 +451,7 @@ var numbers_select = function (options) {
 							level: 0,
 							title: '',
 							icon_class: '',
-							text_right: '',
-							placeholder: false
+							text_right: ''
 						};
 						hash[optgroup_label] = index;
 						index++;
@@ -489,7 +476,7 @@ var numbers_select = function (options) {
 			this.refresh_data();
 			this.flag_data_prepered = true;
 		}
-		var i, j, k, title, placeholder_class, inactive_class, colspan, status = '', hash = {}, hash2 = {};
+		var i, j, k, title, inactive_class, colspan, status = '', hash = {}, hash2 = {};
 		var html = '<table id="' + this.table_id + '" class="numbers_select_option_table" width="100%" cellpadding="0" cellspacing="0">';
 			// select/deselect
 			if (-1 in this.data) {
@@ -510,8 +497,7 @@ var numbers_select = function (options) {
 					html+= '<tr class="' + this.table_tr_class + inactive_class + ' numbers_select_disabled" search-id="' + i + '">';
 				} else {
 					title = this.data[i].title ? this.data[i].title : '';
-					placeholder_class = this.data[i].placeholder ? ' placeholder ' : '';
-					html+= '<tr onclick="' + this.var_id + '.chosen(' + i + ', this);" class="' + this.table_tr_class + (this.data[i].selected ? ' numbers_select_option_table_checked' : '') + placeholder_class + inactive_class + ' numbers_select_option_table_tr_hover" search-id="' + i + '" title="' + title + '">';
+					html+= '<tr onclick="' + this.var_id + '.chosen(' + i + ', this);" class="' + this.table_tr_class + (this.data[i].selected ? ' numbers_select_option_table_checked' : '') + inactive_class + ' numbers_select_option_table_tr_hover" search-id="' + i + '" title="' + title + '">';
 				}
 					if (this.data[i].level == 0) {
 						hash2 = {};

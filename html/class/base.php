@@ -364,8 +364,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		// assembling
 		$result = '';
 		if (!$no_choose) {
-			$placeholder = $options['placeholder'] ?? '';
-			$result.= '<option value="" placeholder="' . ($placeholder ? 1 : '') . '">' . $placeholder . '</option>';
+			$result.= '<option value=""></option>';
 		}
 		// options first
 		if (!empty($options_array)) {

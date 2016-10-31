@@ -73,6 +73,13 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 	public $master_options = [];
 
 	/**
+	 * Acl
+	 *
+	 * @var boolean
+	 */
+	public $acl = true;
+
+	/**
 	 * Constructor
 	 *
 	 * @param array $options
@@ -102,6 +109,7 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 		// class
 		$this->form_object->form_class = get_called_class();
 		$this->form_object->form_parent = & $this;
+		$this->form_object->acl = $this->acl;
 		// add collection
 		$this->form_object->collection = $this->collection;
 		$this->form_object->preload_collection_object(); // must initialize it before calls to container/row/element
@@ -147,7 +155,7 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 			}
 		}
 		// step 3: methods
-		foreach (['save', 'validate', 'refresh', 'pre_render', 'override_field_value', 'override_tabs'] as $v) {
+		foreach (['save', 'validate', 'refresh', 'success', 'pre_render', 'override_field_value', 'override_tabs'] as $v) {
 			if (method_exists($this, $v)) {
 				$this->form_object->wrapper_methods[$v]['main'] = [& $this, $v];
 			}
@@ -163,7 +171,9 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 			}
 		}
 		// last step: process form
-		$this->form_object->process();
+		if (empty($options['skip_processing'])) {
+			$this->form_object->process();
+		}
 	}
 
 	/**
