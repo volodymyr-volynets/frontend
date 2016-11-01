@@ -19,14 +19,6 @@
 	width: auto;
 	outline: none !important;
 }
-.numbers_calendar_prevent_selection {
-	-webkit-touch-callout: none;
-	-webkit-user-select: none;
-	-khtml-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	user-select: none;
-}
 .numbers_calendar_div_holder {
 	display: block;
 	position: relative;

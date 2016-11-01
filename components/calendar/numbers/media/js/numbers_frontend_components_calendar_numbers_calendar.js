@@ -27,7 +27,7 @@ var numbers_calendar = function (options) {
 	// we need to insert div element right after input
 	var div = document.createElement("div");
 	div.setAttribute('id', result.div_id);
-	div.setAttribute('class', 'numbers_calendar_div numbers_calendar_prevent_selection');
+	div.setAttribute('class', 'numbers_calendar_div numbers_prevent_selection');
 	div.setAttribute('tabindex', -1);
 	div.style.display = 'none';
 	div.onfocus = function () {

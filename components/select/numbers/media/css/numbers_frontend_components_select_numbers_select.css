@@ -12,14 +12,6 @@
 	z-index: 2000;
 	width: 100%;
 }
-.numbers_select_prevent_selection {
-	-webkit-touch-callout: none;
-	-webkit-user-select: none;
-	-khtml-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	user-select: none;
-}
 .numbers_select_icons {
 	height: 100% !important;
 	display: inline-block !important;
@@ -47,13 +39,6 @@
 }
 tr.numbers_select_option_table_tr_hover:hover {
 	background-color: #fafafa;
-}
-.numbers_select_disabled {
-	cursor: not-allowed !important;
-}
-.numbers_select_inactive {
-	color: #a94442;
-	background-color: lightcoral;
 }
 .numbers_select_option_table_td {
 	height: 2.5em;
@@ -90,7 +75,7 @@ tr.numbers_select_option_table_tr_hover:hover {
 	width: 1.5em !important;
 	border: 1px solid #d3d3d3;
 }
-.numbers_select_option_table_checked i.numbers_select_option_table_checked_icon:before {
+.numbers_selected i.numbers_select_option_table_checked_icon:before {
 	content: "\f00c";
 	padding-right: 5px;
 }

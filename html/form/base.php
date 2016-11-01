@@ -130,6 +130,13 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 	public $refresh = false;
 
 	/**
+	 * Delete
+	 *
+	 * @var boolean
+	 */
+	public $delete = false;
+
+	/**
 	 * Reset
 	 *
 	 * @var boolean
@@ -829,6 +836,7 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 		// reset
 		$this->submitted = false;
 		$this->refresh = false;
+		$this->delete = false;
 		$this->blank = false;
 		$this->values_loaded = false;
 		$this->values_saved = false;
@@ -907,6 +915,10 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 				}
 			}
 		}
+		// if we delete
+		if (!empty($this->process_submit[self::button_submit_delete])) {
+			$this->delete = true;
+		}
 		// if we are blanking the form
 		if ($this->blank) {
 			$this->get_all_values([]);
@@ -919,27 +931,32 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 		}
 		// load original values
 		$this->get_original_values($this->options['input'] ?? [], $this->transaction);
-		//print_r2($this->original_values);
 		// validate submits
 		if ($this->submitted) {
 			if (!$this->validate_submit_buttons()) {
 				goto process_errors;
 			}
 		}
-		//print_r2($this->process_submit);
+		// if we do not submit the form and have no values
 		if (!$this->submitted && !$this->refresh) {
-			goto load_values;
+			if ($this->values_loaded) {
+				goto load_values;
+			} else { // if we have no values its blank
+				$this->blank = true;
+				$this->get_all_values([]);
+				goto convert_multiple_columns;
+			}
 		}
 		// get all values
 		$this->get_all_values($this->options['input'] ?? [], [
 			'validate_required' => $this->submitted, // a must, used for widget data processing
-			'validate_for_delete' => $this->process_submit[self::button_submit_delete] ?? false
+			'validate_for_delete' => $this->delete
 		]);
 		//print_r2($this->values);
 		// handling form refresh
 		$this->trigger_method('refresh');
 		// validate required fields after refresh
-		if ($this->submitted && empty($this->process_submit[self::button_submit_delete])) {
+		if ($this->submitted && !$this->delete) {
 			$this->validate_required_fields();
 		}
 		// convert columns on refresh
@@ -949,10 +966,12 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 		// if form has been submitted
 		if ($this->submitted) {
 			// call attached method to the form
-			if (method_exists($this, 'validate')) {
-				$this->validate($this);
-			} else if (!empty($this->wrapper_methods['validate'])) {
-				$this->trigger_method('validate');
+			if (!$this->delete) {
+				if (method_exists($this, 'validate')) {
+					$this->validate($this);
+				} else if (!empty($this->wrapper_methods['validate'])) {
+					$this->trigger_method('validate');
+				}
 			}
 			// if we have no error and have proper submit we proceed to saving
 			if (!$this->has_errors() && !empty($this->process_submit[$this::button_submit_save])) {
@@ -994,6 +1013,8 @@ process_errors:
 		}
 		// close transaction
 		$this->close_transaction();
+		// if we are deleting and have an error we need to pull the data
+		if ($this->delete && $this->has_errors()) goto load_values2;
 load_values:
 		if (!$this->has_errors()) {
 			if ($this->values_deleted) { // we need to provide default values
@@ -1002,6 +1023,7 @@ load_values:
 				$this->get_all_values([]);
 			} else if ($this->values_saved) { // if saved we need to reload from database
 				$this->trigger_method('success');
+load_values2:
 				$this->original_values = $this->values = $this->load_values();
 				$this->values_loaded = true;
 			} else if ($this->values_loaded) { // otherwise set loaded values

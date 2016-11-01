@@ -48,9 +48,9 @@ var numbers_select = function (options) {
 	if (placeholder) {
 		placeholder = ' data-placeholder="' + placeholder + '" ';
 	}
-	var temp = '<div class="' + result.elem.className + ' numbers_select_icons numbers_select_prevent_selection" onclick="window[\'' + result.var_id + '\'].show();"><i class="' + icon_class + '"></i></div>';
+	var temp = '<div class="' + result.elem.className + ' numbers_select_icons numbers_prevent_selection" onclick="window[\'' + result.var_id + '\'].show();"><i class="' + icon_class + '"></i></div>';
 	temp+= '<div class="' + result.elem.className + ' numbers_select_replacement" id="' + result.replacement_div_id + '"' + tabindex + placeholder + ' onkeyup="window[\'' + result.var_id + '\'].onkeyup(event);" onkeydown="window[\'' + result.var_id + '\'].onkeydown(event);" tabindex="-1"' + (result.searchable ? ' contenteditable="true"' : '') + '></div>';
-	temp+= '<div id="' + result.div_id + '" class="numbers_select_div numbers_select_prevent_selection" tabindex="-1" style="display:none;"></div>';
+	temp+= '<div id="' + result.div_id + '" class="numbers_select_div numbers_prevent_selection" tabindex="-1" style="display:none;"></div>';
 	container.innerHTML = temp;
 	result.elem.parentNode.insertBefore(container, result.elem.nextSibling);
 	// hide select element
@@ -490,14 +490,14 @@ var numbers_select = function (options) {
 				// inactive
 				inactive_class = '';
 				if (this.data[i].inactive) {
-					inactive_class = ' numbers_select_inactive ';
+					inactive_class = ' numbers_inactive ';
 				}
 				// if disabled
 				if (this.data[i].disabled) {
-					html+= '<tr class="' + this.table_tr_class + inactive_class + ' numbers_select_disabled" search-id="' + i + '">';
+					html+= '<tr class="' + this.table_tr_class + inactive_class + ' numbers_disabled" search-id="' + i + '">';
 				} else {
 					title = this.data[i].title ? this.data[i].title : '';
-					html+= '<tr onclick="' + this.var_id + '.chosen(' + i + ', this);" class="' + this.table_tr_class + (this.data[i].selected ? ' numbers_select_option_table_checked' : '') + inactive_class + ' numbers_select_option_table_tr_hover" search-id="' + i + '" title="' + title + '">';
+					html+= '<tr onclick="' + this.var_id + '.chosen(' + i + ', this);" class="' + this.table_tr_class + (this.data[i].selected ? ' numbers_selected' : '') + inactive_class + ' numbers_select_option_table_tr_hover" search-id="' + i + '" title="' + title + '">';
 				}
 					if (this.data[i].level == 0) {
 						hash2 = {};
@@ -507,6 +507,12 @@ var numbers_select = function (options) {
 							if (!result.tree) {
 								html+= '<td class="numbers_select_option_table_level">&nbsp;</td>';
 							} else {
+								// reset hash
+								for (var h in hash2) {
+									if (h >= this.data[i].level) {
+										hash2[h] = 0;
+									}
+								}
 								status = '';
 								if (j < this.data[i].level) {
 									for (k = i + 1; k < this.data.length; k++) {
@@ -546,7 +552,7 @@ var numbers_select = function (options) {
 										if (this.data[k].level >= j) {
 											continue;
 										} else {
-											status = 'blank';
+											status = 'next';
 											break;
 										}
 									}
