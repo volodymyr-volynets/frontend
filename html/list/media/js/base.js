@@ -1,4 +1,8 @@
-
+/**
+ * List
+ *
+ * @type object
+ */
 numbers.frontend_list = {
 
 	/**

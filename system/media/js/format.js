@@ -1,5 +1,5 @@
 /**
- * Numbers wrappers for format functions
+ * Format
  *
  * @type object
  */
@@ -18,18 +18,10 @@ numbers.format = {
 		if (!type) type = 'date';
 		if (!options) options = {};
 		// processing format
-		var format;
 		if (options.format) {
-			format = options.format;
+			var format = options.format;
 		} else {
-			// todo: we need to load format from global flags
-			if (type == 'time') {
-				format = 'H:i:s';
-			} else if (type == 'datetime') {
-				format = 'Y-m-d H:i:s';
-			} else {
-				format = 'Y-m-d';
-			}
+			var format = this.get_date_format(type);
 		}
 		// formatting string
 		if (typeof value == 'object') {
@@ -47,7 +39,7 @@ numbers.format = {
 		var hours = datetime.getHours();
 		result = result.replace('a', (hours >= 12) ? 'pm' : 'am');
 		var ghours = hours > 12 ? (hours - 12) : hours;
-		result = result.replace('g', (ghours < 10) ? ('0'+ ghours) : ghours);
+		result = result.replace('g', (ghours < 10) ? ('0' + ghours) : ghours);
 		return result;
 	},
 
@@ -58,15 +50,7 @@ numbers.format = {
 	 * @returns string
 	 */
 	get_date_format: function(type) {
-		var format, global_format = array_key_get(numbers, 'flag.global.format') || {};
-		if (type == 'time') {
-			format = global_format.time ? global_format.time : 'H:i:s';
-		} else if (type == 'datetime') {
-			format = global_format.datetime ? global_format.datetime : 'Y-m-d H:i:s';
-		} else {
-			format = global_format.date ? global_format.date : 'Y-m-d';
-		}
-		return format;
+		return array_key_get(numbers, 'flag.global.format.' + type);
 	},
 
 	/**
@@ -100,5 +84,68 @@ numbers.format = {
 	 */
 	time: function(value, options) {
 		return this.date_format(value, 'time', options);
+	},
+
+	/**
+	 * Read float
+	 *
+	 * @param string amount
+	 * @param array options
+	 *		boolean - bcnumeric
+	 *		boolean - valid_check
+	 * @returns mixed
+	 */
+	read_floatval: function(amount, options) {
+		if (!options) options = {};
+		// remove currency symbol and name, thousands separator
+		var locale_options = array_key_get(numbers, 'flag.global.format.locale_options');
+		amount = amount.toString().replace(locale_options.int_curr_symbol, '').replace(locale_options.currency_symbol, '').replace(locale_options.mon_thousands_sep, '').replace(' ', '');
+		// handle decimal separator
+		if (locale_options.mon_decimal_point != '.') {
+			amount = amount.replace(locale_options.mon_decimal_point, '.');
+		}
+		// sanitize only check
+		if (options.valid_check) {
+			return !isNaN(parseFloat(amount));
+		}
+		// if we are processing bc numeric data type
+		if (options.bcnumeric) {
+			if (isNaN(parseFloat(amount)) || amount == '') {
+				amount = '0';
+			}
+			return amount;
+		}
+		// process based on type
+		if (options.intval) {
+			return parseInt(amount);
+		} else {
+			return parseFloat(amount);
+		}
+	},
+
+	/**
+	 * Read bcnumeric
+	 *
+	 * @param string amount
+	 * @param array options
+	 * @returns string
+	 */
+	read_bcnumeric: function(amount, options) {
+		if (!options) options = {};
+		options.bcnumeric = true;
+		return this.read_floatval(amount, options);
+	},
+
+	/**
+	 * Read intval
+	 *
+	 * @param string amount
+	 * @param array options
+	 * @returns int
+	 */
+	read_intval: function(amount, options) {
+		if (!options) options = {};
+		options.intval = true;
+		return this.read_floatval(amount, options);
 	}
 };

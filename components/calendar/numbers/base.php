@@ -8,8 +8,8 @@ class numbers_frontend_components_calendar_numbers_base implements numbers_front
 	public static function calendar($options = []) {
 		// include js & css files
 		if (empty($options['readonly'])) {
-			layout::add_js('/numbers/media_submodules/numbers_frontend_components_calendar_numbers_calendar.js');
-			layout::add_css('/numbers/media_submodules/numbers_frontend_components_calendar_numbers_calendar.css');
+			layout::add_js('/numbers/media_submodules/numbers_frontend_components_calendar_numbers_media_js_base.js');
+			layout::add_css('/numbers/media_submodules/numbers_frontend_components_calendar_numbers_media_css_base.css');
 		}
 		// font awesome icons
 		library::add('fontawesome');
@@ -31,6 +31,7 @@ class numbers_frontend_components_calendar_numbers_base implements numbers_front
 		// set placeholder
 		if (!empty($options['placeholder']) && $options['placeholder'] == 'format::get_date_placeholder') {
 			$options['placeholder'] = $placeholder;
+			$options['title'] = ($options['title'] ?? '') . ' (' . $placeholder . ')';
 		}
 		if (isset($options['calendar_icon']) && ($options['calendar_icon'] == 'left' || $options['calendar_icon'] == 'right')) {
 			$position = $options['calendar_icon'];

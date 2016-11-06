@@ -44,12 +44,17 @@ var numbers_select = function (options) {
 		tabindex = ' tabindex="' + result.tabindex + '" ';
 	}
 	// placeholder
-	placeholder = result.elem.getAttribute('placeholder');
+	var placeholder = result.elem.getAttribute('placeholder');
 	if (placeholder) {
 		placeholder = ' data-placeholder="' + placeholder + '" ';
 	}
+	// title
+	var title = result.elem.getAttribute('title');
+	if (title) {
+		title = ' title="' + title + '" ';
+	}
 	var temp = '<div class="' + result.elem.className + ' numbers_select_icons numbers_prevent_selection" onclick="window[\'' + result.var_id + '\'].show();"><i class="' + icon_class + '"></i></div>';
-	temp+= '<div class="' + result.elem.className + ' numbers_select_replacement" id="' + result.replacement_div_id + '"' + tabindex + placeholder + ' onkeyup="window[\'' + result.var_id + '\'].onkeyup(event);" onkeydown="window[\'' + result.var_id + '\'].onkeydown(event);" tabindex="-1"' + (result.searchable ? ' contenteditable="true"' : '') + '></div>';
+	temp+= '<div class="' + result.elem.className + ' numbers_select_replacement" id="' + result.replacement_div_id + '"' + tabindex + placeholder + title + ' onkeyup="window[\'' + result.var_id + '\'].onkeyup(event);" onkeydown="window[\'' + result.var_id + '\'].onkeydown(event);" tabindex="-1"' + (result.searchable ? ' contenteditable="true"' : '') + '></div>';
 	temp+= '<div id="' + result.div_id + '" class="numbers_select_div numbers_prevent_selection" tabindex="-1" style="display:none;"></div>';
 	container.innerHTML = temp;
 	result.elem.parentNode.insertBefore(container, result.elem.nextSibling);
@@ -476,7 +481,7 @@ var numbers_select = function (options) {
 			this.refresh_data();
 			this.flag_data_prepered = true;
 		}
-		var i, j, k, title, inactive_class, colspan, status = '', hash = {}, hash2 = {};
+		var i, j, k, title, inactive_class, colspan, status = '', hash = {}, hash2 = {}, selected_class;
 		var html = '<table id="' + this.table_id + '" class="numbers_select_option_table" width="100%" cellpadding="0" cellspacing="0">';
 			// select/deselect
 			if (-1 in this.data) {
@@ -492,12 +497,17 @@ var numbers_select = function (options) {
 				if (this.data[i].inactive) {
 					inactive_class = ' numbers_inactive ';
 				}
+				// selected
+				selected_class = ' numbers_selected ';
+				if (this.data[i].value == '') {
+					selected_class = '';
+				}
 				// if disabled
 				if (this.data[i].disabled) {
 					html+= '<tr class="' + this.table_tr_class + inactive_class + ' numbers_disabled" search-id="' + i + '">';
 				} else {
 					title = this.data[i].title ? this.data[i].title : '';
-					html+= '<tr onclick="' + this.var_id + '.chosen(' + i + ', this);" class="' + this.table_tr_class + (this.data[i].selected ? ' numbers_selected' : '') + inactive_class + ' numbers_select_option_table_tr_hover" search-id="' + i + '" title="' + title + '">';
+					html+= '<tr onclick="' + this.var_id + '.chosen(' + i + ', this);" class="' + this.table_tr_class + (this.data[i].selected ? (selected_class + ' numbers_select_row_selected ') : '') + inactive_class + ' numbers_select_option_table_tr_hover" search-id="' + i + '" title="' + title + '">';
 				}
 					if (this.data[i].level == 0) {
 						hash2 = {};

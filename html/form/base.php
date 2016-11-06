@@ -94,6 +94,13 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 	public $collection_object;
 
 	/**
+	 * Column prefix
+	 *
+	 * @var string
+	 */
+	public $column_prefix;
+
+	/**
 	 * Error messages
 	 *
 	 * @var array
@@ -329,6 +336,8 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 			// sort
 			if (in_array($k, $collection['pk'] ?? [])) {
 				$fields[$k]['order_for_defaults'] = -32000;
+			} else if (!empty($v['options']['default']) && strpos($v['options']['default'], 'dependent::') !== false) { // processed last
+				$fields[$k]['order_for_defaults'] = 32000 + intval(str_replace(['dependent::', 'static::'], '', $v['options']['default']));
 			} else if (!empty($v['options']['default']) && (strpos($v['options']['default'], 'parent::') !== false || strpos($v['options']['default'], 'static::') !== false)) {
 				$column = str_replace(['parent::', 'static::'], '', $v['options']['default']);
 				$fields[$k]['order_for_defaults'] = ($fields[$column]['order_for_defaults'] ?? 0) + 100;
@@ -529,6 +538,17 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 				$allowed[] = $this->collection_object->primary_model->optimistic_lock_column;
 			}
 		}
+		// see if we have a change in entry fields
+		$changed_field = [
+			'parent' => null,
+			'detail' => null,
+			'subdetail' => null
+		];
+		if (!empty($this->misc_settings['__form_onchange_field_values_key']) && count($this->misc_settings['__form_onchange_field_values_key']) == 1) {
+			if (isset($fields[$this->misc_settings['__form_onchange_field_values_key'][0]])) {
+				$changed_field['parent'] = $this->misc_settings['__form_onchange_field_values_key'][0];
+			}
+		}
 		// process fields
 		foreach ($fields as $k => $v) {
 			// skip certain values
@@ -567,8 +587,8 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 			}
 			// default
 			if (array_key_exists('default', $v['options'])) {
-				if (strpos($v['options']['default'], 'static::') !== false || (is_null($value) && empty($v['options']['null']))) {
-					$value = $this->process_default_value($k, $v['options']['default']);
+				if ($this->can_process_default_value($value, $v)) {
+					$value = $this->process_default_value($k, $v['options']['default'], $value, $this->values, false, $changed_field);
 				}
 			}
 			// put into values
@@ -619,6 +639,19 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 				$autoincrement = $v['options']['details_autoincrement'];
 				$counter = 1;
 				foreach ($details as $k2 => $v2) {
+					// see if we have a change in a detail
+					$changed_field_details = $changed_field;
+					if (!empty($this->misc_settings['__form_onchange_field_values_key'])) {
+						$temp_count = count($this->misc_settings['__form_onchange_field_values_key']);
+						if ($this->misc_settings['__form_onchange_field_values_key'][0] == $k && ($temp_count == 2 || $temp_count == 3)) {
+							if (!empty($v['options']['details_11'])) {
+								$changed_field_details['detail'] = $this->misc_settings['__form_onchange_field_values_key'][1];
+							} else if ($this->misc_settings['__form_onchange_field_values_key'][1] . '' == $k2 . '') {
+								$changed_field_details['detail'] = $this->misc_settings['__form_onchange_field_values_key'][2];
+							}
+						}
+					}
+					// change detected
 					$flag_change_detected = false;
 					// put pk into detail
 					$detail = $detail_key_holder['parent_pks'];
@@ -632,8 +665,8 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 						if (empty($v3['options']['type'])) {
 							$v3['options']['type'] = 'varchar';
 						}
-						// get value
-						$value = $v2[$k3] ?? null;
+						// get value, grab from neighbouring values first
+						$value = $detail[$k3] ?? $v2[$k3] ?? null;
 						// validate data type
 						if (!empty($v3['options']['multiple_column'])) {
 							$value = $this->generate_multiple_columns($value, $error_name, $detail, [$k], $v3);
@@ -666,8 +699,8 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 						// default
 						$default = null;
 						if (array_key_exists('default', $v3['options'])) {
-							$default = $this->process_default_value($k3, $v3['options']['default']);
-							if (strpos($v3['options']['default'], 'static::') !== false || is_null($value)) {
+							$default = $this->process_default_value($k3, $v3['options']['default'], $value, $detail, false, $changed_field_details);
+							if ($this->can_process_default_value($value, $v3)) {
 								$value = $default;
 							}
 						}
@@ -745,7 +778,7 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 										// default
 										$default = null;
 										if (array_key_exists('default', $v6['options'])) {
-											$default = $this->process_default_value($k6, $v6['options']['default']);
+											$default = $this->process_default_value($k6, $v6['options']['default'], $value, $subdetail, false);
 											if (strpos($v6['options']['default'], 'static::') !== false || is_null($value)) {
 												$value = $default;
 											}
@@ -819,10 +852,24 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 					// process subdetails
 					// todo     
 				}
-				// see if detail is required
+				// see if detail is required, we display
 				if (!empty($v['options']['required']) && empty($this->values[$k])) {
+					// add error to pk
+					$counter = 1;
 					foreach ($v['options']['details_pk'] as $v8) {
+						if (empty($v['elements'][$v8]['options']['row_link']) || $v['elements'][$v8]['options']['row_link'] == $this::hidden) continue;
 						$this->error('danger', object_content_messages::required_field, "{$k}[1][{$v8}]");
+						$counter++;
+					}
+					// sometimes pk can be hidden, so we add error to two more
+					if ($counter == 1) {
+						array_key_sort($v['elements'], ['row_order' => SORT_ASC, 'order' => SORT_ASC]);
+						foreach ($v['elements'] as $k8 => $v8) {
+							if (($v8['options']['required'] ?? '') . '' == '1' && !in_array($k8, $v['options']['details_pk']) && $counter == 1) {
+								$this->error('danger', object_content_messages::required_field, "{$k}[1][{$k8}]");
+								$counter++;
+							}
+						}
 					}
 				}
 			}
@@ -850,7 +897,7 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 			}
 			// optimistic lock
 			if (!empty($this->collection_object->primary_model->optimistic_lock)) {
-				$this->element($this::hidden, $this::hidden, $this->collection_object->primary_model->optimistic_lock_column, ['label_name' => 'Optimistic Lock', 'domain' => 'optimistic_lock', 'null' => true, 'default' => null, 'method'=> 'hidden']);
+				$this->element($this::hidden, $this::hidden, $this->collection_object->primary_model->optimistic_lock_column, ['label_name' => 'Optimistic Lock', 'type' => 'text', 'null' => true, 'default' => null, 'method'=> 'hidden']);
 			}
 		}
 		// hidden buttons to handle form though javascript
@@ -895,6 +942,11 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 		if (!empty($this->options['input']['navigation'])) {
 			$this->process_navigation($this->options['input']['navigation']);
 		}
+		// onchange fields
+		$this->misc_settings['__form_onchange_field_values_key'] = null;
+		if (!empty($this->options['input']['__form_onchange_field_values_key'])) {
+			$this->misc_settings['__form_onchange_field_values_key'] = explode('[::]', $this->options['input']['__form_onchange_field_values_key']);
+		}
 		// we need to see if form has been submitted
 		$this->process_submit = [];
 		if (isset($this->process_submit_all[$this::button_submit_blank]) && !empty($this->options['input'][$this::button_submit_blank])) {
@@ -922,6 +974,7 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 		// if we are blanking the form
 		if ($this->blank) {
 			$this->get_all_values([]);
+			$this->trigger_method('refresh');
 			goto convert_multiple_columns;
 		}
 		// we need to start transaction
@@ -944,6 +997,7 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 			} else { // if we have no values its blank
 				$this->blank = true;
 				$this->get_all_values([]);
+				$this->trigger_method('refresh');
 				goto convert_multiple_columns;
 			}
 		}
@@ -1835,7 +1889,9 @@ convert_multiple_columns:
 				$field = [
 					'id' => $options['id'],
 					'name' => $options['name'],
-					'options' => $options
+					'options' => $options,
+					'order' => $options['order'] ?? 0,
+					'row_order' => $this->data[$container_link]['rows'][$row_link]['order'] // a must used in validations
 				];
 				// we need to put values into fields and details
 				$persistent_key = [];
@@ -1919,7 +1975,22 @@ convert_multiple_columns:
 		}
 		$this->tabindex = 1;
 		// css & js
-		layout::add_js('/numbers/media_submodules/numbers_frontend_html_form_base.js', 9000);
+		layout::add_js('/numbers/media_submodules/numbers_frontend_html_form_media_js_base.js', -10000);
+		// include master js
+		if (!empty($this->master_object) && method_exists($this->master_object, 'add_js')) {
+			$this->master_object->add_js();
+		}
+		// include js
+		$filename = str_replace('_model_', '_media_js_', $this->form_class) . '.js';
+		if (file_exists('./../libraries/vendor/' . str_replace('_', '/', $filename))) {
+			layout::add_js('/numbers/media_submodules/' . $filename);
+		}
+		$this->misc_settings['extended_js_class'] = 'numbers.' . $this->form_class;
+		// include css
+		$filename = str_replace('_model_', '_media_css_', $this->form_class) . '.css';
+		if (file_exists('./../libraries/vendor/' . str_replace('_', '/', $filename))) {
+			layout::add_css('/numbers/media_submodules/' . $filename);
+		}
 		// load mask
 		numbers_frontend_media_libraries_loadmask_base::add();
 		// new record action
@@ -2039,6 +2110,7 @@ convert_multiple_columns:
 		// couple hidden fields
 		$result.= html::hidden(['name' => '__form_link', 'value' => $this->form_link]);
 		$result.= html::hidden(['name' => '__form_values_loaded', 'value' => $this->values_loaded]);
+		$result.= html::hidden(['name' => '__form_onchange_field_values_key', 'value' => '']);
 		if (!empty($this->options['bypass_hidden_values'])) {
 			foreach ($this->options['bypass_hidden_values'] as $k => $v) {
 				$result.= html::hidden(['name' => $k, 'value' => $v]);
@@ -2169,11 +2241,11 @@ convert_multiple_columns:
 	public function render_container_type_details_rows($rows, $values, $options = []) {
 		$result = '';
 		// empty_warning_message
-		if (empty($options['details_new_rows']) && empty($values) && isset($options['empty_warning_message'])) {
-			if (empty($options['empty_warning_message'])) {
+		if (empty($options['details_new_rows']) && empty($values) && isset($options['details_empty_warning_message'])) {
+			if (empty($options['details_empty_warning_message'])) {
 				return html::message(['type' => 'warning', 'options' => [object_content_messages::no_rows_found]]);
 			} else {
-				return html::message(['type' => 'warning', 'options' => [$options['empty_warning_message']]]);
+				return html::message(['type' => 'warning', 'options' => [$options['details_empty_warning_message']]]);
 			}
 		}
 		// building table
@@ -2258,11 +2330,15 @@ convert_multiple_columns:
 			}
 			$i0 = $row_number;
 			// we need to preset default values
-			foreach ($rows as $k => $v) {
-				foreach ($v['elements'] as $k2 => $v2) {
-					if (array_key_exists('default', $v2['options']) && !isset($v0[$k2])) {
-						$temp = $this->process_default_value($k2, $v2['options']['default'], $v0);
-					}
+			if (!empty($options['details_parent_key'])) {
+				$fields = $this->sort_fields_for_processing($this->detail_fields[$options['details_parent_key']]['subdetails'][$options['details_key']]['elements'], $this->detail_fields[$options['details_key']]['options']);
+			} else {
+				$fields = $this->sort_fields_for_processing($this->detail_fields[$options['details_key']]['elements'], $this->detail_fields[$options['details_key']]['options']);
+			}
+			// todo: handle changed field
+			foreach ($fields as $k19 => $v19) {
+				if (array_key_exists('default', $v19['options']) && !isset($v0[$k19])) {
+					$temp = $this->process_default_value($k19, $v19['options']['default'], $v0[$k19] ?? null, $v0, true);
 				}
 			}
 			// looping though rows
@@ -2298,17 +2374,20 @@ convert_multiple_columns:
 									$id = "form_{$this->form_link}_details_{$options['details_key']}_{$k3}";
 									$error_name = "{$options['details_key']}[{$k3}]";
 									$values_key = [$options['details_key'], $k3];
+									$field_values_key = [$options['details_key'], $k3];
 								} else { // 1 to M
 									$name = "{$options['details_key']}[{$i0}][{$k3}]";
 									$id = "form_{$this->form_link}_details_{$options['details_key']}_{$row_number}_{$k3}";
 									$error_name = "{$options['details_key']}[{$k0}][{$k3}]";
 									$values_key = [$options['details_key'], $k0, $k3];
+									$field_values_key = [$options['details_key'], $i0, $k3];
 								}
 							} else {
 								$name = "{$options['details_parent_key']}[{$options['__parent_row_number']}][{$options['details_key']}][{$k0}][{$k3}]";
 								$id = "form_{$this->form_link}_subdetails_{$options['details_parent_key']}_{$options['__parent_row_number']}_{$options['details_key']}_{$row_number}_{$k3}";
 								$error_name = "{$options['details_parent_key']}[{$options['__parent_key']}][{$options['details_key']}][{$k0}][{$k3}]";
 								$values_key = [$options['details_parent_key'], $options['__parent_key'], $options['details_key'], $k0, $k3];
+								$field_values_key = [$options['details_parent_key'], $options['__parent_row_number'], $options['details_key'], $k0, $k3];
 							}
 							// error
 							$error = $this->get_field_errors([
@@ -2337,6 +2416,7 @@ convert_multiple_columns:
 							$value_options['options']['__new_row'] = !$processing_values;
 							// need to set values_key
 							$value_options['options']['values_key'] = $values_key;
+							$value_options['options']['field_values_key'] = $field_values_key;
 							// tabindex but not for subdetails
 							if (!$hidden && empty($options['__parent_row_number'])) {
 								$value_options['options']['tabindex'] = $this->tabindex;
@@ -2823,18 +2903,50 @@ convert_multiple_columns:
 	 * @param array $neighbouring_values
 	 * @return mixed
 	 */
-	private function process_default_value($key, $default, & $neighbouring_values = null) {
-		if (strpos($default, 'parent::') !== false) {
+	private function process_default_value($key, $default, $value, & $neighbouring_values, $set_neightbouring_values = true, $changed_field = []) {
+		if (strpos($default, 'dependent::') !== false) {
+			// nothing
+		} else if (strpos($default, 'master_object::') !== false) {
+			$field = explode('::', str_replace(['master_object::', 'static::'], '', $default));
+			$value = $this->master_object->{$field[0]}->{$field[1]}->{$field[2]};
+		} else if (strpos($default, 'parent::') !== false) {
 			$field = str_replace(['parent::', 'static::'], '', $default);
 			$value = $this->values[$field] ?? null;
 		} else {
 			if ($default === 'now()') $default = format::now('timestamp');
 			$value = $default;
 		}
-		if (isset($neighbouring_values)) {
-			array_key_set($neighbouring_values, $key, $value);
+		// handling override_field_value method
+		if (!empty($this->wrapper_methods['process_default_value']['main'])) {
+			// fix changed field
+			if (empty($changed_field)) $changed_field = [];
+			$changed_field['parent'] = $changed_field['parent'] ?? null;
+			$changed_field['detail'] = $changed_field['detail'] ?? null;
+			$changed_field['subdetail'] = $changed_field['subdetail'] ?? null;
+			// call override method
+			$model = $this->wrapper_methods['process_default_value']['main'][0];
+			$model->{$this->wrapper_methods['process_default_value']['main'][1]}($this, $key, $default, $value, $neighbouring_values, $changed_field);
+		}
+		// if we need to set neightbouring values
+		if ($set_neightbouring_values) {
+			$neighbouring_values[$key] = $value;
 		}
 		return $value;
+	}
+
+	/**
+	 * Can default value be processed
+	 *
+	 * @param mixed $value
+	 * @param array $options
+	 * @return boolean
+	 */
+	private function can_process_default_value($value, $options) {
+		if (strpos($options['options']['default'], 'static::') !== false || strpos($options['options']['default'], 'dependent::') !== false || (is_null($value) && empty($options['options']['null']))) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**
@@ -2847,6 +2959,9 @@ convert_multiple_columns:
 	 * @throws Exception
 	 */
 	public function render_element_value(& $options, $value = null, & $neighbouring_values = []) {
+		// field name and values_key
+		$options['options']['field_name'] = $options['options']['details_field_name'] ?? $options['options']['name'];
+		$options['options']['field_values_key'] = implode('[::]', $options['options']['field_values_key'] ?? [$options['options']['field_name']]);
 		// custom renderer
 		if (!empty($options['options']['custom_renderer'])) {
 			$method = factory::method($options['options']['custom_renderer'], null, true);
@@ -2858,6 +2973,7 @@ convert_multiple_columns:
 			call_user_func_array($this->wrapper_methods['override_field_value']['main'], [& $this, & $options, & $value, & $neighbouring_values]);
 		}
 		$result_options = $options['options'];
+		$options['options']['value'] = $value;
 		array_key_extract_by_prefix($result_options, 'label_');
 		$element_expand = !empty($result_options['expand']);
 		$html_suffix = $result_options['html_suffix'] ?? '';
@@ -3031,8 +3147,12 @@ convert_multiple_columns:
 						$result_options['readonly'] = true;
 					}
 					// we need to empty zero integers and sequences
-					if (($result_options['php_type'] ?? '') == 'integer' && ($result_options['type'] ?? '') != 'boolean' && $result_options['value'] === 0) {
+					if (($result_options['php_type'] ?? '') == 'integer' && ($result_options['type'] ?? '') != 'boolean' && ($result_options['domain'] ?? '') != 'counter' && 'counter' && $result_options['value'] === 0) {
 						$result_options['value'] = '';
+					}
+					// title
+					if (isset($options['options']['label_name'])) {
+						$result_options['title'] = ($result_options['title'] ?? '') . ' ' . strip_tags(i18n(null, $options['options']['label_name']));
 					}
 				}
 				// translate place holder
@@ -3052,9 +3172,10 @@ convert_multiple_columns:
 					}
 				}
 				// events
-				foreach (['onchange'] as $e) {
+				foreach (['onchange', 'onkeyup'] as $e) {
 					if (!empty($result_options[$e])) {
-						$result_options[$e] = str_replace('this.form.submit();', "numbers.form.trigger_submit(this.form);", $result_options[$e]);
+						$result_options[$e] = str_replace('this.form.submit();', 'numbers.form.trigger_submit(this);', $result_options[$e]);
+						$result_options[$e] = str_replace('this.form.extended.', $this->misc_settings['extended_js_class'] . '.', $result_options[$e]);
 					}
 				}
 				break;

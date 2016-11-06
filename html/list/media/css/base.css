@@ -4,13 +4,11 @@
 .list_filter_name, .list_filter_value {
 	vertical-align: middle !important;
 }
-
 @media screen and (max-width:1200px) {
 	.list_pagination_sort {
 		display: none;
 	}
 }
-
 .list_pagination_navigation {
 	text-align: left;
 }

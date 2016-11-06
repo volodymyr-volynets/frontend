@@ -138,6 +138,13 @@ class numbers_frontend_html_list_base {
 	public $actions = [];
 
 	/**
+	 * Cached options
+	 *
+	 * @var array
+	 */
+	private $cached_options = [];
+
+	/**
 	 * Constructor
 	 *
 	 * @param string $list_link
@@ -234,13 +241,6 @@ class numbers_frontend_html_list_base {
 				]
 			];
 		}
-		// process options model
-		foreach ($this->columns as $k => $v) {
-			if (!empty($v['options_model'])) {
-				$params = $v['options_params'] ?? [];
-				$this->columns[$k]['options'] = factory::model($v['options_model'])->options(['where' => $params]);
-			}
-		}
 		// actions
 		if (!empty($this->options['actions'])) {
 			$this->actions = array_merge($this->actions, $this->options['actions']);
@@ -275,8 +275,8 @@ class numbers_frontend_html_list_base {
 	final public function render() {
 		$result = '';
 		// css & js
-		layout::add_css('/numbers/media_submodules/numbers_frontend_html_list_fixes.css', 9000);
-		layout::add_js('/numbers/media_submodules/numbers_frontend_html_list_base.js', 9000);
+		layout::add_css('/numbers/media_submodules/numbers_frontend_html_list_media_css_base.css', 9000);
+		layout::add_js('/numbers/media_submodules/numbers_frontend_html_list_media_js_base.js', 9000);
 		// load mask
 		numbers_frontend_media_libraries_loadmask_base::add();
 		// hidden fields
@@ -426,6 +426,25 @@ finish:
 					$value['value'] = $counter . '.';
 				} else if ($k2 == 'offset_number') {
 					$value['value'] = ($this->offset + $counter) . '.';
+				} else if (!empty($v2['options_model'])) {
+					if (strpos($v2['options_model'], '::') === false) $v2['options_model'].= '::options';
+					$params = $v2['options_params'] ?? [];
+					if (!empty($v2['options_depends'])) {
+						foreach ($v2['options_depends'] as $k0 => $v0) {
+							$params[$k0] = $v[$v0];
+						}
+					}
+					$crypt_object = new crypt();
+					$hash = $crypt_object->hash($v2['options_model'] . serialize($params));
+					if (!isset($this->cached_options[$hash])) {
+						$method = factory::method($v2['options_model'], null, true);
+						$this->cached_options[$hash] = call_user_func_array($method, [['where' => $params]]);
+					}
+					if (isset($this->cached_options[$hash][$v[$k2]])) {
+						$value['value'] = $this->cached_options[$hash][$v[$k2]]['name'];
+					} else {
+						$value['value'] = null;
+					}
 				} else if (!empty($v2['options']) && !is_array($v[$k2])) {
 					if (isset($v2['options'][$v[$k2]])) {
 						$value['value'] = $v2['options'][$v[$k2]]['name'];

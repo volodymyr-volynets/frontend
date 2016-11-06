@@ -54,10 +54,18 @@ numbers.form = {
 	/**
 	 * Trigger submit button
 	 *
-	 * @param object form
+	 * @param object form/element
 	 * @param string button
 	 */
-	trigger_submit: function(form, button) {
+	trigger_submit: function(form_or_element, button) {
+		// make sure we have a form
+		form_or_element = $(form_or_element);
+		if (form_or_element.is('form')) {
+			var form = form_or_element;
+		} else {
+			var form = form_or_element.closest('form');
+			$("[name='__form_onchange_field_values_key']", "#" + $(form).attr('id')).val(form_or_element.attr('field_values_key'));
+		}
 		// by default we call refresh
 		if (!button) {
 			button = '__submit_refresh';
@@ -82,10 +90,30 @@ numbers.form = {
 	 */
 	details_delete_row: function(form_id, row_id) {
 		var tr = $('#' + row_id), that = this, form = $('#' + form_id);
-        tr.css("background-color", "lightcoral");
-		tr.find("td").fadeOut(400, function() {
+        tr.css('background-color', 'lightcoral');
+		tr.find('td').fadeOut(400, function() {
 			tr.remove();
 			that.trigger_submit(form)
 		});
+	},
+
+	/**
+	 * Get all form values
+	 *
+	 * @param mixed form_or_element
+	 * @param object options
+	 * @returns object
+	 */
+	get_all_values: function(form_or_element, options) {
+		var result = {};
+		var form = $(form_or_element);
+		if (!form.is('form')) {
+			form = form.closest('form');
+		}
+		if (!options) options = {};
+		form.each(function(){
+			console.log($(this).attr('name'));
+		});
+		return result;
 	}
-};
+}

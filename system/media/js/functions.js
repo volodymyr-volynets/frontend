@@ -408,18 +408,19 @@ function array_key_get(arr, keys) {
 	if (keys == null) {
 		return arr;
 	} else {
-		if (keys instanceof String) {
-			keys = keys.replace('.', ',').split(',');
+		// convert non arrays to array
+		if (!(keys instanceof Array)) {
+			keys = keys.toString().replace(/\./g, ',').split(',');
 		}
+		// loop though properties
 		for (var key in keys) {
-			if (arr.hasOwnProperty(key)) {
-				return arr[key];
+			if (arr.hasOwnProperty(keys[key])) {
+				arr = arr[keys[key]];
 			} else {
 				return null;
 			}
-			arr = arr[key];
 		}
-		return null;
+		return arr;
 	}
 }
 

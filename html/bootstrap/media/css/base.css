@@ -152,6 +152,7 @@ legend {
 	background-image: none;
 	box-shadow: none;
 	transition: none;
+	padding: 7px 0;
 }
 .form-tabs {
 	padding-bottom: 10px;

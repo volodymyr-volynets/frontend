@@ -75,7 +75,7 @@ tr.numbers_select_option_table_tr_hover:hover {
 	width: 1.5em !important;
 	border: 1px solid #d3d3d3;
 }
-.numbers_selected i.numbers_select_option_table_checked_icon:before {
+.numbers_select_row_selected i.numbers_select_option_table_checked_icon:before {
 	content: "\f00c";
 	padding-right: 5px;
 }

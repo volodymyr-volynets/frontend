@@ -9,8 +9,8 @@ class numbers_frontend_components_select_numbers_base implements numbers_fronten
 		// we do not process readonly selects
 		if (empty($options['readonly'])) {
 			// include js & css files
-			layout::add_js('/numbers/media_submodules/numbers_frontend_components_select_numbers_select.js', 10000);
-			layout::add_css('/numbers/media_submodules/numbers_frontend_components_select_numbers_select.css', 10000);
+			layout::add_js('/numbers/media_submodules/numbers_frontend_components_select_numbers_media_js_base.js', 10000);
+			layout::add_css('/numbers/media_submodules/numbers_frontend_components_select_numbers_media_css_base.css', 10000);
 			// font awesome icons
 			library::add('fontawesome');
 			// id with name

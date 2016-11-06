@@ -110,6 +110,22 @@ var numbers = {
 			};
 			img.src = src;
 		}
+	},
+
+	/**
+	 * Extend
+	 *
+	 * @param object parent
+	 * @param object child
+	 * @returns object
+	 */
+	extend: function(parent, child) {
+		var temp = function(){};
+		temp.prototype = parent.prototype;
+		child.prototype = new temp();
+		child.parent = parent;
+		child.prototype.constructor = child;    
+		return child;
 	}
 };
 

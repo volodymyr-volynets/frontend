@@ -80,6 +80,13 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 	public $acl = true;
 
 	/**
+	 * Column prefix
+	 *
+	 * @var string
+	 */
+	public $column_prefix;
+
+	/**
 	 * Constructor
 	 *
 	 * @param array $options
@@ -113,8 +120,11 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 		// add collection
 		$this->form_object->collection = $this->collection;
 		$this->form_object->preload_collection_object(); // must initialize it before calls to container/row/element
+		$this->form_object->column_prefix = $this->column_prefix ?? $this->form_object->collection_object->primary_model->column_prefix ?? null;
 		// master object
 		if (!empty($this->master_options['model'])) {
+			$this->master_options['type'] = $this->master_options['type'] ?? '';
+			$this->master_options['ledger'] = strtoupper($this->master_options['ledger']) ?? '';
 			$this->form_object->master_options = $this->master_options;
 			$this->form_object->master_object = factory::model($this->master_options['model'], true);
 		}
@@ -155,7 +165,7 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 			}
 		}
 		// step 3: methods
-		foreach (['save', 'validate', 'refresh', 'success', 'pre_render', 'override_field_value', 'override_tabs'] as $v) {
+		foreach (['save', 'validate', 'refresh', 'success', 'pre_render', 'override_field_value', 'override_tabs', 'process_default_value'] as $v) {
 			if (method_exists($this, $v)) {
 				$this->form_object->wrapper_methods[$v]['main'] = [& $this, $v];
 			}
