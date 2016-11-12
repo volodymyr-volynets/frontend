@@ -136,6 +136,15 @@ var numbers_calendar = function (options) {
 			 hour_last: 'Last Hour'
 			 }*/
 		};
+		// translate
+		for (var i in result.i18n.months.full) result.i18n.months.full[i] = i18n(null, result.i18n.months.full[i]);
+		for (var i in result.i18n.months.short) result.i18n.months.short[i] = i18n(null, result.i18n.months.short[i]);
+		for (var i in result.i18n.weeks.full) result.i18n.weeks.full[i] = i18n(null, result.i18n.weeks.full[i]);
+		for (var i in result.i18n.weeks.short) result.i18n.weeks.short[i] = i18n(null, result.i18n.weeks.short[i]);
+		for (var i in result.i18n.time.am_pm) result.i18n.time.am_pm[i] = i18n(null, result.i18n.time.am_pm[i]);
+		for (var i in result.i18n.time.hour) result.i18n.time.hour[i] = i18n(null, result.i18n.time.hour[i]);
+		for (var i in result.i18n.time.minute) result.i18n.time.minute[i] = i18n(null, result.i18n.time.minute[i]);
+		for (var i in result.i18n.time.second) result.i18n.time.second[i] = i18n(null, result.i18n.time.second[i]);
 	}
 	// we need to calculate years range
 	if (result.type == 'date' || result.type == 'datetime') {
@@ -250,9 +259,9 @@ var numbers_calendar = function (options) {
 		if (this.master_id) {
 			var tmp = document.getElementById(this.master_id).value;
 			if (tmp) {
-				var parsed = strtotime(tmp);
-				if (parsed != false) {
-					this.master_datetime = new Date(parsed * 1000);
+				var date = numbers.format.read_date(tmp, this.type);
+				if (date !== false) {
+					this.master_datetime = date;
 				}
 			}
 		}
@@ -260,9 +269,9 @@ var numbers_calendar = function (options) {
 		if (this.slave_id) {
 			var tmp = document.getElementById(this.slave_id).value;
 			if (tmp) {
-				var parsed = strtotime(tmp);
-				if (parsed != false) {
-					this.slave_datetime = new Date(parsed * 1000);
+				var date = numbers.format.read_date(tmp, this.type);
+				if (date !== false) {
+					this.slave_datetime = date;
 				}
 			}
 		}
@@ -273,18 +282,38 @@ var numbers_calendar = function (options) {
 	 */
 	result.update_date_selected = function () {
 		if (this.elem.value) {
-			// we need to try to parse it
-			var parsed = strtotime(this.elem.value);
-			if (parsed != false) {
-				this.date_used = new Date(parsed * 1000);
+			var date = numbers.format.read_date(this.elem.value, this.type);
+			if (date !== false) {
+				this.date_used = date;
 			}
 		}
 		this.date_selected = this.date_used ? this.date_used : this.date_current;
 		// updating year/month only after we rendered skeleton
 		if (this.flag_skeleton_rendered) {
-			this.date_year_elem.value = this.date_selected.getFullYear();
-			this.date_month_elem.value = this.date_selected.getMonth();
-			this.date_day_elem.value = this.date_selected.getDate();
+			// date
+			if (this.type == 'date' || this.type == 'datetime') {
+				this.date_year_elem.value = this.date_selected.getFullYear();
+				this.date_month_elem.value = this.date_selected.getMonth();
+				this.date_day_elem.value = this.date_selected.getDate();
+			}
+			// time
+			/*
+			if (this.type == 'datetime' || this.type == 'time') {
+				var selected_hour = this.date_selected.getHours();
+				// special handling for am/pm
+				if (this.flag_time_am_pm) {
+					if (selected_hour > 12) {
+						selected_hour = selected_hour - 12;
+						this.time_am_pm_elem.value = 1;
+					} else {
+						this.time_am_pm_elem.value = 0;
+					}
+				}
+				this.time_hour_elem.value = selected_hour;
+				this.time_minute_elem.vaue = this.date_selected.getMinutes();
+				this.time_second_elem.value = this.date_selected.getSeconds();
+			}
+			*/
 		}
 	};
 
@@ -589,7 +618,7 @@ var numbers_calendar = function (options) {
 		if (year == 'down') {
 			var prev_year = this.date_min_year - 1;
 			for (var i = prev_year; i >= this.date_min_year - 5; i--) {
-				var option = new Option(i, i);
+				var option = new Option(i18n(null, i), i);
 				this.date_year_elem.insertBefore(option, this.date_year_elem.options[1]);
 			}
 			this.date_min_year = i + 1;
@@ -599,7 +628,7 @@ var numbers_calendar = function (options) {
 		if (year == 'up') {
 			var next_year = this.date_max_year + 1;
 			for (var i = next_year; i <= this.date_max_year + 5; i++) {
-				var option = new Option(i, i);
+				var option = new Option(i18n(null, i), i);
 				this.date_year_elem.insertBefore(option, this.date_year_elem.options[this.date_year_elem.options.length - 1]);
 			}
 			this.date_max_year = i - 1;
@@ -620,50 +649,50 @@ var numbers_calendar = function (options) {
 	 */
 	result.render_skeleton = function () {
 		var html = '';
-		html += '<table>';
+		html += '<table dir="ltr">';
 		// date elements
 		if (this.type == 'date' || this.type == 'datetime') {
 			// date header
 			html += '<tr>';
-			html += '<td align="left" width="25"><span onclick="' + this.var_id + '.prev_next(0, 1);" id="' + this.id + '_calendar_header_prev" class="numbers_calendar_header_button"><i class="fa fa-chevron-left"></i></span></td>';
-			html += '<td align="center">';
-			html += '<table width="100%">';
-			html += '<tr>';
-			html += '<td>';
-			// hidden day element
-			html += '<input type="hidden" id="' + this.date_day_id + '" value="" />';
-			// month select
-			html += '<select id="' + this.date_month_id + '" class="numbers_calendar_header_date_select" onchange="' + this.var_id + '.month_changed(this.value);" onfocus="' + this.var_id + '.onfocus();" onblur="' + this.var_id + '.onfocus(true);">';
-			// we need to select proper month
-			var selected_month = this.date_selected.getMonth();
-			for (var i in this.i18n.months.full) {
-				html += '<option value="' + i + '" ' + (selected_month == i ? 'selected' : '') + '>' + this.i18n.months.full[i] + '</option>';
-			}
-			html += '</select>';
-			html += '</td>';
-			html += '<td>';
-			// year select
-			html += '<select id="' + this.date_year_id + '" class="numbers_calendar_header_date_select" onchange="' + this.var_id + '.year_changed(this.value);" onfocus="' + this.var_id + '.onfocus();" onblur="' + this.var_id + '.onfocus(true);">';
-			if (this.flag_date_year_down) {
-				html += '<option value="down">+++</option>';
-			}
-			var year_selected = this.date_selected.getFullYear();
-			for (var i = this.date_min_year; i <= this.date_max_year; i++) {
-				html += '<option value="' + i + '" ' + (year_selected == i ? 'selected' : '') + '>' + i + '</option>';
-			}
-			if (this.flag_date_year_up) {
-				html += '<option value="up">+++</option>';
-			}
-			html += '</select>';
-			html += '</td>';
-			html += '</tr>';
-			html += '</table>';
-			html += '</td>';
-			html += '<td align="right" width="25"><span onclick="' + this.var_id + '.prev_next(1, 0);" id="' + this.id + '_calendar_header_next" class="numbers_calendar_header_button"><i class="fa fa-chevron-right"></i></a></td>';
+				html += '<td align="left" width="25"><span onclick="' + this.var_id + '.prev_next(0, 1);" id="' + this.id + '_calendar_header_prev" class="numbers_calendar_header_button"><i class="fa fa-chevron-left"></i></span></td>';
+				html += '<td align="center">';
+					html += '<table width="100%">';
+						html += '<tr>';
+							html += '<td>';
+								// hidden day element
+								html += '<input type="hidden" id="' + this.date_day_id + '" value="" />';
+								// month select
+								html += '<select id="' + this.date_month_id + '" class="numbers_calendar_header_date_select" onchange="' + this.var_id + '.month_changed(this.value);" onfocus="' + this.var_id + '.onfocus();" onblur="' + this.var_id + '.onfocus(true);">';
+								// we need to select proper month
+								var selected_month = this.date_selected.getMonth();
+								for (var i in this.i18n.months.full) {
+									html += '<option value="' + i + '" ' + (selected_month == i ? 'selected' : '') + '>' + this.i18n.months.full[i] + '</option>';
+								}
+								html += '</select>';
+								html += '</td>';
+								html += '<td>';
+								// year select
+								html += '<select id="' + this.date_year_id + '" class="numbers_calendar_header_date_select" onchange="' + this.var_id + '.year_changed(this.value);" onfocus="' + this.var_id + '.onfocus();" onblur="' + this.var_id + '.onfocus(true);">';
+								if (this.flag_date_year_down) {
+									html += '<option value="down">+++</option>';
+								}
+								var year_selected = this.date_selected.getFullYear();
+								for (var i = this.date_min_year; i <= this.date_max_year; i++) {
+									html += '<option value="' + i + '" ' + (year_selected == i ? 'selected' : '') + '>' + i18n(null, i) + '</option>';
+								}
+								if (this.flag_date_year_up) {
+									html += '<option value="up">+++</option>';
+								}
+								html += '</select>';
+							html += '</td>';
+						html += '</tr>';
+					html += '</table>';
+				html += '</td>';
+				html += '<td align="right" width="25"><span onclick="' + this.var_id + '.prev_next(1, 0);" id="' + this.id + '_calendar_header_next" class="numbers_calendar_header_button"><i class="fa fa-chevron-right"></i></a></td>';
 			html += '</tr>';
 			// date days
 			html += '<tr>';
-			html += '<td colspan="3" id="' + this.date_days_id + '">&nbsp;</td>';
+				html += '<td colspan="3" id="' + this.date_days_id + '">&nbsp;</td>';
 			html += '</tr>';
 		}
 		// separator
@@ -689,84 +718,85 @@ var numbers_calendar = function (options) {
 			var hide_am_pm = this.flag_time_am_pm ? '' : ' style="display: none;"';
 			var hide_seconds = this.flag_time_seconds ? '' : ' style="display: none;"';
 			html += '<tr>';
-			html += '<td colspan="3" align="center">';
-			html += '<table width="100%">';
-			html += '<tr>';
-			html += '<td align="center"><span onclick="' + this.var_id + '.time_changed(\'hour\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-up"></i></span></td>';
-			html += '<td>&nbsp;</td>';
-			html += '<td align="center"><span onclick="' + this.var_id + '.time_changed(\'minute\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-up"></i></span></td>';
-			html += '<td' + hide_seconds + '>&nbsp;</td>';
-			html += '<td align="center"' + hide_seconds + '><span onclick="' + this.var_id + '.time_changed(\'second\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-up"></i></span></td>';
-			html += '<td align="center"' + hide_am_pm + '><span onclick="' + this.var_id + '.time_changed(\'am_pm\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-up"></i></span></td>';
-			html += '<td align="center" width="33" rowspan="3" valign="middle"><span onclick="' + this.var_id + '.time_chosen();" id="' + this.time_go_id + '" class="numbers_calendar_time_button"><i class="fa fa-arrow-circle-o-right"></span></a></td>';
-			html += '</tr>';
-			html += '<tr>';
-			html += '<td align="center">';
-			var max_hours = 23;
-			html += '<select id="' + this.time_hour_id + '" class="numbers_calendar_header_date_select" onfocus="' + this.id + '.onfocus();" onblur="' + this.id + '.onfocus(true);">';
-			var selected_hour = this.date_selected.getHours();
-			var label, selected_am_pm = 0, selected_hour_original = selected_hour;
-			// special handling for am/pm
-			if (this.flag_time_am_pm) {
-				max_hours = 11;
-				if (selected_hour > 12) {
-					selected_hour = selected_hour - 12;
-					selected_am_pm = 1;
-				}
-			}
-			for (var i = 0; i <= max_hours; i++) {
-				label = i;
-				if (this.flag_time_am_pm && i == 0) {
-					label = 12;
-				}
-				html += '<option value="' + i + '" ' + (selected_hour == i ? 'selected' : '') + '>' + (label < 10 ? ('0' + label) : label) + '</option>';
-			}
-			html += '</select>';
-			html += '</td>';
-			html += '<td>:</td>';
-			html += '<td align="center">';
-			html += '<select id="' + this.time_minute_id + '" class="numbers_calendar_header_date_select" onfocus="' + this.id + '.onfocus();" onblur="' + this.id + '.onfocus(true);">';
-			var selected_minute = this.date_selected.getMinutes();
-			for (var i = 0; i <= 59; i++) {
-				html += '<option value="' + i + '" ' + (selected_minute == i ? 'selected' : '') + '>' + (i < 10 ? ('0' + i) : i) + '</option>';
-			}
-			html += '</select>';
-			html += '</td>';
-			html += '<td' + hide_seconds + '>:</td>';
-			html += '<td align="center"' + hide_seconds + '>';
-			html += '<select id="' + this.time_second_id + '" class="numbers_calendar_header_date_select" onfocus="' + this.id + '.onfocus();" onblur="' + this.id + '.onfocus(true);">';
-			var selected_second = this.date_selected.getSeconds();
-			for (var i = 0; i <= 59; i++) {
-				html += '<option value="' + i + '" ' + (selected_second == i ? 'selected' : '') + '>' + (i < 10 ? ('0' + i) : i) + '</option>';
-			}
-			html += '</select>';
-			html += '</td>';
-			html += '<td align="center"' + hide_am_pm + '>';
-			html += '<select id="' + this.time_am_pm_id + '" class="numbers_calendar_header_date_select" onfocus="' + this.id + '.onfocus();" onblur="' + this.id + '.onfocus(true);">';
-			for (var i in this.i18n.time.am_pm) {
-				html += '<option value="' + i + '" ' + (selected_am_pm == i ? 'selected' : '') + '>' + (this.i18n.time.am_pm[i]) + '</option>';
-			}
-			html += '</select>';
-			html += '</td>';
-			html += '</tr>';
-			html += '<tr>';
-			html += '<td align="center"><span onclick="' + this.var_id + '.time_changed(\'hour\', true);" class="numbers_calendar_header_button"><i class="fa fa-chevron-down"></i></span></td>';
-			html += '<td>&nbsp;</td>';
-			html += '<td align="center"><span onclick="' + this.var_id + '.time_changed(\'minute\', true);" class="numbers_calendar_header_button"><i class="fa fa-chevron-down"></i></a></td>';
-			html += '<td' + hide_seconds + '>&nbsp;</td>';
-			html += '<td align="center"' + hide_seconds + '><span onclick="' + this.var_id + '.time_changed(\'second\', true);" class="numbers_calendar_header_button"><i class="fa fa-chevron-down"></i></span></td>';
-			html += '<td align="center"' + hide_am_pm + '><span onclick="' + this.var_id + '.time_changed(\'am_pm\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-down"></i></span></td>';
-			html += '</tr>';
-			// names
-			html += '<tr>';
-			html += '<td align="center">' + this.i18n.time.hour[1] + '</td>';
-			html += '<td>&nbsp;</td>';
-			html += '<td align="center">' + this.i18n.time.minute[1] + '</td>';
-			html += '<td' + hide_seconds + '>&nbsp;</td>';
-			html += '<td align="center"' + hide_seconds + '>' + this.i18n.time.second[1] + '</td>';
-			html += '</tr>';
-			html += '</table>';
-			html += '</td>';
+				html += '<td colspan="3" align="center">';
+					var rtl = numbers.i18n.rtl() ? ' dir="rtl" ' : '';
+					html += '<table width="100%"' + rtl + '>';
+						html += '<tr>';
+							html += '<td align="center"><span onclick="' + this.var_id + '.time_changed(\'hour\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-up"></i></span></td>';
+							html += '<td>&nbsp;</td>';
+							html += '<td align="center"><span onclick="' + this.var_id + '.time_changed(\'minute\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-up"></i></span></td>';
+							html += '<td' + hide_seconds + '>&nbsp;</td>';
+							html += '<td align="center"' + hide_seconds + '><span onclick="' + this.var_id + '.time_changed(\'second\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-up"></i></span></td>';
+							html += '<td align="center"' + hide_am_pm + '><span onclick="' + this.var_id + '.time_changed(\'am_pm\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-up"></i></span></td>';
+							html += '<td align="center" width="33" rowspan="3" valign="middle"><span onclick="' + this.var_id + '.time_chosen();" id="' + this.time_go_id + '" class="numbers_calendar_time_button"><i class="fa fa-arrow-circle-o-right"></span></a></td>';
+						html += '</tr>';
+						html += '<tr>';
+							html += '<td align="center">';
+								var max_hours = 23;
+								html += '<select id="' + this.time_hour_id + '" class="numbers_calendar_header_date_select" onfocus="' + this.id + '.onfocus();" onblur="' + this.id + '.onfocus(true);">';
+								var selected_hour = this.date_selected.getHours();
+								var label, selected_am_pm = 0, selected_hour_original = selected_hour;
+								// special handling for am/pm
+								if (this.flag_time_am_pm) {
+									max_hours = 11;
+									if (selected_hour > 12) {
+										selected_hour = selected_hour - 12;
+										selected_am_pm = 1;
+									}
+								}
+								for (var i = 0; i <= max_hours; i++) {
+									label = i;
+									if (this.flag_time_am_pm && i == 0) {
+										label = 12;
+									}
+									html += '<option value="' + i + '" ' + (selected_hour == i ? 'selected' : '') + '>' + i18n(null, label < 10 ? ('0' + label) : label) + '</option>';
+								}
+								html += '</select>';
+							html += '</td>';
+							html += '<td>:</td>';
+							html += '<td align="center">';
+								html += '<select id="' + this.time_minute_id + '" class="numbers_calendar_header_date_select" onfocus="' + this.id + '.onfocus();" onblur="' + this.id + '.onfocus(true);">';
+								var selected_minute = this.date_selected.getMinutes();
+								for (var i = 0; i <= 59; i++) {
+									html += '<option value="' + i + '" ' + (selected_minute == i ? 'selected' : '') + '>' + i18n(null, i < 10 ? ('0' + i) : i) + '</option>';
+								}
+								html += '</select>';
+							html += '</td>';
+							html += '<td' + hide_seconds + '>:</td>';
+								html += '<td align="center"' + hide_seconds + '>';
+								html += '<select id="' + this.time_second_id + '" class="numbers_calendar_header_date_select" onfocus="' + this.id + '.onfocus();" onblur="' + this.id + '.onfocus(true);">';
+								var selected_second = this.date_selected.getSeconds();
+								for (var i = 0; i <= 59; i++) {
+									html += '<option value="' + i + '" ' + (selected_second == i ? 'selected' : '') + '>' + i18n(null, i < 10 ? ('0' + i) : i) + '</option>';
+								}
+								html += '</select>';
+							html += '</td>';
+							html += '<td align="center"' + hide_am_pm + '>';
+							html += '<select id="' + this.time_am_pm_id + '" class="numbers_calendar_header_date_select" onfocus="' + this.id + '.onfocus();" onblur="' + this.id + '.onfocus(true);">';
+							for (var i in this.i18n.time.am_pm) {
+								html += '<option value="' + i + '" ' + (selected_am_pm == i ? 'selected' : '') + '>' + (this.i18n.time.am_pm[i]) + '</option>';
+							}
+							html += '</select>';
+							html += '</td>';
+						html += '</tr>';
+						html += '<tr>';
+							html += '<td align="center"><span onclick="' + this.var_id + '.time_changed(\'hour\', true);" class="numbers_calendar_header_button"><i class="fa fa-chevron-down"></i></span></td>';
+							html += '<td>&nbsp;</td>';
+							html += '<td align="center"><span onclick="' + this.var_id + '.time_changed(\'minute\', true);" class="numbers_calendar_header_button"><i class="fa fa-chevron-down"></i></a></td>';
+							html += '<td' + hide_seconds + '>&nbsp;</td>';
+							html += '<td align="center"' + hide_seconds + '><span onclick="' + this.var_id + '.time_changed(\'second\', true);" class="numbers_calendar_header_button"><i class="fa fa-chevron-down"></i></span></td>';
+							html += '<td align="center"' + hide_am_pm + '><span onclick="' + this.var_id + '.time_changed(\'am_pm\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-down"></i></span></td>';
+						html += '</tr>';
+						// names
+						html += '<tr>';
+							html += '<td align="center">' + this.i18n.time.hour[1] + '</td>';
+							html += '<td>&nbsp;</td>';
+							html += '<td align="center">' + this.i18n.time.minute[1] + '</td>';
+							html += '<td' + hide_seconds + '>&nbsp;</td>';
+							html += '<td align="center"' + hide_seconds + '>' + this.i18n.time.second[1] + '</td>';
+						html += '</tr>';
+					html += '</table>';
+				html += '</td>';
 			html += '</tr>';
 		}
 		// whether we need to show presets panel
@@ -802,8 +832,9 @@ var numbers_calendar = function (options) {
 		var prev_month_total_days = prev_moth_object.getDate();
 		var next_moth_object = new Date(year, month + 1, 1);
 		var week_days_hash = {}, week_days_index = 0;
+		var rtl = numbers.i18n.rtl() ? ' dir="rtl" ' : '';
 		// rendering table
-		html = '<table class="numbers_calendar_date_days" cellpadding="2">';
+		html = '<table class="numbers_calendar_date_days" cellpadding="2"' + rtl + '>';
 		// render header
 		html += '<tr>';
 		for (var t = this.date_week_start_day; t < this.i18n.weeks.short.length; t++) {
@@ -899,10 +930,10 @@ var numbers_calendar = function (options) {
 				}
 				// rendering
 				if (cur_disable) {
-					html += '<span class="' + classes + ' numbers_calendar_date_disabled" onclick="return false;">&nbsp;' + value + '&nbsp;</span>';
+					html += '<span class="' + classes + ' numbers_calendar_date_disabled" onclick="return false;">&nbsp;' + i18n(null, value) + '&nbsp;</span>';
 				} else {
 					classes += ' numbers_calendar_date_day_hover';
-					html += '<span class="' + classes + '" onclick="' + onclick + '">&nbsp;' + value + '&nbsp;</span>';
+					html += '<span class="' + classes + '" onclick="' + onclick + '">&nbsp;' + i18n(null, value) + '&nbsp;</span>';
 				}
 				html += '</td>';
 			}

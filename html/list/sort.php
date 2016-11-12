@@ -44,7 +44,7 @@ class numbers_frontend_html_list_sort {
 			$column = html::select(['id' => 'sort_' . $i . '_column', 'name' => 'sort[' . $i . '][column]', 'options' => $columns, 'value' => $input['sort'][$i]['column'] ?? null]);
 			$order = html::select(['id' => 'sort_' . $i . '_order', 'name' => 'sort[' . $i . '][order]', 'no_choose' => true, 'options' => $order_model->options(['i18n' => true]), 'value' => $input['sort'][$i]['order'] ?? null]);
 			$table['options'][$i] = [
-				'row_number' => ['value' => ($i + 1) . '.', 'width' => '1%', 'align' => 'right'],
+				'row_number' => ['value' => format::id($i + 1) . '.', 'width' => '1%', 'align' => 'right'],
 				'column' => ['value' => $column, 'width' => '25%', 'class' => 'list_sort_name'],
 				'order' => ['value' => $order, 'width' => '30%'],
 			];

@@ -185,6 +185,12 @@ hr.small {
 .grid_table_details_11 td, .grid_table_details_11 th {
 	border: none !important;
 }
+.grid_button_right {
+	text-align: right;
+}
+.grid_button_center {
+	text-align: center;
+}
 
 /* font awesome fixes */
 .fa {
@@ -240,4 +246,27 @@ div.placeholder, span.placeholder {
 .numbers_inactive {
 	color: #a94442;
 	background-color: mistyrose;
+}
+
+/* rtl fixes */
+html[dir="rtl"] a {
+	unicode-bidi: embed;
+}
+html[dir="rtl"] input, html[dir="rtl"] textarea, html[dir="rtl"] select {
+	text-align: right;
+}
+html[dir="rtl"] .nav-tabs>li {
+	float: right;
+}
+html[dir="rtl"] .close {
+    float: left;
+}
+html[dir="rtl"] .grid_button_right {
+	text-align: left;
+}
+html[dir="rtl"] .grid_button_left {
+	text-align: right;
+}
+html[dir="rtl"] .list_pagination_navigation {
+	text-align: left;
 }

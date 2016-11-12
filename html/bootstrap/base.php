@@ -152,6 +152,8 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 	 * @see html::grid()
 	 */
 	public static function grid($options = []) {
+		$rtl = i18n::rtl();
+		$grid_columns = application::get('flag.numbers.framework.html.options.grid_columns') ?? 12;
 		$rows = isset($options['options']) ? $options['options'] : [];
 		unset($options['options']);
 		$result = '';
@@ -186,10 +188,37 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 					}
 				}
 			}
+			// we need to fill up empty columns if rtl
+			if ($rtl) {
+				$index = 0;
+				$current_grid_columns = 0;
+				foreach ($v as $k2 => $v2) {
+					foreach ($v2 as $k3 => $v3) {
+						// if we are mannually set field sizes we skip
+						if (!empty($v3['options']['field_size'])) {
+							$current_grid_columns = 12;
+							break;
+						}
+						$current_grid_columns+= $field_new_sizes['data'][$index];
+						$v[$k2][$k3]['options']['field_size'] = 'col-sm-' . $field_new_sizes['data'][$index]; // a must
+						$index++;
+					}
+				}
+				if ($current_grid_columns != $grid_columns) {
+					$v['__empty_column_fill__']['__empty_column_fill__'] = [
+						'value' => ' '
+					];
+					$field_new_sizes['data'][$index] = $grid_columns - $current_grid_columns;
+				}
+				$v = array_reverse($v, true);
+			}
 			// loop though each field and render it
 			$index = 0;
 			foreach ($v as $k2 => $v2) {
 				$flag_first_field = true;
+				if ($rtl) {
+					$v2 = array_reverse($v2, true);
+				}
 				foreach ($v2 as $k3 => $v3) {
 					$error_class = '';
 					if (!empty($v3['error']['type'])) {

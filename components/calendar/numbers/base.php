@@ -35,6 +35,13 @@ class numbers_frontend_components_calendar_numbers_base implements numbers_front
 		}
 		if (isset($options['calendar_icon']) && ($options['calendar_icon'] == 'left' || $options['calendar_icon'] == 'right')) {
 			$position = $options['calendar_icon'];
+			if (i18n::rtl()) {
+				if ($position == 'left') {
+					$position = 'right';
+				} else {
+					$position = 'left';
+				}
+			}
 			$icon_type = $type == 'time' ? 'clock-o' : 'calendar';
 			unset($options['calendar_icon']);
 			if (empty($options['readonly'])) {
@@ -43,7 +50,7 @@ class numbers_frontend_components_calendar_numbers_base implements numbers_front
 				$icon_onclick = null;
 			}
 			$icon_value = html::span(['onclick' => $icon_onclick, 'class' => 'numbers_calendar_icon numbers_prevent_selection', 'value' => html::icon(['type' => $icon_type])]);
-			$result = html::input_group(['value' => html::input($options), $position => $icon_value]);
+			$result = html::input_group(['value' => html::input($options), $position => $icon_value, 'dir' => 'ltr']);
 			$div_id = $options['id'] . '_div_holder';
 			$result.= html::div(['id' => $div_id, 'class' => 'numbers_calendar_div_holder']);
 			$widget_options['holder_div_id'] = $div_id;

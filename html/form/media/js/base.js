@@ -98,22 +98,168 @@ numbers.form = {
 	},
 
 	/**
-	 * Get all form values
+	 * Get form
 	 *
 	 * @param mixed form_or_element
-	 * @param object options
 	 * @returns object
 	 */
-	get_all_values: function(form_or_element, options) {
-		var result = {};
+	get_form: function(form_or_element) {
 		var form = $(form_or_element);
 		if (!form.is('form')) {
 			form = form.closest('form');
 		}
-		if (!options) options = {};
-		form.each(function(){
-			console.log($(this).attr('name'));
+		return form;
+	},
+
+	/**
+	 * Get all form values
+	 *
+	 * @param mixed form
+	 * @param object options
+	 * @returns object
+	 */
+	get_all_values: function(form) {
+		var result = {};
+		// get all elements
+		$.each($(form)[0].elements, function(index, elem) {
+			var keys = $(elem).attr('name').replace(/\]/g, '').split('[');
+			result = array_key_set(result, keys, $(elem).val());
 		});
 		return result;
+	},
+
+	/**
+	 * Get path
+	 *
+	 * @param object element
+	 * @returns array
+	 */
+	get_path: function(element, neighbour) {
+		var temp = $(element).attr('name').replace(/\]/g, '').split('[');
+		if (neighbour) {
+			temp.pop();
+			temp.push(neighbour);
+		}
+		return temp;
+	},
+
+	/**
+	 * Get name
+	 *
+	 * @param object element
+	 * @returns string
+	 */
+	get_name: function(element, last) {
+		if (last) {
+			return this.get_path(element).pop();
+		} else {
+			return $(element).attr('name');
+		}
+	},
+
+	/**
+	 * Get value
+	 *
+	 * @param mixed element
+	 * @returns array
+	 */
+	get_value: function(values, path, element, neighbour) {
+		if (path) {
+			return array_key_get(values, path);
+		} else if (element) {
+			return array_key_get(values, this.get_path(element, neighbour));
+		}
+	},
+
+	/**
+	 * Set value
+	 *
+	 * @param mixed form
+	 * @param mixed path
+	 * @param mixed value
+	 */
+	set_value: function(form, path, value) {
+		if (path instanceof Array) {
+			var name = path.shift();
+			for (var i in path) {
+				name+= '[' + path[i] + ']';
+			}
+		} else {
+			var name = path;
+		}
+		$('[name="' + name + '"]', $(form)).val(value);
+	},
+
+	/**
+	 * Locks
+	 *
+	 * @type object
+	 */
+	locks: {},
+
+	/**
+	 * Lock timeout
+	 *
+	 * @type int
+	 */
+	lock_timeout: 2000,
+
+	/**
+	 * Lock
+	 *
+	 * @param mixed element
+	 * @param string action
+	 * @returns mixed
+	 */
+	lock: function(element, action, duration) {
+		if (!action) {
+			action = 'is_locked';
+		}
+		var lock = this.get_form(element).attr('name') + '::' + $(element).attr('name');
+		switch (action) {
+			case 'lock':
+				if (!duration) duration = this.lock_timeout - 100;
+				this.locks[lock] = (new Date()).getTime() + duration;
+				break;
+			case 'is_locked':
+				if (!this.locks[lock]) {
+					return false;
+				} else if (this.locks[lock] < (new Date()).getTime()) {
+					return false;
+				} else {
+					return true;
+				}
+				break;
+		}
+	},
+
+	/**
+	 * Focuses
+	 *
+	 * @type object
+	 */
+	focuses: {},
+
+	/**
+	 * Focus
+	 *
+	 * @param object element
+	 * @param boolean end
+	 */
+	focus: function(element, end) {
+		var focus = this.get_form(element).attr('name') + '::' + $(element).attr('name');
+		if (!$(element).is(':focus')) {
+			this.focuses[focus] = null;
+			return;
+		}
+		// record position
+		if (!end) {
+			this.focuses[focus] = {
+				selection_start: element.selectionStart,
+				selection_end: element.selectionEnd
+			};
+		} else if (this.focuses[focus]) {
+			element.setSelectionRange(this.focuses[focus].selection_start, this.focuses[focus].selection_end);
+		}
 	}
 }

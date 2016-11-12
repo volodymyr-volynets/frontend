@@ -85,9 +85,9 @@ var numbers_select = function (options) {
 		result.i18n = options.i18n;
 	} else {
 		result.i18n = {
-			select: {short: 'Select All'},
-			deselect: {short: 'None'},
-			no_rows: {short: 'No options'}
+			select: {short: i18n(null, 'Select All')},
+			deselect: {short: i18n(null, 'None')},
+			no_rows: {short: i18n(null, 'No options')}
 		};
 	}
 	// calendar specific flags
@@ -212,19 +212,19 @@ var numbers_select = function (options) {
 			if (this.elem.options[this.data[id].id].selected) {
 				this.data[id].selected = false;
 				this.elem.options[this.data[id].id].selected = false;
-				tr.className = tr.className.replace('numbers_select_option_table_checked', '');
+				tr.className = tr.className.replace('numbers_select_row_selected', '');
 			} else {
 				this.data[id].selected = true;
 				this.elem.options[this.data[id].id].selected = true;
-				tr.className+= ' numbers_select_option_table_checked';
+				tr.className+= ' numbers_select_row_selected';
 			}
 			this.render_value();
 		} else {
 			// we need to remove checked from previously selected rows
 			if (this.elem.selectedIndex != -1) {
-				trs = document.getElementById(this.table_id).getElementsByClassName('numbers_select_option_table_checked');
+				trs = document.getElementById(this.table_id).getElementsByClassName('numbers_select_row_selected');
 				for (var i = 0; i < trs.length; i++) {
-					trs[i].className = trs[i].className.replace('numbers_select_option_table_checked', '');
+					trs[i].className = trs[i].className.replace('numbers_select_row_selected', '');
 				}
 			}
 			for (var i = 0; i < this.data.length; i++) {
@@ -232,7 +232,7 @@ var numbers_select = function (options) {
 			}
 			this.data[id].selected = true;
 			this.elem.selectedIndex = this.data[id].id;
-			tr.className+= ' numbers_select_option_table_checked';
+			tr.className+= ' numbers_select_row_selected';
 			this.render_value();
 			this.show();
 		}
@@ -266,9 +266,9 @@ var numbers_select = function (options) {
 		var trs = document.getElementsByClassName(this.table_tr_class);
 		for (var i = 0; i < trs.length; i++) {
 			if (!deselect) {
-				trs[i].className = trs[i].className.replace('numbers_select_option_table_checked', '');
+				trs[i].className = trs[i].className.replace('numbers_select_row_selected', '');
 			} else {
-				trs[i].className+= ' numbers_select_option_table_checked';
+				trs[i].className+= ' numbers_select_row_selected';
 			}
 		}
 	};
@@ -487,7 +487,7 @@ var numbers_select = function (options) {
 			if (-1 in this.data) {
 				html+= '<tr search-id="-1">';
 					html+= '<td colspan="' + (this.data_max_level + 2) + '" valign="middle" class="numbers_select_option_table_td">';
-						html+= '<a href="javascript: void(0);" onclick="window[\'' + result.var_id + '\'].select(false);">' + result.i18n.select.short + '</a> / <a href="javascript: void(0);" onclick="window[\'' + result.var_id + '\'].select(true);">' + result.i18n.deselect.short + '</a>';
+						html+= '<a href="javascript:void(0);" onclick="window[\'' + result.var_id + '\'].select(false);">' + result.i18n.select.short + '</a> / <a href="javascript:void(0);" onclick="window[\'' + result.var_id + '\'].select(true);">' + result.i18n.deselect.short + '</a>';
 					html+= '</td>';
 				html+= '</tr>';
 			}
@@ -635,7 +635,7 @@ var numbers_select = function (options) {
 						html+= this.data[i].text;
 					html+= '</td>';
 					html+= '<td width="1%">';
-						html+= '<i class="fa numbers_select_option_table_checked_icon"></i>';
+						html+= '<i class="fa numbers_select_row_selected_icon"></i>';
 					html+= '</td>';
 				html+= '</tr>';
 			}

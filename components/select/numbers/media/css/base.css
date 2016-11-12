@@ -1,3 +1,17 @@
+.numbers_select_replacement {
+	height: auto !important;
+	min-height: 34px;
+	padding-left: 12px;
+	padding-right: 2.5em;
+}
+html[dir="rtl"] .numbers_select_replacement {
+	padding-left: 2.5em;
+	padding-right: 12px;
+}
+html[dir="rtl"] .numbers_select_replacement {
+	text-align: right;
+	unicode-bidi: embed;
+}
 .numbers_select_div {
 	padding: 6px;
 	background: #fff;
@@ -23,11 +37,17 @@
 	padding-right: 0 !important;
 	background: transparent !important;
 	border-radius: 0 !important;
-	border-right: none !important;
 	border-top: none !important;
 	border-bottom: none !important;
-	right: 0 !important;
 	box-shadow: none !important;
+}
+html[dir="rtl"] .numbers_select_icons {
+	left: 0 !important;
+	border-left: none !important;
+}
+html[dir="ltr"] .numbers_select_icons {
+	right: 0 !important;
+	border-right: none !important;
 }
 .numbers_select_option_table tr, .numbers_select_option_multiple_item_close, .numbers_select_icons {
 	cursor: pointer;
@@ -45,6 +65,9 @@ tr.numbers_select_option_table_tr_hover:hover {
 	vertical-align: middle;
 	padding-left: 3px;
 }
+html[dir="rtl"] .numbers_select_option_table_td {
+	text-align: right;
+}
 .numbers_select_option_table_level {
 	width: 2em;
 	height: 2.5em;
@@ -54,6 +77,10 @@ tr.numbers_select_option_table_tr_hover:hover {
 	height: 100%;
 	float: right;
 	border-left: 1px solid #d3d3d3;
+}
+html[dir="rtl"] .numbers_select_option_table_level_nextchild {
+	border-right: 1px solid #d3d3d3;
+	border-left: none;
 }
 .numbers_select_option_table_level_nextchild tr {
 	height: 0.5em !important;
@@ -70,12 +97,16 @@ tr.numbers_select_option_table_tr_hover:hover {
 .numbers_select_option_table_level_last_left {
 	border-left: 1px solid #d3d3d3;
 }
+html[dir="rtl"] .numbers_select_option_table_level_last_left {
+	border-right: 1px solid #d3d3d3;
+	border-left: none;
+}
 .numbers_select_option_table_color {
 	display: inline-block;
 	width: 1.5em !important;
 	border: 1px solid #d3d3d3;
 }
-.numbers_select_row_selected i.numbers_select_option_table_checked_icon:before {
+.numbers_select_row_selected i.numbers_select_row_selected_icon:before {
 	content: "\f00c";
 	padding-right: 5px;
 }
@@ -94,10 +125,4 @@ tr.numbers_select_option_table_tr_hover:hover {
 }
 .numbers_select_option_multiple_item_close {
 	color: inherit !important;
-}
-.numbers_select_replacement {
-	height: auto !important;
-	min-height: 34px;
-	padding-left: 12px;
-	padding-right: 25px;
 }

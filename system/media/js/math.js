@@ -18,6 +18,7 @@ numbers.math = {
 	 * @param int scale
 	 */
 	scale: function(scale) {
+		scale = parseInt(scale);
 		this.scale = scale;
 		bcscale(scale)
 	},
@@ -34,7 +35,7 @@ numbers.math = {
 		if (typeof(scale) == 'undefined') {
 			scale = this.scale;
 		}
-		return bccomp(arg1, arg2, scale);
+		return bccomp(arg1, arg2, parseInt(scale));
 	},
 
 	/**
@@ -49,7 +50,7 @@ numbers.math = {
 		if (typeof(scale) == 'undefined') {
 			scale = this.scale;
 		}
-		return bcadd(arg1, arg2, scale);
+		return bcadd(arg1, arg2, parseInt(scale));
 	},
 
 	/**
@@ -64,7 +65,7 @@ numbers.math = {
 		if (typeof(scale) == 'undefined') {
 			scale = this.scale;
 		}
-		return bcsub(arg1, arg2, scale);
+		return bcsub(arg1, arg2, parseInt(scale));
 	},
 
 	/**
@@ -79,7 +80,7 @@ numbers.math = {
 		if (typeof(scale) == 'undefined') {
 			scale = this.scale;
 		}
-		return bcmul(arg1, arg2, scale);
+		return bcmul(arg1, arg2, parseInt(scale));
 	},
 
 	/**
@@ -93,20 +94,16 @@ numbers.math = {
 		if (typeof(scale) == 'undefined') {
 			scale = this.scale;
 		}
-		return bcround(arg1, scale);
+		return bcround(arg1, parseInt(scale));
 	},
 
 	/**
 	 * Floor
 	 *
 	 * @param string arg1
-	 * @param int scale
 	 * @returns string
 	 */
-	floor: function(arg1, scale) {
-		if (typeof(scale) == 'undefined') {
-			scale = this.scale;
-		}
+	floor: function(arg1) {
 		if (arg1[0] != '-') {
 			return bcadd(arg1, '0', 0);
 		} else {
@@ -118,13 +115,9 @@ numbers.math = {
 	 * Ceil
 	 *
 	 * @param string arg1
-	 * @param int scale
 	 * @returns string
 	 */
-	ceil: function(arg1, scale) {
-		if (typeof(scale) == 'undefined') {
-			scale = this.scale;
-		}
+	ceil: function(arg1) {
 		if (arg1[0] != '-') {
 			return bcadd(arg1, '1', 0);
 		} else {

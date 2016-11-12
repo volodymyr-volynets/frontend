@@ -40,7 +40,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		$value = isset($options['value']) ? $options['value'] : '';
 		$tag = $options['tag'] ?? 'div';
 		unset($options['value'], $options['tag']);
-		return '<' . $tag . ' ' . self::generate_attributes($options) . '>' . $value . '</' . $tag . '>';
+		return '<' . $tag . ' ' . self::generate_attributes($options, $tag) . '>' . $value . '</' . $tag . '>';
 	}
 
 	/**
@@ -74,13 +74,16 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 * Generate attributes
 	 *
 	 * @param array $options
+	 * @param string $tag
 	 * @return string
 	 */
-	protected static function generate_attributes($options) {
+	protected static function generate_attributes($options, $tag = null) {
 		$result = [];
 		foreach ($options as $k => $v) {
-			if (in_array($k, ['options'])) {
-				continue;
+			// validate HTML 5 attribute
+			if (!numbers_frontend_html_class_html5::is_valid_html5_attribute($k, $tag)) continue;
+			if (in_array($k, numbers_frontend_html_class_html5::$strip_tags)) {
+				$v = strip_tags($v);
 			}
 			if (is_array($v)) {
 				if (array_values($v) !== $v) {
@@ -142,7 +145,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		if (!empty($options['name'])) {
 			$options['id'] = $options['name'];
 		}
-		return '<a ' . self::generate_attributes($options) . '>' . $value . '</a>';
+		return '<a ' . self::generate_attributes($options, 'a') . '>' . $value . '</a>';
 	}
 
 	/**
@@ -150,7 +153,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	 */
 	public static function img($options = []) {
 		$options['border'] = isset($options['border']) ? $options['border'] : 0;
-		return '<img ' . self::generate_attributes($options) . ' />';
+		return '<img ' . self::generate_attributes($options, 'img') . ' />';
 	}
 
 	/**
@@ -160,7 +163,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		$value = isset($options['value']) ? $options['value'] : '';
 		unset($options['value']);
 		$options['type'] = !empty($options['type']) ? $options['type'] : 'text/javascript';
-		return '<script ' . self::generate_attributes($options) . '>' . $value . '</script>';
+		return '<script ' . self::generate_attributes($options, 'script') . '>' . $value . '</script>';
 	}
 
 	/**
@@ -173,7 +176,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		$value = isset($options['value']) ? $options['value'] : '';
 		unset($options['value']);
 		$options['type'] = !empty($options['type']) ? $options['type'] : 'text/css';
-		return '<style ' . self::generate_attributes($options) . '>' . $value . '</style>';
+		return '<style ' . self::generate_attributes($options, 'style') . '>' . $value . '</style>';
 	}
 
 	/**
@@ -204,8 +207,16 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		if (!isset($options['autocomplete'])) {
 			$options['autocomplete'] = 'off';
 		}
+		// rtl
+		$rtl = i18n::rtl(false);
+		if (i18n::rtl()) {
+			if (isset($options['style'])) $options['style'] = str_replace(['text-align:right;', 'text-align: right;'], 'text-align:left;', $options['style']);
+			// let browser decide the direction based on content
+			$rtl = ' dir="auto" ';
+		}
+		// generate html
 		$options['value'] = isset($options['value']) ? htmlspecialchars($options['value']) : '';
-		return '<input ' . self::generate_attributes($options) . ' />';
+		return '<input ' . self::generate_attributes($options, 'input') . $rtl . ' />';
 	}
 
 	/**
@@ -324,7 +335,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		} else {
 			$options['readonly'] = 'readonly';
 		}
-		return '<textarea ' . self::generate_attributes($options) . '>' . htmlspecialchars($value) . '</textarea>';
+		return '<textarea ' . self::generate_attributes($options, 'textarea') . '>' . htmlspecialchars($value) . '</textarea>';
 	}
 
 	/**
@@ -379,7 +390,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 				$result.= '</optgroup>';
 			}
 		}
-		return '<select ' . self::generate_attributes($options) . '>' . $result . '</select>';
+		return '<select ' . self::generate_attributes($options, 'select') . '>' . $result . '</select>';
 	}
 
 	/**
@@ -411,7 +422,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		$value = $options['value'] ?? strip_tags(i18n(null, 'Submit'));
 		$options['class'] = $options['class'] ?? 'button';
 		$options['value'] = 1;
-		return '<button ' . self::generate_attributes($options) . '>' . $value . '</button>';
+		return '<button ' . self::generate_attributes($options, 'button') . '>' . $value . '</button>';
 	}
 
 	/**
@@ -443,7 +454,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		// assembling form
 		$value = $options['value'] ?? '';
 		unset($options['value']);
-		return '<form ' . self::generate_attributes($options) . '>' . $value . '</form>';
+		return '<form ' . self::generate_attributes($options, 'form') . '>' . $value . '</form>';
 	}
 
 	/**
@@ -473,7 +484,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 							$tag = !empty($v['header_use_td_tag']) ? 'td' : 'th';
 							$temp_value = isset($v['value']) ? $v['value'] : '';
 							unset($v['value']);
-							$temp2.= '<' . $tag . ' ' . self::generate_attributes($v) . '>' . $temp_value . '</' . $tag . '>';
+							$temp2.= '<' . $tag . ' ' . self::generate_attributes($v, $tag) . '>' . $temp_value . '</' . $tag . '>';
 						} else {
 							$temp2.= '<th nowrap>' . $v . '</th>';
 						}
@@ -493,7 +504,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 					$row_options = array_merge_hard($row_options, array_key_extract_by_prefix($v[$k2], 'row_'));
 				}
 			}
-			$temp2 = '<tr ' . self::generate_attributes($row_options) . '>';
+			$temp2 = '<tr ' . self::generate_attributes($row_options, 'tr') . '>';
 				// important we render based on header array and not on what is in rows
 				$flag_colspan = 0;
 				foreach ($header as $k2 => $v2) {
@@ -514,7 +525,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 							$flag_colspan = $v[$k2]['colspan'];
 							$flag_colspan--;
 						}
-						$temp2.= '<td ' . self::generate_attributes($v[$k2]) . '>' . $temp3 . '</td>';
+						$temp2.= '<td ' . self::generate_attributes($v[$k2], 'td') . '>' . $temp3 . '</td>';
 					} else {
 						$temp2.= '<td nowrap>' . $v[$k2] . '</td>';
 					}
@@ -526,7 +537,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		}
 		// todo: add footer
 		// todo: maybe use <thead>, <tfoot>, and a <tbody> tags
-		return '<table ' . self::generate_attributes($options) . '>' . implode('', $result) . '</table>';
+		return '<table ' . self::generate_attributes($options, 'table') . '>' . implode('', $result) . '</table>';
 	}
 
 	/**
@@ -579,7 +590,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		$value = isset($options['value']) ? $options['value'] : '';
 		$legend = isset($options['legend']) ? $options['legend'] : '';
 		unset($options['value'], $options['legend']);
-		return '<fieldset ' . self::generate_attributes($options) . '>' . '<legend>' . $legend . '</legend>' . $value . '</fieldset>';
+		return '<fieldset ' . self::generate_attributes($options, 'fieldset') . '>' . '<legend>' . $legend . '</legend>' . $value . '</fieldset>';
 	}
 
 	/**
@@ -594,12 +605,12 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 			if (is_array($v)) {
 				$temp3 = !empty($v['value']) ? $v['value'] : '';
 				unset($v['value']);
-				$temp[]= '<li ' . self::generate_attributes($v) . '>' . $temp3 . '</li>';
+				$temp[]= '<li ' . self::generate_attributes($v, 'li') . '>' . $temp3 . '</li>';
 			} else {
 				$temp[]= '<li>' . $v . '</li>';
 			}
 		}
-		return '<' . $type . ' ' . self::generate_attributes($options) . '>' . implode('', $temp) . '</' . $type . '>';
+		return '<' . $type . ' ' . self::generate_attributes($options, $type) . '>' . implode('', $temp) . '</' . $type . '>';
 	}
 
 	/**
@@ -644,7 +655,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	public static function tooltip($options = []) {
 		$value = isset($options['value']) ? $options['value'] : '';
 		unset($options['value']);
-		return '<span ' . self::generate_attributes($options) . '>' . $value . '</span>';
+		return '<span ' . self::generate_attributes($options, 'span') . '>' . $value . '</span>';
 	}
 
 	/**
@@ -662,7 +673,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		if ($type == 'error') {
 			$error_type_addon = '<b>There was some errors with your submission:</b></br/>';
 		}
-		return '<div ' . self::generate_attributes($options) . '>' . $error_type_addon . self::ul(['options' => $value, 'type' => 'ul']) . '</div>';
+		return '<div ' . self::generate_attributes($options, 'div') . '>' . $error_type_addon . self::ul(['options' => $value, 'type' => 'ul']) . '</div>';
 	}
 
 	/**
@@ -675,7 +686,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		$footer = $options['footer'] ?? null;
 		unset($options['value'], $options['type'], $options['header'], $options['footer']);
 		$options['class'] = ['segment', $type];
-		$result = '<div ' . self::generate_attributes($options) . '>';
+		$result = '<div ' . self::generate_attributes($options, 'div') . '>';
 			if ($header) {
 				$result.= '<div class="segment_header">' . $header . '</div>';
 			}

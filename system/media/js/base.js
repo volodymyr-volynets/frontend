@@ -126,6 +126,49 @@ var numbers = {
 		child.parent = parent;
 		child.prototype.constructor = child;    
 		return child;
+	},
+
+	/**
+	 * I18n
+	 *
+	 * @type object
+	 */
+	i18n: {
+
+		/**
+		 * Get translation
+		 *
+		 * @param string i18n
+		 * @param string text
+		 * @param array options
+		 * @return string
+		 */
+		get: function(i18n, text, options) {
+			if (!options) options = {};
+			// translate though used submodule
+			if (numbers.i18n.hasOwnProperty('__custom')) {
+				text = numbers.i18n.__custom.get(i18n, text, options);
+			}
+			// if we need to handle replaces, for example:
+			//		"Error occured on line [line_number]"
+			// important: replaces must be translated/formatted separatly
+			if (options.replace) {
+				for (var i in options.replace) {
+					text = text.replace(i, options.replace[i]);
+				}
+			}
+			return text;
+		},
+
+		/**
+		 * Rtl
+		 *
+		 * @returns boolean
+		 */
+		rtl: function() {
+			var format = array_key_get(numbers, 'flag.global.format');
+			return !empty(format.rtl);
+		}
 	}
 };
 

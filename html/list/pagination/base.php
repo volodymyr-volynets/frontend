@@ -10,7 +10,7 @@ class numbers_frontend_html_list_pagination_base implements numbers_frontend_htm
 	 */
 	public function render($object, $type) {
 		// fetched
-		$fetched = i18n(null, 'Fetched') . ': ' . $object->num_rows . ($object->total > 0 ? (' ' . i18n(null, 'of') . ' ' . $object->total) : '');
+		$fetched = i18n(null, 'Fetched') . ': ' . i18n(null, $object->num_rows) . ($object->total > 0 ? (' ' . i18n(null, 'of') . ' ' . i18n(null, $object->total)) : '');
 		// sorting
 		$sort = '';
 		if (!empty($object->orderby)) {
@@ -27,9 +27,7 @@ class numbers_frontend_html_list_pagination_base implements numbers_frontend_htm
 		}
 		// displaying
 		$displaying = i18n(null, 'Displaying') . ' ';
-		$page_options = $object->page_sizes;
-		$page_options[PHP_INT_MAX] = ['name' => i18n(null, $page_options[PHP_INT_MAX]['name'])];
-		$displaying.= '<div style="width: 80px; display: inline-block;">' . html::select(['id' => 'page_sizes_' . $type, 'options' => $page_options, 'value' => $object->limit, 'no_choose' => true, 'onchange' => "$('#offset').val(0); $('#limit').val(this.value); numbers.frontend_list.trigger_submit(this.form);"]) . '</div>';
+		$displaying.= '<div style="width: 80px; display: inline-block;">' . html::select(['id' => 'page_sizes_' . $type, 'options' => factory::model('numbers_frontend_html_list_pagination_pagesizes', true)->options(['i18n' => 'skip_sorting']), 'value' => $object->limit, 'no_choose' => true, 'onchange' => "$('#offset').val(0); $('#limit').val(this.value); numbers.frontend_list.trigger_submit(this.form);"]) . '</div>';
 		// navigation
 		$navigation = [];
 		$flag_next_row_exists = false;
@@ -47,7 +45,7 @@ class numbers_frontend_html_list_pagination_base implements numbers_frontend_htm
 		if ($object->num_rows) {
 			$temp = [];
 			for ($i = 0; $i < $pages; $i++) {
-				$temp[($i * $object->limit)] = ['name' => $i + 1];
+				$temp[($i * $object->limit)] = ['name' => i18n(null, $i + 1)];
 			}
 			$navigation2 = i18n(null, 'Page') . ': ';
 			$previous = (($current_page - 1) * $object->limit);

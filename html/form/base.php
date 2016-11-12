@@ -444,7 +444,7 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 			// populate parent pks
 			foreach ($holder['collection']['map'] as $k12 => $v12) {
 				if (isset($values[$k12])) {
-					$holder['parent_pks'][$v12] = $values[$k12]; // $holder['parent_pks'][$k12]
+					$holder['parent_pks'][$v12] = $values[$k12];
 				}
 			}
 		}
@@ -465,12 +465,14 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 			if (!empty($holder['new_pk_locks'][$holder['pk']])) {
 				$holder['pk'] = '__duplicate_key_' . $holder['new_pk_counter'];
 				$holder['new_pk_counter']++;
-				$holder['error_name'] = $this->parent_keys_to_error_name(array_merge($parent_keys ?? [], [$holder['pk']]));
+				$error_pk = !empty($options['options']['details_11']) ? ($parent_keys ?? []) : array_merge($parent_keys ?? [], [$holder['pk']]);
+				$holder['error_name'] = $this->parent_keys_to_error_name($error_pk);
 				foreach ($options['options']['details_pk'] as $v) {
 					$this->error('danger', object_content_messages::duplicate_value, "{$holder['error_name']}[{$v}]");
 				}
 			} else {
-				$holder['error_name'] = $this->parent_keys_to_error_name(array_merge($parent_keys ?? [], [$holder['pk']]));
+				$error_pk = !empty($options['options']['details_11']) ? ($parent_keys ?? []) : array_merge($parent_keys ?? [], [$holder['pk']]);
+				$holder['error_name'] = $this->parent_keys_to_error_name($error_pk);
 				$holder['new_pk_locks'][$holder['pk']] = true;
 			}
 		}
@@ -1400,15 +1402,18 @@ convert_multiple_columns:
 					$error = true;
 				}
 			} else if ($v['options']['php_type'] == 'integer') {
-				// we need to convert empty string to null
-				if (empty($value) && empty($data[$k]) && !empty($v['options']['null'])) {
-					$data[$k] = null;
-				} else if (!empty($value) && ($data[$k] == 0 || ($value . '' !== $data[$k] . ''))) {
+				if ($value . '' !== '' && !format::read_intval($value, ['valid_check' => 1])) {
 					$this->error('danger', 'Wrong integer value!', $error_field);
 					$error = true;
 				}
+				// null processing
+				if (!$error) {
+					if (empty($data[$k]) && !empty($v['options']['null'])) {
+						$data[$k] = null;
+					}
+				}
 			} else if ($v['options']['php_type'] == 'bcnumeric') { // accounting numbers
-				if ($value . '' !== '' && !format::read_floatval($value, ['valid_check' => 1])) {
+				if ($value . '' !== '' && !format::read_bcnumeric($value, ['valid_check' => 1])) {
 					$this->error('danger', 'Wrong numeric value!', $error_field);
 					$error = true;
 				}
@@ -1432,9 +1437,15 @@ convert_multiple_columns:
 					}
 				}
 			} else if ($v['options']['php_type'] == 'float') { // regular floats
-				if (!empty($value) && $data[$k] == 0) {
+				if ($value . '' !== '' && !format::read_floatval($value, ['valid_check' => 1])) {
 					$this->error('danger', 'Wrong float value!', $error_field);
 					$error = true;
+				}
+				// null processing
+				if (!$error) {
+					if (empty($data[$k]) && !empty($v['options']['null'])) {
+						$data[$k] = null;
+					}
 				}
 			} else if ($v['options']['php_type'] == 'string') {
 				// we need to convert empty string to null
@@ -1867,6 +1878,7 @@ convert_multiple_columns:
 					if (!empty($options['preset'])) {
 						$options['options_manual_validation'] = true;
 						$options['tree'] = true;
+						$options['searchable'] = true;
 					}
 				}
 				// multiple column
@@ -2331,7 +2343,7 @@ convert_multiple_columns:
 			$i0 = $row_number;
 			// we need to preset default values
 			if (!empty($options['details_parent_key'])) {
-				$fields = $this->sort_fields_for_processing($this->detail_fields[$options['details_parent_key']]['subdetails'][$options['details_key']]['elements'], $this->detail_fields[$options['details_key']]['options']);
+				$fields = $this->sort_fields_for_processing($this->detail_fields[$options['details_parent_key']]['subdetails'][$options['details_key']]['elements'], $this->detail_fields[$options['details_parent_key']]['subdetails'][$options['details_key']]['options']);
 			} else {
 				$fields = $this->sort_fields_for_processing($this->detail_fields[$options['details_key']]['elements'], $this->detail_fields[$options['details_key']]['options']);
 			}
@@ -2432,7 +2444,7 @@ convert_multiple_columns:
 								'error' => $error,
 								'label' => $label,
 								'value' => $this->render_element_value($value_options, $v0[$k3] ?? null, $v0),
-								'description' => null,
+								'description' => $v3['options']['description'] ?? null,
 								'options' => $v3['options'],
 								'row_class' => ($value_options['options']['row_class'] ?? '') . (!($row_number % 2) ? ' grid_row_even' : ' grid_row_odd')
 							];
@@ -2526,7 +2538,7 @@ convert_multiple_columns:
 			}
 			// add a row to a table
 			$table['options'][$row_number] = [
-				'row_number' => ['value' => $row_number . '.', 'width' => '1%', 'row_id' => $row_id],
+				'row_number' => ['value' => format::id($row_number) . '.', 'width' => '1%', 'row_id' => $row_id],
 				'row_data' => ['value' => html::grid($data), 'width' => (!empty($options['details_11']) ? '100%' : '98%')],
 				'row_delete' => ['value' => $link, 'width' => '1%'],
 			];
@@ -2658,9 +2670,7 @@ convert_multiple_columns:
 				// render button groups
 				foreach ($buttons as $k2 => $v2) {
 					$value = implode(' ', $v2);
-					if ($k2 != 'left') {
-						$value = '<div style="text-align: ' . $k2 . ';">' . $value . '</div>';
-					}
+					$value = '<div class="grid_button_' . $k2 . '">' . $value . '</div>';
 					$data['options'][$k][$v['key']][$k2] = [
 						'label' => null,
 						'value' => $value,
@@ -3091,7 +3101,7 @@ convert_multiple_columns:
 					}
 					// accesskey
 					if (isset($result_options['accesskey'])) {
-						$accesskey = explode('::', i18n(null, 'accesskey::' . $result_options['name'] . '::' . $result_options['accesskey']));
+						$accesskey = explode('::', i18n(null, 'accesskey::' . $result_options['name'] . '::' . $result_options['accesskey'], ['skip_translation_symbol' => true]));
 						$result_options['accesskey'] = $accesskey[2];
 						$result_options['title'] = ($result_options['title'] ?? '') . ' ' . i18n(null, 'Shortcut Key: ') . $accesskey[2];
 					}
@@ -3107,13 +3117,24 @@ convert_multiple_columns:
 					if (!empty($result_options['empty_value'])) {
 						$result_options['value'] = '';
 					}
-					// format
-					if (!empty($result_options['format'])) {
-						if (!empty($this->errors['fields'][$result_options['error_name']]) && empty($this->errors['formats'][$result_options['error_name']])) {
-							// nothing
-						} else {
-							$method = factory::method($result_options['format'], 'format');
-							$result_options['value'] = call_user_func_array([$method[0], $method[1]], [$result_options['value'], $result_options['format_options'] ?? []]);
+					// we need to empty zero integers and sequences, before format
+					if (($result_options['php_type'] ?? '') == 'integer' && ($result_options['type'] ?? '') != 'boolean' && ($result_options['domain'] ?? '') != 'counter' && 'counter' && empty($result_options['value'])) {
+						$result_options['value'] = '';
+					}
+					// format, not for selects/autocompletes/presets
+					if (!$flag_select_or_autocomplete) {
+						if (!empty($result_options['format'])) {
+							if (!empty($this->errors['fields'][$result_options['error_name']]) && empty($this->errors['formats'][$result_options['error_name']])) {
+								// nothing
+							} else {
+								$result_options['format_options'] = $result_options['format_options'] ?? [];
+								if (!empty($result_options['format_depends'])) {
+									$this->process_params_and_depends($result_options['format_depends'], $neighbouring_values, $options, true);
+									$result_options['format_options'] = array_merge_hard($result_options['format_options'], $result_options['format_depends']);
+								}
+								$method = factory::method($result_options['format'], 'format');
+								$result_options['value'] = call_user_func_array([$method[0], $method[1]], [$result_options['value'], $result_options['format_options']]);
+							}
 						}
 					}
 					// align
@@ -3146,10 +3167,6 @@ convert_multiple_columns:
 					if (!empty($this->misc_settings['global']['readonly']) && empty($result_options['navigation'])) {
 						$result_options['readonly'] = true;
 					}
-					// we need to empty zero integers and sequences
-					if (($result_options['php_type'] ?? '') == 'integer' && ($result_options['type'] ?? '') != 'boolean' && ($result_options['domain'] ?? '') != 'counter' && 'counter' && $result_options['value'] === 0) {
-						$result_options['value'] = '';
-					}
 					// title
 					if (isset($options['options']['label_name'])) {
 						$result_options['title'] = ($result_options['title'] ?? '') . ' ' . strip_tags(i18n(null, $options['options']['label_name']));
@@ -3172,7 +3189,7 @@ convert_multiple_columns:
 					}
 				}
 				// events
-				foreach (['onchange', 'onkeyup'] as $e) {
+				foreach (['onchange', 'onkeyup', 'onblur'] as $e) {
 					if (!empty($result_options[$e])) {
 						$result_options[$e] = str_replace('this.form.submit();', 'numbers.form.trigger_submit(this);', $result_options[$e]);
 						$result_options[$e] = str_replace('this.form.extended.', $this->misc_settings['extended_js_class'] . '.', $result_options[$e]);
@@ -3194,19 +3211,19 @@ convert_multiple_columns:
 			// building navigation
 			if (!empty($result_options['navigation'])) {
 				$name = 'navigation[' . $result_options['name'] . ']';
-				$temp = '<table width="100%">';
+				$temp = '<table width="100%" dir="ltr">'; // always left to right
 					$temp.= '<tr>';
-						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[first]', 'value' => html::icon(['type' => 'step-backward']), 'onclick' => 'numbers.form.trigger_submit_on_button(this);']) . '</td>';
+						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[first]', 'value' => html::icon(['type' => 'step-backward']), 'onclick' => 'numbers.form.trigger_submit_on_button(this);', 'title' => i18n(null, 'First')]) . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
-						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[previous]', 'value' => html::icon(['type' => 'caret-left']), 'onclick' => 'numbers.form.trigger_submit_on_button(this);']) . '</td>';
+						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[previous]', 'value' => html::icon(['type' => 'caret-left']), 'onclick' => 'numbers.form.trigger_submit_on_button(this);', 'title' => i18n(null, 'Previous')]) . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
 						$temp.= '<td width="90%">' . $value . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
-						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[refresh]', 'value' => html::icon(['type' => 'refresh']), 'onclick' => 'numbers.form.trigger_submit_on_button(this);']) . '</td>';
+						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[refresh]', 'value' => html::icon(['type' => 'refresh']), 'onclick' => 'numbers.form.trigger_submit_on_button(this);', 'title' => i18n(null, 'Refresh')]) . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
-						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[next]', 'value' => html::icon(['type' => 'caret-right']), 'onclick' => 'numbers.form.trigger_submit_on_button(this);']) . '</td>';
+						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[next]', 'value' => html::icon(['type' => 'caret-right']), 'onclick' => 'numbers.form.trigger_submit_on_button(this);', 'title' => i18n(null, 'Next')]) . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
-						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[last]', 'value' => html::icon(['type' => 'step-forward']), 'onclick' => 'numbers.form.trigger_submit_on_button(this);']) . '</td>';
+						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[last]', 'value' => html::icon(['type' => 'step-forward']), 'onclick' => 'numbers.form.trigger_submit_on_button(this);', 'title' => i18n(null, 'Last')]) . '</td>';
 					$temp.= '</tr>';
 				$temp.= '</table>';
 				$value = $temp;

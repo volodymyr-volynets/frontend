@@ -59,23 +59,6 @@ class numbers_frontend_html_list_base {
 	public $rows = [];
 
 	/**
-	 * Page sizes
-	 *
-	 * @var array
-	 */
-	public $page_sizes = [
-		//1 => ['name' => 1],
-		10 => ['name' => 10],
-		20 => ['name' => 20],
-		30 => ['name' => 30],
-		50 => ['name' => 50],
-		100 => ['name' => 100],
-		250 => ['name' => 250],
-		500 => ['name' => 500],
-		PHP_INT_MAX => ['name' => 'All']
-	];
-
-	/**
 	 * Model
 	 *
 	 * @var string
@@ -423,9 +406,9 @@ finish:
 					}
 					$value['value'] = implode(' ', $value['value']);
 				} else if ($k2 == 'row_number') {
-					$value['value'] = $counter . '.';
+					$value['value'] = format::id($counter) . '.';
 				} else if ($k2 == 'offset_number') {
-					$value['value'] = ($this->offset + $counter) . '.';
+					$value['value'] = format::id($this->offset + $counter) . '.';
 				} else if (!empty($v2['options_model'])) {
 					if (strpos($v2['options_model'], '::') === false) $v2['options_model'].= '::options';
 					$params = $v2['options_params'] ?? [];
@@ -458,8 +441,14 @@ finish:
 				}
 				// put value into row
 				if (!empty($v2['format'])) {
+					$format_options = $v2['format_options'] ?? [];
+					if (!empty($v2['format_depends'])) {
+						$format_depends = $v2['format_depends'];
+						$this->process_params_and_depends($format_depends, $v);
+						$format_options = array_merge_hard($format_options, $format_depends);
+					}
 					$method = factory::method($v2['format'], 'format');
-					$value['value'] = call_user_func_array([$method[0], $method[1]], [$value['value'], $v2['format_options'] ?? []]);
+					$value['value'] = call_user_func_array([$method[0], $method[1]], [$value['value'], $format_options]);
 				}
 				$row[$k2] = $value;
 			}
@@ -472,5 +461,17 @@ finish:
 			$counter++;
 		}
 		return html::table($table);
+	}
+
+	/**
+	 * Process depends
+	 *
+	 * @param array $params
+	 * @param array $neighbouring_values
+	 */
+	private function process_params_and_depends(& $params, & $neighbouring_values) {
+		foreach ($params as $k => $v) {
+			$params[$k] = $neighbouring_values[$v] ?? null;
+		}
 	}
 }
