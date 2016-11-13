@@ -30,7 +30,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	}
 
 	/**
-	 * Generate html tag
+	 * Generate HTML tag
 	 *
 	 * @param string $tag
 	 * @param array $options
@@ -206,6 +206,11 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		}
 		if (!isset($options['autocomplete'])) {
 			$options['autocomplete'] = 'off';
+		}
+		if (!empty($options['autofocus'])) {
+			$options['autofocus'] = 'autofocus';
+		} else {
+			unset($options['autofocus']);
 		}
 		// rtl
 		$rtl = i18n::rtl(false);
@@ -669,11 +674,7 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		if (!is_array($value)) {
 			$value = [$value];
 		}
-		$error_type_addon = '';
-		if ($type == 'error') {
-			$error_type_addon = '<b>There was some errors with your submission:</b></br/>';
-		}
-		return '<div ' . self::generate_attributes($options, 'div') . '>' . $error_type_addon . self::ul(['options' => $value, 'type' => 'ul']) . '</div>';
+		return '<div ' . self::generate_attributes($options, 'div') . '>' . self::ul(['options' => $value, 'type' => 'ul']) . '</div>';
 	}
 
 	/**

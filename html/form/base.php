@@ -587,10 +587,11 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 					$this->error('danger', 'You are trying to change persistent field!', $error_name);
 				}
 			}
+			$v['options']['error_name_no_field'] = $error_name;
 			// default
 			if (array_key_exists('default', $v['options'])) {
 				if ($this->can_process_default_value($value, $v)) {
-					$value = $this->process_default_value($k, $v['options']['default'], $value, $this->values, false, $changed_field);
+					$value = $this->process_default_value($k, $v['options']['default'], $value, $this->values, false, $changed_field, $v);
 				}
 			}
 			// put into values
@@ -698,10 +699,11 @@ class numbers_frontend_html_form_base extends numbers_frontend_html_form_wrapper
 								$this->error('danger', 'You are trying to change persistent field!', "{$error_name}[{$k3}]");
 							}
 						}
+						$v3['options']['error_name_no_field'] = $error_name;
 						// default
 						$default = null;
 						if (array_key_exists('default', $v3['options'])) {
-							$default = $this->process_default_value($k3, $v3['options']['default'], $value, $detail, false, $changed_field_details);
+							$default = $this->process_default_value($k3, $v3['options']['default'], $value, $detail, false, $changed_field_details, $v3);
 							if ($this->can_process_default_value($value, $v3)) {
 								$value = $default;
 							}
@@ -1311,8 +1313,7 @@ convert_multiple_columns:
 			} else if (empty($buttons_found[$k]) || in_array($k, $not_allowed)) {
 				// if we have validation
 				if (empty($options['skip_validation'])) {
-					$temp = i18n(null, 'Form action [action] is not allowed!', ['replace' => ['[action]' => i18n(null, $names[$k])]]);
-					$this->error('danger', $temp, null, ['skip_i18n' => true]);
+					$this->error('danger', 'Form action [action] is not allowed!', null, ['replace' => ['[action]' => i18n(null, $names[$k])]]);
 					$result = false;
 				}
 				unset($this->process_submit[$k]);
@@ -1423,7 +1424,7 @@ convert_multiple_columns:
 					$digits = explode('.', $data[$k] . '');
 					if (!empty($v['options']['scale'])) {
 						if (!empty($digits[1]) && strlen($digits[1]) > $v['options']['scale']) {
-							$this->error('danger', i18n(null, 'Only [digits] fraction digits allowed!', ['replace' => ['[digits]' => $v['options']['scale']]]), $error_field, ['skip_i18n' => true]);
+							$this->error('danger', 'Only [digits] fraction digits allowed!', $error_field, ['replace' => ['[digits]' => i18n(null, $v['options']['scale'])]]);
 							$error = true;
 						}
 					}
@@ -1431,7 +1432,7 @@ convert_multiple_columns:
 					if (!empty($v['options']['precision'])) {
 						$precision = $v['options']['precision'] - $v['options']['scale'] ?? 0;
 						if (strlen($digits[0]) > $precision) {
-							$this->error('danger', i18n(null, 'Only [digits] digits allowed!', ['replace' => ['[digits]' => $precision]]), $error_field, ['skip_i18n' => true]);
+							$this->error('danger', 'Only [digits] digits allowed!', $error_field, ['replace' => ['[digits]' => i18n(null, $precision)]]);
 							$error = true;
 						}
 					}
@@ -1456,10 +1457,10 @@ convert_multiple_columns:
 				if ($data[$k] . '' !== '') {
 					// validate length
 					if (!empty($v['options']['type']) && $v['options']['type'] == 'char' && strlen($data[$k]) != $v['options']['length']) {  // char
-						$this->error('danger', i18n(null, 'The length must be [length] characters!', ['replace' => ['[length]' => $v['options']['length']]]), $error_field, ['skip_i18n' => true]);
+						$this->error('danger', 'The length must be [length] characters!', $error_field, ['replace' => ['[length]' => i18n(null, $v['options']['length'])]]);
 						$error = true;
 					} else if (!empty($v['options']['length']) && strlen($data[$k]) > $v['options']['length']) { // varchar
-						$this->error('danger', i18n(null, 'String is too long, should be no longer than [length]!', ['replace' => ['[length]' => $v['options']['length']]]), $error_field, ['skip_i18n' => true]);
+						$this->error('danger', 'String is too long, should be no longer than [length]!', $error_field, ['replace' => ['[length]' => i18n(null, $v['options']['length'])]]);
 						$error = true;
 					}
 				}
@@ -1601,56 +1602,52 @@ convert_multiple_columns:
 	 *		info
 	 *		warning
 	 *		danger
-	 * @param array $messages
-	 * @param array $options
-	 *		boolean skip_i18n
+	 * @param mixed $message
 	 * @param mixed $field
+	 * @param array $options - same parameters as in i18n
 	 */
-	public function error($type, $messages, $field = null, $options = []) {
-		// convert messages to array
-		if (!is_array($messages)) {
-			$messages = [$messages];
+	public function error($type, $message, $field = null, $options = []) {
+		// if its an array of message we process them one by one
+		if (is_array($message)) {
+			foreach ($message as $v) {
+				$this->error($type, $v, $field, $options);
+			}
+			return;
 		}
+		// generate hash
+		$hash = sha1($message);
 		// i18n
 		if (empty($options['skip_i18n'])) {
-			foreach ($messages as $k => $v) {
-				$messages[$k] = i18n(null, $v);
-			}
+			$message = i18n(null, $message, $options);
 		}
 		// set field error
 		if (!empty($field)) {
-			if (!isset($this->errors['fields'])) {
-				$this->errors['fields'] = [];
-			}
-			if (!is_array($field)) {
-				$key = [$field];
+			if ($type == 'reset') {
+				unset($this->errors['fields'][$field]);
+				// recalculate
+				$this->errors['flag_error_in_fields'] = false;
+				$this->errors['flag_warning_in_fields'] = false;
+				if (!empty($this->errors['fields'])) {
+					foreach ($this->errors['fields'] as $k => $v) {
+						print_r2($v);
+					}
+				}
 			} else {
-				$key = $field;
-			}
-			$key[] = $type;
-			$existing = array_key_get($this->errors['fields'], $key);
-			if (!empty($existing)) {
-				$existing = array_merge($existing, $messages);
-			} else {
-				$existing = $messages;
-			}
-			array_key_set($this->errors['fields'], $key, $existing);
-			// set special flag that we have error in fields
-			if ($type == 'danger') {
-				$this->errors['flag_error_in_fields'] = true;
-			}
-			if ($type == 'warning') {
-				$this->errors['flag_warning_in_fields'] = true;
-			}
-			// format
-			if (!empty($options['format'])) {
-				array_key_set($this->errors['formats'], $key, 1);
+				array_key_set($this->errors, ['fields', $field, $type, $hash], $message);
+				// set special flag that we have error in fields
+				if ($type == 'danger') {
+					$this->errors['flag_error_in_fields'] = true;
+				}
+				if ($type == 'warning') {
+					$this->errors['flag_warning_in_fields'] = true;
+				}
+				// format
+				if (!empty($options['format'])) {
+					array_key_set($this->errors, ['formats', $field, $type], 1);
+				}
 			}
 		} else {
-			if (!isset($this->errors['general'][$type])) {
-				$this->errors['general'][$type] = [];
-			}
-			$this->errors['general'][$type] = array_merge($this->errors['general'][$type], $messages);
+			$this->errors['general'][$type][$hash] = $message;
 		}
 	}
 
@@ -1987,6 +1984,7 @@ convert_multiple_columns:
 		}
 		$this->tabindex = 1;
 		// css & js
+		numbers_frontend_media_libraries_jssha_base::add();
 		layout::add_js('/numbers/media_submodules/numbers_frontend_html_form_media_js_base.js', -10000);
 		// include master js
 		if (!empty($this->master_object) && method_exists($this->master_object, 'add_js')) {
@@ -2117,7 +2115,7 @@ convert_multiple_columns:
 			foreach ($this->errors['general'] as $k => $v) {
 				$messages.= html::message(['options' => $v, 'type' => $k]);
 			}
-			$result = $messages . $result;
+			$result = '<div class="form_message_container">' . $messages . '</div>' . $result;
 		}
 		// couple hidden fields
 		$result.= html::hidden(['name' => '__form_link', 'value' => $this->form_link]);
@@ -2782,7 +2780,7 @@ convert_multiple_columns:
 			foreach ($sorted as $k => $v) {
 				if (empty($v)) continue;
 				foreach ($v as $k2 => $v2) {
-					$result['message'].= html::text(['tag' => 'div', 'type' => $k, 'value' => $v2]);
+					$result['message'].= html::text(['tag' => 'div', 'class' => 'numbers_field_error_messages', 'field_value_hash' => sha1($v2), 'type' => $k, 'value' => $v2]);
 				}
 			}
 			return $result;
@@ -2913,7 +2911,7 @@ convert_multiple_columns:
 	 * @param array $neighbouring_values
 	 * @return mixed
 	 */
-	private function process_default_value($key, $default, $value, & $neighbouring_values, $set_neightbouring_values = true, $changed_field = []) {
+	private function process_default_value($key, $default, $value, & $neighbouring_values, $set_neightbouring_values = true, $changed_field = [], $options = []) {
 		if (strpos($default, 'dependent::') !== false) {
 			// nothing
 		} else if (strpos($default, 'master_object::') !== false) {
@@ -2935,7 +2933,7 @@ convert_multiple_columns:
 			$changed_field['subdetail'] = $changed_field['subdetail'] ?? null;
 			// call override method
 			$model = $this->wrapper_methods['process_default_value']['main'][0];
-			$model->{$this->wrapper_methods['process_default_value']['main'][1]}($this, $key, $default, $value, $neighbouring_values, $changed_field);
+			$model->{$this->wrapper_methods['process_default_value']['main'][1]}($this, $key, $default, $value, $neighbouring_values, $changed_field, $options);
 		}
 		// if we need to set neightbouring values
 		if ($set_neightbouring_values) {
@@ -3189,8 +3187,10 @@ convert_multiple_columns:
 					}
 				}
 				// events
-				foreach (['onchange', 'onkeyup', 'onblur'] as $e) {
-					if (!empty($result_options[$e])) {
+				foreach (numbers_frontend_html_class_html5::$events as $e) {
+					if (!empty($result_options['readonly'])) { // important - readonly emenets cannot have events
+						unset($result_options[$e]);
+					} else if (!empty($result_options[$e])) {
 						$result_options[$e] = str_replace('this.form.submit();', 'numbers.form.trigger_submit(this);', $result_options[$e]);
 						$result_options[$e] = str_replace('this.form.extended.', $this->misc_settings['extended_js_class'] . '.', $result_options[$e]);
 					}

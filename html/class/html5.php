@@ -162,7 +162,7 @@ class numbers_frontend_html_class_html5 {
 	 * @var string
 	 */
 	public static $numbers = [
-		'preset', 'searchable', 'tree', 'placeholder', 'color_picker', 'optgroups', 'title'
+		'preset', 'searchable', 'tree', 'placeholder', 'color_picker', 'optgroups', 'title', 'field_values_key', 'field_value_hash'
 	];
 
 	/**

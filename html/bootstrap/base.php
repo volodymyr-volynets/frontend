@@ -444,13 +444,7 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 		if (!is_array($value)) {
 			$value = [$value];
 		}
-		$error_type_addon = '';
-		/*
-		if ($type == 'error') {
-			$error_type_addon = '<b>There was some errors with your submission:</b></br/>';
-		}
-		*/
-		return '<div role="alert" ' . self::generate_attributes($options) . '>' . $error_type_addon . self::ul(['options' => $value, 'type' => 'ul']) . '</div>';
+		return '<div role="alert" ' . self::generate_attributes($options) . '>' . self::ul(['options' => $value, 'type' => 'ul']) . '</div>';
 	}
 
 	/**

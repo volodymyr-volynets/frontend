@@ -266,7 +266,20 @@ numbers.format = {
 	quantity: function(amount, options) {
 		if (!options) options = {};
 		options.symbol = false;
-		options.decimals = 4;
+		options.decimals = numbers.object_data_domains.get_setting('quantity', 'scale');
+		return this.amount(amount, options);
+	},
+
+	/**
+	 * Currency Rate
+	 *
+	 * @param float amount
+	 * @param array options
+	 * @return string
+	 */
+	currency_rate: function(amount, options = []) {
+		if (!options) options = {};
+		options.decimals = numbers.object_data_domains.get_setting('currency_rate', 'scale');
 		return this.amount(amount, options);
 	},
 
@@ -367,6 +380,8 @@ numbers.format = {
 		} else {
 			var number = amount;
 		}
+		// convert number to native locale
+		number = this.number_to_from_native_language(number);
 		// format based on settings
 		var cs_precedes = negative ? format.locale_options.n_cs_precedes : format.locale_options.p_cs_precedes;
 		var sep_by_space = negative ? format.locale_options.n_sep_by_space : format.locale_options.p_sep_by_space;

@@ -169,6 +169,39 @@ var numbers = {
 			var format = array_key_get(numbers, 'flag.global.format');
 			return !empty(format.rtl);
 		}
+	},
+
+	/**
+	 * Domains
+	 *
+	 * @type object
+	 */
+	object_data_domains: {
+
+		/**
+		 * Data
+		 *
+		 * @type object
+		 */
+		data: {},
+
+		/**
+		 * Get setting
+		 *
+		 * @param string domain
+		 * @param string property
+		 * @returns mixed
+		 */
+		get_setting: function(domain, property) {
+			var keys = [];
+			if (isset(domain)) {
+				keys.push(domain);
+				if (isset(property)) {
+					keys.push(property);
+				}
+			}
+			return array_key_get(this.data, keys);
+		}
 	}
 };
 

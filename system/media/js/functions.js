@@ -14,6 +14,16 @@ function is_numeric(value) {
 }
 
 /**
+ * Check if value is an array
+ *
+ * @param mixed value
+ * @returns boolean
+ */
+function is_array(value) {
+	return Array.isArray(value);
+}
+
+/**
  * Check if value is in array
  *
  * @param mixed needle

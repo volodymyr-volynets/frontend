@@ -17,8 +17,8 @@ numbers.math = {
 	 *
 	 * @param int scale
 	 */
-	scale: function(scale) {
-		scale = parseInt(scale);
+	set_scale: function(scale) {
+		scale = parseInt(scale.toString());
 		this.scale = scale;
 		bcscale(scale)
 	},
@@ -32,10 +32,12 @@ numbers.math = {
 	 * @returns int -1, 0, 1
 	 */
 	compare: function(arg1, arg2, scale) {
-		if (typeof(scale) == 'undefined') {
+		if (typeof(scale) === 'undefined') {
 			scale = this.scale;
+		} else if (typeof scale !== 'number') {
+			scale = parseInt(scale.toString());
 		}
-		return bccomp(arg1, arg2, parseInt(scale));
+		return bccomp(arg1, arg2, scale);
 	},
 
 	/**
@@ -47,10 +49,12 @@ numbers.math = {
 	 * @returns string
 	 */
 	add: function(arg1, arg2, scale) {
-		if (typeof(scale) == 'undefined') {
+		if (typeof(scale) === 'undefined') {
 			scale = this.scale;
+		} else if (typeof scale !== 'number') {
+			scale = parseInt(scale.toString());
 		}
-		return bcadd(arg1, arg2, parseInt(scale));
+		return bcadd(arg1, arg2, scale);
 	},
 
 	/**
@@ -62,10 +66,12 @@ numbers.math = {
 	 * @returns string
 	 */
 	subtract: function(arg1, arg2, scale) {
-		if (typeof(scale) == 'undefined') {
+		if (typeof(scale) === 'undefined') {
 			scale = this.scale;
+		} else if (typeof scale !== 'number') {
+			scale = parseInt(scale.toString());
 		}
-		return bcsub(arg1, arg2, parseInt(scale));
+		return bcsub(arg1, arg2, scale);
 	},
 
 	/**
@@ -77,10 +83,12 @@ numbers.math = {
 	 * @returns string
 	 */
 	multiply: function(arg1, arg2, scale) {
-		if (typeof(scale) == 'undefined') {
+		if (typeof(scale) === 'undefined') {
 			scale = this.scale;
+		} else if (typeof scale !== 'number') {
+			scale = parseInt(scale.toString());
 		}
-		return bcmul(arg1, arg2, parseInt(scale));
+		return bcmul(arg1, arg2, scale);
 	},
 
 	/**
@@ -91,10 +99,12 @@ numbers.math = {
 	 * @returns string
 	 */
 	round: function(arg1, scale) {
-		if (typeof(scale) == 'undefined') {
+		if (typeof(scale) === 'undefined') {
 			scale = this.scale;
+		} else if (typeof scale !== 'number') {
+			scale = parseInt(scale.toString());
 		}
-		return bcround(arg1, parseInt(scale));
+		return bcround(arg1, scale);
 	},
 
 	/**
@@ -142,8 +152,10 @@ numbers.math = {
 	 * @returns string
 	 */
 	zero: function(scale) {
-		if (typeof(scale) == 'undefined') {
+		if (typeof(scale) === 'undefined') {
 			scale = this.scale;
+		} else if (typeof scale !== 'number') {
+			scale = parseInt(scale.toString());
 		}
 		return this.add('0', '0.0000000000000', scale);
 	}

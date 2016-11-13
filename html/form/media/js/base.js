@@ -98,6 +98,72 @@ numbers.form = {
 	},
 
 	/**
+	 * Mapping for error message types, important data must be in reverse order
+	 *
+	 * @type object
+	 */
+	error_map: {
+		success: 'has-success',
+		warning: 'has-warning',
+		danger: 'has-error'
+	},
+
+	/**
+	 * Add an error to the form or field
+	 *
+	 * @param element form_or_element
+	 * @param string type
+	 * @param string message
+	 * @param string field
+	 * @param object options
+	 */
+	error: function(form_or_element, type, message, field, options) {
+		if (!options) options = {};
+		// if its an array of message we process them one by one
+		if (is_array(message)) {
+			for (var i in message) {
+				this.error(form_or_element, type, message[i], field, options);
+			}
+			return;
+		}
+		// generate hash
+		var hash = sha1(message);
+		// i18n
+		if (!options.skip_i18n) {
+			message = i18n(null, message, options);
+		}
+		var form = this.get_form(form_or_element);
+		if (field) {
+			var field_element = $('[name="' + field + '"]', $(form));
+			var form_group = $(field_element).closest('.form-group');
+			var text_class = 'text-' + (isset(type) ? type : 'primary');
+			if (type == 'reset') {
+				form_group.children('.numbers_field_error_messages').remove();
+			} else {
+				form_group.find('div[field_value_hash="' + hash + '"]').remove();
+				form_group.append('<div class="numbers_field_error_messages ' + text_class + '" field_value_hash="' + hash + '">' + message + '</div>');
+			}
+			// update form group class
+			form_group.removeClass('has-warning has-error has-success');
+			var class_name;
+			for (var i in this.error_map) {
+				if (form_group.find('.numbers_field_error_messages.text-' + i).length > 0) {
+					class_name = this.error_map[i];
+				}
+			}
+			if (class_name) {
+				form_group.addClass(class_name);
+			}
+		} else {
+			var message_continer = $(form).find('.form_message_container');
+			if (message_continer.find('.alert-' + type).length === 0) {
+				message_continer.append('<div role="alert" class="alert alert-' + type + '"><ul></ul></div>');
+			}
+			message_continer.find('ul').prepend('<li>' + message + '</li>');
+		}
+	},
+
+	/**
 	 * Get form
 	 *
 	 * @param mixed form_or_element
@@ -147,11 +213,24 @@ numbers.form = {
 	 * Get name
 	 *
 	 * @param object element
+	 * @param string neighbour
+	 * @param boolean last
 	 * @returns string
 	 */
-	get_name: function(element, last) {
+	get_name: function(element, neighbour, last) {
 		if (last) {
 			return this.get_path(element).pop();
+		} else if (neighbour) {
+			var path = this.get_path(element, neighbour);
+			if (path instanceof Array) {
+				var name = path.shift();
+				for (var i in path) {
+					name+= '[' + path[i] + ']';
+				}
+				return name;
+			} else {
+				return path;
+			}
 		} else {
 			return $(element).attr('name');
 		}
