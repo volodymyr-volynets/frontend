@@ -34,14 +34,7 @@ class numbers_frontend_components_calendar_numbers_base implements numbers_front
 			$options['title'] = ($options['title'] ?? '') . ' (' . $placeholder . ')';
 		}
 		if (isset($options['calendar_icon']) && ($options['calendar_icon'] == 'left' || $options['calendar_icon'] == 'right')) {
-			$position = $options['calendar_icon'];
-			if (i18n::rtl()) {
-				if ($position == 'left') {
-					$position = 'right';
-				} else {
-					$position = 'left';
-				}
-			}
+			$position = html::align($options['calendar_icon']);
 			$icon_type = $type == 'time' ? 'clock-o' : 'calendar';
 			unset($options['calendar_icon']);
 			if (empty($options['readonly'])) {

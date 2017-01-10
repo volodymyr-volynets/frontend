@@ -148,7 +148,7 @@ class numbers_frontend_html_list_base {
 		}
 		// process domains
 		foreach ($this->columns as $k => $v) {
-			$temp = object_data_common::process_domains(['options' => $v]);
+			$temp = object_data_common::process_domains_and_types(['options' => $v]);
 			$this->columns[$k] = $temp['options'];
 		}
 		// limit

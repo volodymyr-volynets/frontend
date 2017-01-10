@@ -226,7 +226,7 @@ abstract class numbers_frontend_html_form_wrapper_collection {
 					$model_options['form_link'] = $form_k;
 					// input
 					$model_options['input'] = $this->values;
-					$model = new $class($model_options);
+					$model = factory::model($class, false, $model_options);
 					// render to grid
 					$result[$index]['grid']['options'][$row_k][$form_k][$form_k] = [
 						'value' => $model->render(),

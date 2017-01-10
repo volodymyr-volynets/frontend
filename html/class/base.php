@@ -99,12 +99,14 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 	/**
 	 * Generate selects options
 	 *
+	 * @param array $data
+	 * @param mixed $value
 	 * @param array $options
 	 * @return string
 	 */
-	private static function generate_select_options($options, $value) {
+	private static function generate_select_options($data, $value, $options = []) {
 		$result = '';
-		foreach($options as $k => $v) {
+		foreach($data as $k => $v) {
 			$k = (string) $k;
 			$text = $v['name'];
 			// selected
@@ -114,6 +116,8 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 			} else if (!is_array($value) && ($value . '') === $k) {
 				$selected = ' selected="selected" ';
 			}
+			// we need to skip certain options
+			if (!empty($options['readonly']) && !empty($options['filter_only_selected_options_if_readonly']) && empty($selected)) continue;
 			$temp = '';
 			if (empty($v['disabled'])) {
 				unset($v['disabled']);
@@ -384,14 +388,14 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		}
 		// options first
 		if (!empty($options_array)) {
-			$result.= self::generate_select_options($options_array, $value);
+			$result.= self::generate_select_options($options_array, $value, $options);
 		}
 		// optgroups second
 		if (!empty($optgroups_array)) {
 			$options['optgroups'] = 'optgroups';
 			foreach ($optgroups_array as $k2 => $v2) {
 				$result.= '<optgroup label="' . $v2['name'] . '" id="' . $k2 . '">';
-					$result.= self::generate_select_options($v2['options'], $value);
+					$result.= self::generate_select_options($v2['options'], $value, $options);
 				$result.= '</optgroup>';
 			}
 		}
@@ -486,9 +490,14 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 							$first_column = $k;
 						}
 						if (is_array($v)) {
-							$tag = !empty($v['header_use_td_tag']) ? 'td' : 'th';
+							$tag = $v['tag'] ?? 'th';
 							$temp_value = isset($v['value']) ? $v['value'] : '';
-							unset($v['value']);
+							unset($v['value'], $v['tag']);
+							// we add align to the style
+							if (!empty($v['align'])) {
+								$v['align'] = html::align($v['align']);
+								$v['style'] = ($v['style'] ?? '') . 'text-align:' . $v['align'] . ';';
+							}
 							$temp2.= '<' . $tag . ' ' . self::generate_attributes($v, $tag) . '>' . $temp_value . '</' . $tag . '>';
 						} else {
 							$temp2.= '<th nowrap>' . $v . '</th>';
@@ -521,16 +530,24 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 						$v[$k2] = null;
 					}
 					if (is_array($v[$k2])) {
-						$temp3 = isset($v[$k2]['value']) ? $v[$k2]['value'] : '';
-						unset($v[$k2]['value']);
+						$tag = $v[$k2]['tag'] ?? 'td';
+						$temp_value = $v[$k2]['value'] ?? '';
+						unset($v[$k2]['value'], $v[$k2]['tag']);
+						// nowrap
 						if (!empty($v[$k2]['nowrap'])) {
 							$v[$k2]['nowrap'] = 'nowrap';
 						}
+						// colspan
 						if (!empty($v[$k2]['colspan'])) {
 							$flag_colspan = $v[$k2]['colspan'];
 							$flag_colspan--;
 						}
-						$temp2.= '<td ' . self::generate_attributes($v[$k2], 'td') . '>' . $temp3 . '</td>';
+						// we add align to the style
+						if (!empty($v[$k2]['align'])) {
+							$v[$k2]['align'] = html::align($v[$k2]['align']);
+							$v[$k2]['style'] = ($v[$k2]['style'] ?? '') . 'text-align:' . $v[$k2]['align'] . ';';
+						}
+						$temp2.= '<' . $tag . ' ' . self::generate_attributes($v[$k2], $tag) . '>' . $temp_value . '</' . $tag . '>';
 					} else {
 						$temp2.= '<td nowrap>' . $v[$k2] . '</td>';
 					}

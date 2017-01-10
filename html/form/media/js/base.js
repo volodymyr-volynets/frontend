@@ -342,3 +342,24 @@ numbers.form = {
 		}
 	}
 }
+
+/**
+ * Report
+ *
+ * @type object
+ */
+numbers.form.report = {
+
+	/**
+	 * Format change event
+	 *
+	 * @param object element
+	 */
+	on_format_changed: function(element) {
+		if ($(element).val() == 'printable') {
+			element.form.target = '_blank';
+		} else {
+			element.form.target = '';
+		}
+	}
+}

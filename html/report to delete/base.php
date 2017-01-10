@@ -5,7 +5,7 @@ class numbers_frontend_html_report_base {
 	/**
 	 * Data container
 	 * 
-	 * @var unknown_type
+	 * @var array
 	 */
 	private $data = array();
 

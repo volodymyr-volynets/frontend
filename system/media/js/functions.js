@@ -24,6 +24,20 @@ function is_array(value) {
 }
 
 /**
+ * Intval
+ *
+ * @param mixed value
+ * @returns intager
+ */
+function intval(value) {
+	var temp = parseInt(value);
+	if (isNaN(temp)) {
+		temp = 0;
+	}
+	return temp;
+}
+
+/**
  * Check if value is in array
  *
  * @param mixed needle
@@ -220,9 +234,12 @@ function strip_tags(str, allowable_tags) {
  * @param int length
  * @param string string
  * @param string type
+ *		string left
+ *		string right
+ *		string both
  * @returns string
  */
-function str_pad(input, length, string, type) {
+function mb_str_pad(input, length, string, type) {
 	if (!type) type = 'right';
 	if (!isset(string)) string = ' ';
 	if (!isset(input)) input = '';
@@ -233,6 +250,17 @@ function str_pad(input, length, string, type) {
 	} else if (type == 'left') {
 		while (input.length < length) {
 			input = string + input;
+		}
+	} else if (type == 'both') {
+		// if not an even number, the right side gets the extra padding
+		var counter = 1;
+		while (input.length < length) {
+			if (counter % 2) {
+				input+= string;
+			} else {
+				input = string + input;
+			}
+			counter++;
 		}
 	}
     return input;

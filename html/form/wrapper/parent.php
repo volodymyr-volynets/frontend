@@ -16,7 +16,7 @@ class numbers_frontend_html_form_wrapper_parent extends object_override_data {
 	/**
 	 * Row for batch buttons
 	 */
-	const batch_buttons = '__submit_batch_buttons';
+	const transaction_buttons = '__submit_transaction_buttons';
 
 	/**
 	 * Hidden container/row
@@ -48,7 +48,7 @@ class numbers_frontend_html_form_wrapper_parent extends object_override_data {
 	const button_submit_save_and_close_data = ['order' => 300, 'button_group' => 'left', 'value' => 'Save & Close', 'type' => 'default', 'method' => 'button2', 'icon' => 'floppy-o', 'process_submit' => true];
 
 	/**
-	 * Delete button
+	 * Delete button, actual delete will be performed in database
 	 */
 	const button_submit_delete = '__submit_delete';
 	const button_submit_delete_data = ['order' => 32000, 'button_group' => 'right', 'value' => 'Delete', 'type' => 'danger', 'method' => 'button2', 'icon' => 'trash-o', 'accesskey' => 'd', 'process_submit' => true, 'confirm_message' => object_content_messages::confirm_delete];
@@ -63,7 +63,7 @@ class numbers_frontend_html_form_wrapper_parent extends object_override_data {
 	 * Blank button
 	 */
 	const button_submit_blank = '__submit_blank';
-	const button_submit_blank_data = ['order' => 30000, 'button_group' => 'right', 'value' => 'New', 'icon' => 'file-o', 'method' => 'button2', 'accesskey' => 'n', 'process_submit' => true, 'confirm_message' => object_content_messages::confirm_blank];
+	const button_submit_blank_data = ['order' => 30000, 'button_group' => 'right', 'value' => 'Blank', 'icon' => 'file-o', 'method' => 'button2', 'accesskey' => 'n', 'process_submit' => true, 'confirm_message' => object_content_messages::confirm_blank];
 
 	/**
 	 * Refresh button
@@ -80,8 +80,8 @@ class numbers_frontend_html_form_wrapper_parent extends object_override_data {
 	/**
 	 * Post provisionally button
 	 */
-	const button_submit_post_provisionally = '__submit_post_provisionally';
-	const button_submit_post_provisionally_data = ['order' => 151, 'button_group' => 'left', 'value' => 'Post Provisionally', 'type' => 'success', 'method' => 'button2', 'process_submit' => true];
+	const button_submit_temporary_post = '__submit_post_temporary';
+	const button_submit_temporary_post_data = ['order' => 151, 'button_group' => 'left', 'value' => 'Temporary Post', 'type' => 'success', 'method' => 'button2', 'process_submit' => true];
 
 	/**
 	 * Ready to post button
@@ -94,6 +94,18 @@ class numbers_frontend_html_form_wrapper_parent extends object_override_data {
 	 */
 	const button_submit_open = '__submit_open';
 	const button_submit_open_data = ['order' => 151, 'button_group' => 'center', 'value' => 'Open', 'type' => 'info', 'method' => 'button2', 'process_submit' => true];
+
+	/**
+	 * Mark deleted button, used in transactions
+	 */
+	const button_submit_mark_deleted = '__submit_mark_deleted';
+	const button_submit_mark_deleted_data = self::button_submit_delete_data;
+
+	/**
+	 * Print button
+	 */
+	const button_print = '__print_button';
+	const button_print_data = ['order' => -100, 'button_group' => 'left', 'value' => 'Print', 'type' => 'default', 'icon' => 'print', 'method' => 'button2', 'accesskey' => 'p'];
 
 	/**
 	 * Standard buttons
@@ -110,13 +122,22 @@ class numbers_frontend_html_form_wrapper_parent extends object_override_data {
 	/**
 	 * Standard buttons for batches
 	 */
-	const batch_buttons_data_group = [
+	const transaction_buttons_data_group = [
 		self::button_submit_save => self::button_submit_save_data,
 		self::button_submit_post => self::button_submit_post_data,
-		self::button_submit_post_provisionally => self::button_submit_post_provisionally_data,
+		self::button_submit_temporary_post => self::button_submit_temporary_post_data,
 		self::button_submit_ready_to_post => self::button_submit_ready_to_post_data,
 		self::button_submit_open => self::button_submit_open_data,
 		self::button_submit_reset => self::button_submit_reset_data,
-		self::button_submit_delete => self::button_submit_delete_data
+		self::button_submit_mark_deleted => self::button_submit_mark_deleted_data
+	];
+
+	/**
+	 * Report buttons
+	 */
+	const report_buttons_data_group = [
+		self::button_submit => self::button_submit_data,
+		self::button_submit_blank => self::button_submit_blank_data,
+		self::button_submit_reset => self::button_submit_reset_data
 	];
 }

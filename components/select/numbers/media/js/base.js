@@ -90,6 +90,8 @@ var numbers_select = function (options) {
 			no_rows: {short: i18n(null, 'No options')}
 		};
 	}
+	result.semicolon = array_key_get(numbers, 'flag.global.format.symbols.semicolon');
+	if (!result.semicolon) result.semicolon = ';';
 	// calendar specific flags
 	result.flag_data_prepered = false;
 	result.flag_skeleton_rendered = false;
@@ -481,7 +483,7 @@ var numbers_select = function (options) {
 			this.refresh_data();
 			this.flag_data_prepered = true;
 		}
-		var i, j, k, title, inactive_class, colspan, status = '', hash = {}, hash2 = {}, selected_class;
+		var i, j, k, title, inactive_class, colspan, status = '', hash = {}, hash2 = {}, selected_class, cell, temp;
 		var html = '<table id="' + this.table_id + '" class="numbers_select_option_table" width="100%" cellpadding="0" cellspacing="0">';
 			// select/deselect
 			if (-1 in this.data) {
@@ -502,11 +504,12 @@ var numbers_select = function (options) {
 				if (this.data[i].value == '') {
 					selected_class = '';
 				}
+				// title
+				title = this.data[i].title ? this.data[i].title : '';
 				// if disabled
 				if (this.data[i].disabled) {
-					html+= '<tr class="' + this.table_tr_class + inactive_class + ' numbers_disabled" search-id="' + i + '">';
+					html+= '<tr class="' + this.table_tr_class + inactive_class + ' numbers_disabled" search-id="' + i + '" title="' + title + '">';
 				} else {
-					title = this.data[i].title ? this.data[i].title : '';
 					html+= '<tr onclick="' + this.var_id + '.chosen(' + i + ', this);" class="' + this.table_tr_class + (this.data[i].selected ? (selected_class + ' numbers_select_row_selected ') : '') + inactive_class + ' numbers_select_option_table_tr_hover" search-id="' + i + '" title="' + title + '">';
 				}
 					if (this.data[i].level == 0) {
@@ -632,7 +635,13 @@ var numbers_select = function (options) {
 						if (this.color_picker && this.data[i].value != '') {
 							html+= '<span class="numbers_select_option_table_color" style="background-color:#' + this.data[i].value + ';">&nbsp;</span> ';
 						}
-						html+= this.data[i].text;
+						// see if we have semicolons in a content
+						if (this.data[i].text.indexOf(this.semicolon + ' ') != -1) {
+							cell = '<table><tr><td>' + this.data[i].text.split(this.semicolon + ' ').join('</td><td>' + this.semicolon + '&nbsp;</td><td>') + '</td></tr></table>';
+						} else {
+							cell = this.data[i].text;
+						}
+						html+= cell;
 					html+= '</td>';
 					html+= '<td width="1%">';
 						html+= '<i class="fa numbers_select_row_selected_icon"></i>';

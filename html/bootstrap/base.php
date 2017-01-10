@@ -141,7 +141,7 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 	 * @see html::table()
 	 */
 	public static function table($options = []) {
-		if (empty($options['class'])) {
+		if (!isset($options['class'])) {
 			$options['class'] = array_add_token($options['class'] ?? [], 'table table-striped', ' ');
 		}
 		//'<div class="table-responsive">' . parent::table($options) . '</div>';
@@ -206,7 +206,10 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 				}
 				if ($current_grid_columns != $grid_columns) {
 					$v['__empty_column_fill__']['__empty_column_fill__'] = [
-						'value' => ' '
+						'value' => ' ',
+						'options' => [
+							'field_size' => 'col-sm-' . ($grid_columns - $current_grid_columns) // a must
+						]
 					];
 					$field_new_sizes['data'][$index] = $grid_columns - $current_grid_columns;
 				}
@@ -238,6 +241,10 @@ class numbers_frontend_html_bootstrap_base extends numbers_frontend_html_class_b
 						// label
 						if ($flag_first_field) {
 							if (($v3['label'] ?? '') . '' != '') {
+								// if label is not wrapped into label we autowrap
+								if (strpos($v3['label'], '<label') === false) {
+									$v3['label'] = html::label(['value' => $v3['label']]);
+								}
 								$result.= $v3['label'];
 							} else if ($flag_have_label) {
 								$result.= '<label>&nbsp;</label>';

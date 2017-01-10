@@ -115,6 +115,7 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 		$this->form_object = new numbers_frontend_html_form_base($this->form_link, array_merge_hard($this->options, $options));
 		// class
 		$this->form_object->form_class = get_called_class();
+		$this->form_object->initiator_class = $options['initiator_class'] ?? $this->form_object->form_class;
 		$this->form_object->form_parent = & $this;
 		$this->form_object->acl = $this->acl;
 		// add collection
@@ -128,6 +129,8 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 			$this->form_object->master_options = $this->master_options;
 			$this->form_object->master_object = factory::model($this->master_options['model'], true);
 		}
+		// report object
+		$this->form_object->report_object = new numbers_frontend_html_form_report($this->form_object);
 		// title
 		if (!empty($this->title)) {
 			$this->form_object->title = $this->title;
@@ -165,7 +168,7 @@ class numbers_frontend_html_form_wrapper_base extends numbers_frontend_html_form
 			}
 		}
 		// step 3: methods
-		foreach (['save', 'validate', 'refresh', 'success', 'pre_render', 'override_field_value', 'override_tabs', 'process_default_value'] as $v) {
+		foreach (['refresh', 'validate', 'save', 'post', 'success', 'override_field_value', 'override_tabs', 'process_default_value'] as $v) {
 			if (method_exists($this, $v)) {
 				$this->form_object->wrapper_methods[$v]['main'] = [& $this, $v];
 			}

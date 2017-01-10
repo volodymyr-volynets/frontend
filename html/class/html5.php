@@ -141,9 +141,10 @@ class numbers_frontend_html_class_html5 {
 		'select' => ['autofocus', 'disabled', 'form', 'multiple', 'name', 'required', 'size'],
 		'source' => ['src', 'type', 'media'],
 		'style' => ['media', 'type', 'scoped'],
-		'td' => ['colspan', 'rowspan', 'headers'],
+		'table' => ['width', 'cellpadding', 'cellspacing', 'border'],
+		'td' => ['colspan', 'rowspan', 'headers', 'width', 'align'],
 		'textarea' => ['autocomplete', 'autofocus', 'cols', 'dirname', 'disabled', 'form', 'inputmode', 'maxlength', 'name', 'placeholder', 'readonly', 'required', 'rows', 'wrap'],
-		'th' => ['colspan', 'rowspan', 'headers', 'scope', 'abbr'],
+		'th' => ['colspan', 'rowspan', 'headers', 'scope', 'abbr', 'width', 'align'],
 		'time' => ['datetime', 'pubdate'],
 		'track' => ['default', 'kind', 'label', 'src', 'srclang'],
 		'video' => ['src', 'crossorigin', 'poster', 'preload', 'autoplay', 'mediagroup', 'loop', 'muted', 'controls', 'width', 'height']

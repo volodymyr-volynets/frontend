@@ -369,12 +369,12 @@ numbers.format = {
 			// left precision
 			if (options.digits) {
 				if (number.length < options.digits) {
-					number = str_pad(number, options.digits, ' ', 'left')
+					number = mb_str_pad(number, options.digits, ' ', 'left')
 				}
 			}
 			// right precision
 			if (options.decimals > 0) {
-				fraction = str_pad(fraction, options.decimals, '0', 'right').substring(0, options.decimals);
+				fraction = mb_str_pad(fraction, options.decimals, '0', 'right').substring(0, options.decimals);
 				number = number + format.locale_options.mon_decimal_point + fraction;
 			}
 		} else {

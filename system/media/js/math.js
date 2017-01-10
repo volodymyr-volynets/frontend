@@ -18,7 +18,7 @@ numbers.math = {
 	 * @param int scale
 	 */
 	set_scale: function(scale) {
-		scale = parseInt(scale.toString());
+		scale = intval(scale.toString());
 		this.scale = scale;
 		bcscale(scale)
 	},
@@ -35,7 +35,7 @@ numbers.math = {
 		if (typeof(scale) === 'undefined') {
 			scale = this.scale;
 		} else if (typeof scale !== 'number') {
-			scale = parseInt(scale.toString());
+			scale = intval(scale.toString());
 		}
 		return bccomp(arg1, arg2, scale);
 	},
@@ -52,7 +52,7 @@ numbers.math = {
 		if (typeof(scale) === 'undefined') {
 			scale = this.scale;
 		} else if (typeof scale !== 'number') {
-			scale = parseInt(scale.toString());
+			scale = intval(scale.toString());
 		}
 		return bcadd(arg1, arg2, scale);
 	},
@@ -69,7 +69,7 @@ numbers.math = {
 		if (typeof(scale) === 'undefined') {
 			scale = this.scale;
 		} else if (typeof scale !== 'number') {
-			scale = parseInt(scale.toString());
+			scale = intval(scale.toString());
 		}
 		return bcsub(arg1, arg2, scale);
 	},
@@ -86,9 +86,19 @@ numbers.math = {
 		if (typeof(scale) === 'undefined') {
 			scale = this.scale;
 		} else if (typeof scale !== 'number') {
-			scale = parseInt(scale.toString());
+			scale = intval(scale.toString());
 		}
 		return bcmul(arg1, arg2, scale);
+	},
+
+	/**
+	 * Double the scale
+	 *
+	 * @param mixed scale
+	 * @returns integer
+	 */
+	double: function(scale) {
+		return (intval(scale) * 2) + 1;
 	},
 
 	/**
@@ -102,7 +112,7 @@ numbers.math = {
 		if (typeof(scale) === 'undefined') {
 			scale = this.scale;
 		} else if (typeof scale !== 'number') {
-			scale = parseInt(scale.toString());
+			scale = intval(scale.toString());
 		}
 		return bcround(arg1, scale);
 	},
@@ -155,7 +165,7 @@ numbers.math = {
 		if (typeof(scale) === 'undefined') {
 			scale = this.scale;
 		} else if (typeof scale !== 'number') {
-			scale = parseInt(scale.toString());
+			scale = intval(scale.toString());
 		}
 		return this.add('0', '0.0000000000000', scale);
 	}

@@ -18,7 +18,7 @@ class numbers_frontend_html_form_model_datasource_navigation extends object_data
 				$options['type'] = 'first';
 			}
 			if ($options['type'] == 'next') {
-				$options['type'] = 'last';
+				$options['type'] = 'first';
 			}
 		} else {
 			if ($options['type'] == 'previous') {
