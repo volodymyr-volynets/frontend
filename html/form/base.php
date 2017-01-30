@@ -3427,8 +3427,8 @@ render_custom_renderer:
 			$id_modified = $result_options['id'] . '__settings_modified';
 			$value.= html::a(['href' => 'javascript:void(0);', 'onclick' => "$('#{$id_original}').toggle();", 'value' => html::label2(['type' => 'primary', 'value' => count($options['options'])])]);
 			$value.= html::a(['href' => 'javascript:void(0);', 'onclick' => "$('#{$id_modified}').toggle();", 'value' => html::label2(['type' => 'warning', 'value' => count($result_options)])]);
-			$value.= '<div id="' . $id_original . '" style="display:none; position: absolute; text-align: left; width: 500px; z-index: 32000;">' . print_r2($options['options'], true) . '</div>';
-			$value.= '<div id="' . $id_modified . '" style="display:none; position: absolute; text-align: left; width: 500px; z-index: 32000;">' . print_r2($result_options, true) . '</div>';
+			$value.= '<div id="' . $id_original . '" style="display:none; position: absolute; text-align: left; width: 500px; z-index: 32000;">' . print_r2($options['options'], '', true) . '</div>';
+			$value.= '<div id="' . $id_modified . '" style="display:none; position: absolute; text-align: left; width: 500px; z-index: 32000;">' . print_r2($result_options, '', true) . '</div>';
 		}
 		// we need to put original options back
 		if (!empty($options['options']['custom_renderer'])) {
