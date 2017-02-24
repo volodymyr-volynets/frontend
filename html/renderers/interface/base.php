@@ -1,6 +1,6 @@
 <?php
 
-interface numbers_frontend_html_interface_base {
+interface numbers_frontend_html_renderers_interface_base {
 	// basic elements
 	public static function a($options = []);
 	public static function img($options = []);

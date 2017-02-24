@@ -1,6 +1,6 @@
 <?php
 
-class numbers_frontend_html_semanticui_base extends numbers_frontend_html_class_base implements numbers_frontend_html_interface_base {
+class numbers_frontend_html_renderers_semanticui_base extends numbers_frontend_html_renderers_class_base implements numbers_frontend_html_renderers_interface_base {
 
 	public static function segment($options = []) {
 		$value = $options['value'] ?? '';

@@ -3,7 +3,7 @@
 /**
  * html class is designed to help generate HTML 5 code
  */
-class numbers_frontend_html_class_base implements numbers_frontend_html_interface_base {
+class numbers_frontend_html_renderers_class_base implements numbers_frontend_html_renderers_interface_base {
 
 	/**
 	 * Generate html based on value in options
@@ -81,8 +81,8 @@ class numbers_frontend_html_class_base implements numbers_frontend_html_interfac
 		$result = [];
 		foreach ($options as $k => $v) {
 			// validate HTML 5 attribute
-			if (!numbers_frontend_html_class_html5::is_valid_html5_attribute($k, $tag)) continue;
-			if (in_array($k, numbers_frontend_html_class_html5::$strip_tags)) {
+			if (!numbers_frontend_html_renderers_class_html5::is_valid_html5_attribute($k, $tag)) continue;
+			if (in_array($k, numbers_frontend_html_renderers_class_html5::$strip_tags)) {
 				$v = strip_tags($v);
 			}
 			if (is_array($v)) {

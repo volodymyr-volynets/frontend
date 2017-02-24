@@ -1,6 +1,6 @@
 <?php
 
-class numbers_frontend_html_class_html5 {
+class numbers_frontend_html_renderers_class_html5 {
 
 	/**
 	 * Global attributes
