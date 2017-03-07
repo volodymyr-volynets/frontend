@@ -1,0 +1,71 @@
+.numbers_frontend_components_wizard_numbers_base {
+	width: 100%;
+}
+.numbers_frontend_components_wizard_numbers_base_header {
+	text-align: center;
+}
+.numbers_frontend_components_wizard_numbers_base_holder {
+	position: relative;
+	height: 50px;
+}
+.numbers_frontend_components_wizard_numbers_base_center {
+	position: absolute;
+	width: 32px;
+	height: 32px;
+	top: 20px;
+	left: 50%;
+	margin-top: -16px;
+	margin-left: -16px;
+	border-radius: 50%;
+	z-index: 32000;
+}
+.numbers_frontend_components_wizard_numbers_base_start, .numbers_frontend_components_wizard_numbers_base_end {
+	position: absolute;
+	top: 20px;
+	height: 10px;
+	margin-top: -5px;
+	width: 50%;
+	z-index: 31000;
+}
+.numbers_frontend_components_wizard_numbers_base_start {
+	left: 0;
+}
+.numbers_frontend_components_wizard_numbers_base_end {
+	left: 50%;
+}
+.numbers_frontend_components_wizard_numbers_base_active {
+	/*background: #337ab7;*/
+}
+.numbers_frontend_components_wizard_numbers_base_inactive {
+	background: lightgrey;
+}
+.numbers_frontend_components_wizard_numbers_base_circle {
+	position: absolute;
+	width: 16px;
+	height: 16px;
+	top: 20px;
+	left: 50%;
+	margin-top: -8px;
+	margin-left: -8px;
+	border-radius: 50%;
+	z-index: 32001;
+	background: white !important;
+}
+@media screen and (max-width:768px) {
+	.numbers_frontend_components_wizard_numbers_base_header {
+		font-size: 10px;
+		height: 160px !important;
+		/* Safari */
+		-webkit-transform: rotate(-90deg);
+		/* Firefox */
+		-moz-transform: rotate(-90deg);
+		/* Opera */
+		-o-transform: rotate(-90deg);
+		/* Internet Explorer */
+		-ms-transform: rotate(-90deg);
+		filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+	}
+	.numbers_frontend_components_wizard_numbers_base_description {
+		display: none;
+	}
+}

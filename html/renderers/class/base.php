@@ -832,4 +832,24 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 		$result.= '</table>';
 		return $result;
 	}
+
+	/**
+	 * HR
+	 *
+	 * @param array $options
+	 * @return string
+	 */
+	public static function hr($options = []) {
+		return '<hr ' . self::generate_attributes($options, 'hr') . ' />';
+	}
+
+	/**
+	 * BR
+	 *
+	 * @param array $options
+	 * @return string
+	 */
+	public static function br($options = []) {
+		return '<br ' . self::generate_attributes($options, 'br') . ' />';
+	}
 }

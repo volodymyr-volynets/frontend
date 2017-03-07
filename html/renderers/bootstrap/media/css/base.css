@@ -46,7 +46,6 @@
 .navbar-nav {
 	direction: ltr;
 }
-
 @media screen and (min-width:768px) {
 	.navbar-nav {
 		display: table !important;
@@ -59,7 +58,6 @@
 		display: inline;
 	}
 }
-
 .navbar {
 	margin-bottom: 0;
 }
@@ -246,6 +244,19 @@ div.placeholder, span.placeholder {
 .numbers_inactive {
 	color: #a94442;
 	background-color: mistyrose;
+}
+
+/* rotate */
+.rotate90 {
+	/* Safari */
+	-webkit-transform: rotate(-90deg);
+	/* Firefox */
+	-moz-transform: rotate(-90deg);
+	/* Opera */
+	-o-transform: rotate(-90deg);
+	/* Internet Explorer */
+	-ms-transform: rotate(-90deg);
+	filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
 }
 
 /* rtl fixes */

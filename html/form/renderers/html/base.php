@@ -46,17 +46,20 @@ class numbers_frontend_html_form_renderers_html_base {
 		numbers_frontend_media_libraries_loadmask_base::add();
 		// new record action
 		$mvc = application::get('mvc');
-		if (object_controller::can('record_new')) {
+		if (!empty($this->object->options['actions']['new']) && object_controller::can('record_new')) {
 			$onclick = 'return confirm(\'' . strip_tags(i18n(null, object_content_messages::confirm_blank)) . '\');';
 			$this->object->actions['form_new'] = ['value' => 'New', 'sort' => -31000, 'icon' => 'file-o', 'href' => $mvc['full'] . '?' . $this->object::button_submit_blank . '=1', 'onclick' => $onclick, 'internal_action' => true];
 		}
 		// back to list
-		if (object_controller::can('list_view')) {
+		if (!empty($this->object->options['actions']['back']) && object_controller::can('list_view')) {
 			$this->object->actions['form_back'] = ['value' => 'Back', 'sort' => -32000, 'icon' => 'arrow-left', 'href' => $mvc['controller'] . '/_index', 'internal_action' => true];
 		}
-		// reload button
-		if ($this->object->values_loaded) {
-			$url = $mvc['full'] . '?' . http_build_query2($this->object->pk);
+		// refresh button
+		if (!empty($this->object->options['actions']['refresh'])) {
+			$url = $mvc['full'];
+			if ($this->object->values_loaded) {
+				$url.= '?' . http_build_query2($this->object->pk);
+			}
 			$this->object->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => 32000, 'icon' => 'refresh', 'href' => $url, 'internal_action' => true];
 		}
 		// assembling everything into result variable
@@ -158,9 +161,15 @@ class numbers_frontend_html_form_renderers_html_base {
 		$result.= html::hidden(['name' => '__form_link', 'value' => $this->object->form_link]);
 		$result.= html::hidden(['name' => '__form_values_loaded', 'value' => $this->object->values_loaded]);
 		$result.= html::hidden(['name' => '__form_onchange_field_values_key', 'value' => '']);
+		// bypass values
 		if (!empty($this->object->options['bypass_hidden_values'])) {
 			foreach ($this->object->options['bypass_hidden_values'] as $k => $v) {
 				$result.= html::hidden(['name' => $k, 'value' => $v]);
+			}
+		}
+		if (!empty($this->object->options['bypass_hidden_from_input'])) {
+			foreach ($this->object->options['bypass_hidden_from_input'] as $v) {
+				$result.= html::hidden(['name' => $v, 'value' => $this->object->options['input'][$v] ?? '']);
 			}
 		}
 		// js to update counters in tabs
