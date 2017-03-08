@@ -326,9 +326,9 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 							$name = html::icon(['type' => $v2['icon']]) . ' ' . $name;
 						}
 						if (!empty($v2['url'])) {
-							$result.= html::a(['href' => $v2['url'], 'value' => $name]);
+							$result.= html::a(['href' => $v2['url'], 'title' => $v2['title'] ?? null, 'value' => $name]);
 						} else {
-							$result.= $name;
+							$result.= html::div(['title' => $v2['title'] ?? null, 'value' => $name]);
 						}
 					}
 				$result.= '</li>';

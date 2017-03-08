@@ -1,9 +1,9 @@
 <?php
 
-class numbers_frontend_components_captcha_gd_base extends numbers_frontend_components_captcha_class_base implements numbers_frontend_components_captcha_interface_base {
+class numbers_frontend_components_captcha_gd_base implements numbers_frontend_components_captcha_interface_base {
 
 	/**
-	 * Draw captcha
+	 * Draw
 	 *
 	 * @param string $word
 	 * @param array $options
@@ -56,17 +56,32 @@ class numbers_frontend_components_captcha_gd_base extends numbers_frontend_compo
 	}
 
 	/**
+	 * Generate random string
+	 *
+	 * @param string $captcha_link
+	 * @param string $letters
+	 * @param int $length
+	 * @return string
+	 */
+	public static function generate_password($captcha_link, $letters = null, $length = 5) {
+		$letters = isset($letters) ? $letters : '123456789';
+		$result = '';
+		for ($i = 0; $i < $length; $i++) {
+			 $result.= $letters[mt_rand(0, strlen($letters) - 1)];
+		}
+		// setting value in session
+		session::set(str_replace('_', '.', get_called_class()) . '.' . $captcha_link . '.password', $result);
+		return $result;
+	}
+
+	/**
 	 * Captcha
 	 *
 	 * @param array $options
 	 * @return string
 	 */
-	public static function captcha($options = []) {
+	public static function captcha(array $options = []) : string {
 		$captcha_link = $options['id'] ?? 'default';
-		// validation
-		if (!empty($options['validate'])) {
-			return self::validate($captcha_link, $options['password']);
-		}
 		// generating password
 		$password = self::generate_password($captcha_link, $options['password_letters'] ?? null, $options['password_length'] ?? 5);
 		array_key_unset($options, ['password_letters', 'password_length']);
@@ -79,5 +94,25 @@ class numbers_frontend_components_captcha_gd_base extends numbers_frontend_compo
 		} else {
 			return '<table width="100%"><tr><td>' . html::input($options) . '</td><td width="1%">&nbsp;</td><td width="1%">' . html::img($image_options) . '</td></tr></table>';
 		}
+	}
+
+	/**
+	 * @see object_validator_base::validate()
+	 */
+	public function validate(string $value, array $options = []) : array {
+		$result = [
+			'success' => false,
+			'error' => [],
+			'placeholder' => ''
+		];
+		$password = session::get(['numbers', 'frontend', 'components', 'captcha', 'gd', 'base', $options['options']['id'], 'password']);
+		$result['placeholder'] = 'Enter text here';
+		if (empty($value) || $value !== $password) {
+			$result['error'][] = 'Invalid captcha!';
+		} else {
+			$result['success'] = true;
+			$result['data'] = $value;
+		}
+		return $result;
 	}
 }
