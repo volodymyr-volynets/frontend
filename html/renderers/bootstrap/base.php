@@ -270,7 +270,9 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 			}
 			$result.= '</div>';
 		}
-		return '<div class="container-fluid">' . $result . '</div>';
+		$class = ['container-fluid'];
+		if (!empty($options['class'])) $class[] = $options['class'];
+		return '<div class="' . implode(' ', $class) . '">' . $result . '</div>';
 	}
 
 	/**

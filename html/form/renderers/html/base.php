@@ -46,21 +46,34 @@ class numbers_frontend_html_form_renderers_html_base {
 		numbers_frontend_media_libraries_loadmask_base::add();
 		// new record action
 		$mvc = application::get('mvc');
-		if (!empty($this->object->options['actions']['new']) && object_controller::can('record_new')) {
+		if (!empty($this->object->options['actions']['new'])) {
 			$onclick = 'return confirm(\'' . strip_tags(i18n(null, object_content_messages::confirm_blank)) . '\');';
-			$this->object->actions['form_new'] = ['value' => 'New', 'sort' => -31000, 'icon' => 'file-o', 'href' => $mvc['full'] . '?' . $this->object::button_submit_blank . '=1', 'onclick' => $onclick, 'internal_action' => true];
+			$this->object->actions['form_new'] = ['value' => 'New', 'sort' => -31000, 'icon' => 'file-o', 'href' => $mvc['controller'] . '/_edit?' . $this->object::button_submit_blank . '=1', 'onclick' => $onclick, 'internal_action' => true];
+			// override
+			if (is_array($this->object->options['actions']['new'])) {
+				$this->object->actions['form_new'] = array_merge($this->object->actions['form_new'], $this->object->options['actions']['new']);
+			}
 		}
 		// back to list
-		if (!empty($this->object->options['actions']['back']) && object_controller::can('list_view')) {
+		if (!empty($this->object->options['actions']['back'])) {
 			$this->object->actions['form_back'] = ['value' => 'Back', 'sort' => -32000, 'icon' => 'arrow-left', 'href' => $mvc['controller'] . '/_index', 'internal_action' => true];
 		}
-		// refresh button
+		// refresh action
 		if (!empty($this->object->options['actions']['refresh'])) {
 			$url = $mvc['full'];
 			if ($this->object->values_loaded) {
 				$url.= '?' . http_build_query2($this->object->pk);
 			}
 			$this->object->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => 32000, 'icon' => 'refresh', 'href' => $url, 'internal_action' => true];
+			// override
+			if (is_array($this->object->options['actions']['refresh'])) {
+				$this->object->actions['form_refresh'] = array_merge($this->object->actions['form_refresh'], $this->object->options['actions']['refresh']);
+			}
+		}
+		// other actions
+		foreach ($this->object->options['actions'] ?? [] as $k => $v) {
+			if (in_array($k, ['refresh', 'new', 'back'])) continue;
+			$this->object->actions['form_custom_' . $k] = $v;
 		}
 		// assembling everything into result variable
 		$result = [];
@@ -126,9 +139,11 @@ class numbers_frontend_html_form_renderers_html_base {
 					}
 					// if we do not have tabs
 					if ($have_tabs) {
+						$class = ['form-tabs'];
+						if (!empty($v['options']['class'])) $class[] = $v['options']['class'];
 						$result[$k]['html'] = html::tabs([
 							'id' => $tab_id,
-							'class' => 'form-tabs',
+							'class' => implode(' ', $class),
 							'header' => $tab_header,
 							'options' => $tab_values,
 							'tab_options' => $tab_options
@@ -169,6 +184,21 @@ class numbers_frontend_html_form_renderers_html_base {
 		$result.= html::hidden(['name' => '__form_link', 'value' => $this->object->form_link]);
 		$result.= html::hidden(['name' => '__form_values_loaded', 'value' => $this->object->values_loaded]);
 		$result.= html::hidden(['name' => '__form_onchange_field_values_key', 'value' => '']);
+		// form data in onload
+		$js_data = [
+			'submitted' => $this->object->submitted,
+			'refresh' => $this->object->refresh,
+			'delete' => $this->object->delete,
+			'blank' => $this->object->blank,
+			'values_loaded' => $this->object->values_loaded,
+			'values_saved' => $this->object->values_saved,
+			'values_deleted' => $this->object->values_deleted,
+			'values_inserted' => $this->object->values_inserted,
+			'values_updated' => $this->object->values_updated,
+		];
+		$js = "numbers.form.data['form_{$this->object->form_link}_form'] = " . json_encode($js_data) . ";\n";
+		$js.= "numbers.form.list_filter_sort_toggle('#form_{$this->object->form_link}_form', true);\n";
+		layout::onload($js);
 		// bypass values
 		if (!empty($this->object->options['bypass_hidden_values'])) {
 			foreach ($this->object->options['bypass_hidden_values'] as $k => $v) {
@@ -257,7 +287,7 @@ class numbers_frontend_html_form_renderers_html_base {
 		$data = $this->object->misc_settings['list'] ?? [];
 		if (empty($data['enabled'])) return $result;
 		$options = $this->object->form_parent->list_options ?? [];
-		$result['data']['html'].= '<hr/>';
+		$result['data']['html'].= '<hr class="numbers_form_filter_sort_container" />';
 		// render pagination
 		if (!empty($options['pagination_top'])) {
 			$data['pagination_type'] = 'top';
@@ -488,7 +518,7 @@ render_custom_renderer:
 		// rendering
 		foreach ($grouped as $k => $v) {
 			$first = current($v);
-			$result['data']['html'].= $this->{'render_row_' . $first['type']}($v);
+			$result['data']['html'].= $this->{'render_row_' . $first['type']}($v, ['class' => $this->object->data[$container_link]['options']['class'] ?? null]);
 		}
 		$result['success'] = true;
 		return $result;
@@ -889,10 +919,12 @@ render_custom_renderer:
 	 * Render table rows
 	 *
 	 * @param array $rows
+	 * @param array $options
 	 * @return string
 	 */
-	public function render_row_grid($rows) {
+	public function render_row_grid($rows, $options = []) {
 		$data = [
+			'class' => $options['class'] ?? null,
 			'options' => []
 		];
 		foreach ($rows as $k => $v) {

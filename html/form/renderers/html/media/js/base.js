@@ -9,9 +9,32 @@ var numbers_frontend_form_submit_hidden_initiator = null;
 numbers.form = {
 
 	/**
+	 * Data
+	 *
+	 * @type object
+	 */
+	data: {},
+
+	/**
+	 * Get form data
+	 *
+	 * @param object form_or_element
+	 * @return object
+	 */
+	get_form_data: function(form_or_element) {
+		var form = this.get_form(form_or_element);
+		var name = form.attr('name');
+		if (name in this.data) {
+			return this.data[name];
+		} else {
+			return {};
+		}
+	},
+
+	/**
 	 * This function would be called when user submits the form
 	 *
-	 * @param formect form
+	 * @param object form
 	 * @returns boolean
 	 */
 	on_form_submit: function(form) {
@@ -339,6 +362,26 @@ numbers.form = {
 			};
 		} else if (this.focuses[focus]) {
 			element.setSelectionRange(this.focuses[focus].selection_start, this.focuses[focus].selection_end);
+		}
+	},
+
+	/**
+	 * List filter/sort toggle
+	 *
+	 * @param mixed form
+	 */
+	list_filter_sort_toggle: function(form_or_element, show) {
+		var form = this.get_form(form_or_element);
+		var data = this.get_form_data(form_or_element);
+		if (!data.submitted) show = true;
+		if (show) {
+			if (data.submitted) {
+				$('.numbers_form_filter_sort_container', form).hide();
+			} else {
+				$('.numbers_form_filter_sort_container', form).show();
+			}
+		} else {
+			$('.numbers_form_filter_sort_container', form).toggle();
 		}
 	}
 }
