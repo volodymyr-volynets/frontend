@@ -47,6 +47,29 @@
 .numbers_frontend_form_report_screen_cell_linethrough {
 	text-decoration: line-through;
 }
+
+/*
+.list_filter_full_text_search {
+	display: inline-block !important;
+}
+.list_filter_name, .list_filter_value {
+	vertical-align: middle !important;
+}
+*/
+@media screen and (max-width:1200px) {
+	.numbers_frontend_form_list_sort {
+		display: none;
+	}
+}
+.numbers_frontend_form_list_pagination_navigation {
+	text-align: left;
+}
+@media screen and (min-width:1200px) {
+	.numbers_frontend_form_list_pagination_navigation {
+		text-align: right;
+	}
+}
+
 /* printable */
 /*
 html[layout="blank"] .numbers_frontend_form_report_screen_table_global_row_header, html[layout="blank"] .numbers_frontend_form_report_screen_cell_data {
