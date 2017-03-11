@@ -195,6 +195,7 @@ class numbers_frontend_html_form_renderers_html_base {
 			'values_deleted' => $this->object->values_deleted,
 			'values_inserted' => $this->object->values_inserted,
 			'values_updated' => $this->object->values_updated,
+			'list_rendered' => $this->object->list_rendered,
 			'has_errors' => $this->object->has_errors()
 		];
 		$js = "numbers.form.data['form_{$this->object->form_link}_form'] = " . json_encode($js_data) . ";\n";
@@ -284,9 +285,9 @@ class numbers_frontend_html_form_renderers_html_base {
 				'css' => ''
 			]
 		];
+		if (!$this->object->list_rendered) return $result;
 		// merge options
 		$data = $this->object->misc_settings['list'] ?? [];
-		if (empty($data['enabled'])) return $result;
 		$options = $this->object->form_parent->list_options ?? [];
 		$result['data']['html'].= '<hr class="numbers_form_filter_sort_container" />';
 		// render pagination
@@ -412,7 +413,7 @@ class numbers_frontend_html_form_renderers_html_base {
 						} else {
 							$value = $v0[$k2] ?? null;
 						}
-						$inner_table['options'][$k . '_' . $k2][1] = ['value' => '<b>' . $v2['options']['label_name'] . ':</b>', 'nowrap' => true, 'width' => '15%', 'align' => 'left'];
+						$inner_table['options'][$k . '_' . $k2][1] = ['value' => '<b>' . $v2['options']['label_name'] . ':</b>', 'width' => '15%', 'align' => 'left'];
 						$inner_table['options'][$k . '_' . $k2][2] = ['value' => $value, 'nowrap' => true, 'width' => '85%', 'align' => 'left'];
 					}
 				}

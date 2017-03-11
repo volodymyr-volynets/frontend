@@ -28,12 +28,14 @@ class numbers_frontend_html_form_renderers_html_pagination_base {
 		// sorting
 		$sort = '';
 		if (!empty($options['sort'])) {
-			$sort.= i18n(null, 'Sort') . ': ';
-			$temp = [];
-			foreach ($options['sort'] as $k => $v) {
-				$temp[] = i18n(null, $k) . ' ' . html::icon(['type' => 'sort-alpha-' . ($v == SORT_ASC ? 'asc' : 'desc')]);
-			}
-			$sort.= implode(', ', $temp);
+			$sort.= '<table style="min-height: 40px;"><tr><td valign="middle">';
+				$sort.= i18n(null, 'Sort') . ': ';
+				$temp = [];
+				foreach ($options['sort'] as $k => $v) {
+					$temp[] = i18n(null, $k) . ' ' . html::icon(['type' => 'sort-alpha-' . ($v == SORT_ASC ? 'asc' : 'desc')]);
+				}
+				$sort.= implode(', ', $temp);
+			$sort.= '</td></tr></table>';
 		}
 		// displaying
 		$displaying = '<table>';
@@ -121,7 +123,7 @@ class numbers_frontend_html_form_renderers_html_pagination_base {
 							'options' => [
 								'field_size' => 'col-xs-12 col-sm-12 col-lg-3',
 								'percent' => 15,
-								'style' => 'height: 40px; line-height: 40px;',
+								'style' => 'min-height: 40px;'
 							]
 						]
 					],
