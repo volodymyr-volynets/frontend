@@ -48,14 +48,14 @@
 	text-decoration: line-through;
 }
 
-/*
-.list_filter_full_text_search {
-	display: inline-block !important;
+/* list */
+.numbers_frontend_form_list_table_wrapper_outer {
+	overflow-x: scroll;
 }
-.list_filter_name, .list_filter_value {
-	vertical-align: middle !important;
+.numbers_frontend_form_list_table_wrapper_inner {
+	min-width: 1100px;
+	margin: 0 auto;
 }
-*/
 @media screen and (max-width:1200px) {
 	.numbers_frontend_form_list_sort {
 		display: none;

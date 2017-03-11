@@ -195,6 +195,7 @@ class numbers_frontend_html_form_renderers_html_base {
 			'values_deleted' => $this->object->values_deleted,
 			'values_inserted' => $this->object->values_inserted,
 			'values_updated' => $this->object->values_updated,
+			'has_errors' => $this->object->has_errors()
 		];
 		$js = "numbers.form.data['form_{$this->object->form_link}_form'] = " . json_encode($js_data) . ";\n";
 		$js.= "numbers.form.list_filter_sort_toggle('#form_{$this->object->form_link}_form', true);\n";
@@ -305,6 +306,36 @@ class numbers_frontend_html_form_renderers_html_base {
 	}
 
 	/**
+	 * Cached options
+	 *
+	 * @var array
+	 */
+	private $cached_options = [];
+
+	/**
+	 * Render list one option
+	 *
+	 * @param array $options
+	 * @param mixed $value
+	 * @return mixed
+	 */
+	private function render_list_container_default_options(array $options, $value) {
+		if (strpos($options['options_model'], '::') === false) $options['options_model'].= '::options';
+		$params = $options['options_params'] ?? [];
+		if (!empty($options['options_depends'])) {
+			foreach ($options['options_depends'] as $k9 => $v9) {
+				$params[$k9] = $v0[$v9];
+			}
+		}
+		$hash = sha1($options['options_model'] . serialize($params));
+		if (!isset($this->cached_options[$hash])) {
+			$method = factory::method($options['options_model'], null, true);
+			$this->cached_options[$hash] = call_user_func_array($method, [['where' => $params, 'i18n' => true]]);
+		}
+		return $this->cached_options[$hash][$value]['name'] ?? null;
+	}
+
+	/**
 	 * Data default renderer
 	 *
 	 * @return string
@@ -315,128 +346,82 @@ class numbers_frontend_html_form_renderers_html_base {
 		if ($data['num_rows'] == 0) {
 			return html::message(['type' => 'warning', 'options' => [i18n(null, object_content_messages::no_rows_found)]]);
 		}
-		$counter = 1;
 		$table = [
+			'width' => '100%',
 			'options' => []
 		];
 		// action flags
-		$actions = [];
-		if (object_controller::can('record_view')) {
-			$actions['view'] = true;
-		}
+//		$actions = [];
+//		if (object_controller::can('record_view')) {
+//			$actions['view'] = true;
+//		}
 		// sort columns
-		$columns = [];
 		foreach ($data['columns'] as $k => $v) {
 			array_key_sort($v['elements'], ['order' => SORT_ASC]);
 			$data['columns'][$k]['elements'] = $v['elements'];
 		}
 		array_key_sort($data['columns'], ['order' => SORT_ASC]);
-		// render columns
-		$row_number = 1;
-		$inner_table = ['options' => [], 'width' => '100%', 'class' => 'list_header_inner'];
-		foreach ($data['columns'] as $k => $v) {
-			foreach ($v['elements'] as $k2 => $v2) {
-				$inner_table['options'][$row_number][$k2] = ['value' => i18n(null, $v2['options']['label_name']), 'nowrap' => true, 'width' => $v2['options']['width'], 'tag' => 'th'];
-			}
-			$row_number++;
-		}
-		$table['options'][0][1] = ['value' => '&nbsp;', 'nowrap' => true, 'width' => '1%'];
-		$table['options'][0][2] = ['value' => html::table($inner_table), 'nowrap' => true, 'width' => '99%'];
-		// generate rows
-		$row_number_final = $data['offset'] + 1;
-		$cached_options = [];
-		foreach ($data['rows'] as $k0 => $v0) {
-			// process all columns first
-			$row = [];
-			$inner_table = ['options' => [], 'width' => '100%', 'class' => 'list_header_inner'];
+		// render list
+		if (empty($data['preview'])) {
+			// render columns
 			foreach ($data['columns'] as $k => $v) {
+				$inner_table = ['options' => [], 'width' => '100%', 'class' => 'list_header_inner'];
 				foreach ($v['elements'] as $k2 => $v2) {
-					// process options
-					if (!empty($v2['options']['options_model'])) {
-						if (strpos($v2['options']['options_model'], '::') === false) $v2['options']['options_model'].= '::options';
-						$params = $v2['options']['options_params'] ?? [];
-						if (!empty($v2['options']['options_depends'])) {
-							foreach ($v2['options']['options_depends'] as $k9 => $v9) {
-								$params[$k9] = $v0[$v9];
-							}
-						}
-						$hash = sha1($v2['options']['options_model'] . serialize($params));
-						if (!isset($cached_options[$hash])) {
-							$method = factory::method($v2['options']['options_model'], null, true);
-							$cached_options[$hash] = call_user_func_array($method, [['where' => $params, 'i18n' => true]]);
-						}
-						$value = $cached_options[$hash][$v0[$k2]]['name'] ?? null;
-					} else {
-						$value = $v0[$k2] ?? null;
-					}
-					/**
-				// process rows
-				if ($k2 == 'action') {
-					$value['value'] = [];
-					if (!empty($actions['view'])) {
-						$mvc = application::get('mvc');
-						$pk = extract_keys($this->model_object->pk, $v);
-						$url = $mvc['controller'] . '/_edit?' . http_build_query2($pk);
-						$value['value'][] = html::a(['value' => i18n(null, 'View'), 'href' => $url]);
-					}
-					$value['value'] = implode(' ', $value['value']);
-				} else if ($k2 == 'row_number') {
-					$value['value'] = format::id($counter) . '.';
-				} else if ($k2 == 'offset_number') {
-					$value['value'] = format::id($this->offset + $counter) . '.';
-				} else if (!empty($v2['options_model'])) {
-					if (strpos($v2['options_model'], '::') === false) $v2['options_model'].= '::options';
-					$params = $v2['options_params'] ?? [];
-					if (!empty($v2['options_depends'])) {
-						foreach ($v2['options_depends'] as $k0 => $v0) {
-							$params[$k0] = $v[$v0];
-						}
-					}
-					$crypt_object = new crypt();
-					$hash = $crypt_object->hash($v2['options_model'] . serialize($params));
-					if (!isset($this->cached_options[$hash])) {
-						$method = factory::method($v2['options_model'], null, true);
-						$this->cached_options[$hash] = call_user_func_array($method, [['where' => $params]]);
-					}
-					if (isset($this->cached_options[$hash][$v[$k2]])) {
-						$value['value'] = $this->cached_options[$hash][$v[$k2]]['name'];
-					} else {
-						$value['value'] = null;
-					}
-				} else if (!empty($v2['options']) && !is_array($v[$k2])) {
-					if (isset($v2['options'][$v[$k2]])) {
-						$value['value'] = $v2['options'][$v[$k2]]['name'];
-					} else {
-						$value['value'] = null;
-					}
-				} else if (isset($v[$k2])) {
-					$value['value'] = $v[$k2];
-				} else {
-					$value['value'] = null;
+					$width = $v2['options']['width'] ?? ($v2['options']['percent'] . '%');
+					$inner_table['options'][1][$k2] = ['value' => i18n(null, $v2['options']['label_name']), 'nowrap' => true, 'width' => $width, 'tag' => 'th'];
 				}
-				// put value into row
-				if (!empty($v2['format'])) {
-					$format_options = $v2['format_options'] ?? [];
-					if (!empty($v2['format_depends'])) {
-						$format_depends = $v2['format_depends'];
-						$this->process_params_and_depends($format_depends, $v);
-						$format_options = array_merge_hard($format_options, $format_depends);
-					}
-					$method = factory::method($v2['format'], 'format');
-					$value['value'] = call_user_func_array([$method[0], $method[1]], [$value['value'], $format_options]);
-				}
-				$row[$k2] = $value;
-					 */
-					
-					$inner_table['options'][$row_number][$k2] = ['value' => $value, 'nowrap' => true, 'width' => $v2['options']['width'], 'align' => $v2['options']['align'] ?? 'left'];
-				}
-				$row_number++;
+				$table['options']['header_' . $k][1] = ['value' => '&nbsp;', 'nowrap' => true, 'width' => '1%'];
+				$table['options']['header_' . $k][2] = ['value' => html::table($inner_table), 'nowrap' => true, 'width' => '99%'];
 			}
-			$table['options'][$row_number_final][1] = ['value' => format::id($row_number_final) . '.', 'nowrap' => true, 'width' => '1%'];
-			$table['options'][$row_number_final][2] = ['value' => html::table($inner_table), 'nowrap' => true, 'width' => '99%'];
-			$row_number_final++;
+			// generate rows
+			$row_number_final = $data['offset'] + 1;
+			$cached_options = [];
+			foreach ($data['rows'] as $k0 => $v0) {
+				// process all columns first
+				$row = [];
+				foreach ($data['columns'] as $k => $v) {
+					$inner_table = ['options' => [], 'width' => '100%', 'class' => 'list_header_inner'];
+					foreach ($v['elements'] as $k2 => $v2) {
+						// process options
+						if (!empty($v2['options']['options_model'])) {
+							$value = $this->render_list_container_default_options($v2['options'], $v0[$k2]);
+						} else {
+							$value = $v0[$k2] ?? null;
+						}
+						$width = $v2['options']['width'] ?? ($v2['options']['percent'] . '%');
+						$inner_table['options'][$k][$k2] = ['value' => $value, 'nowrap' => true, 'width' => $width, 'align' => $v2['options']['align'] ?? 'left'];
+					}
+					$table['options'][$row_number_final . '_' . $k][1] = ['value' => format::id($row_number_final) . '.', 'nowrap' => true, 'width' => '1%'];
+					$table['options'][$row_number_final . '_' . $k][2] = ['value' => html::table($inner_table), 'nowrap' => true, 'width' => '99%'];
+				}
+				$row_number_final++;
+			}
+		} else { // preview
+			// generate rows
+			$row_number_final = $data['offset'] + 1;
+			$cached_options = [];
+			foreach ($data['rows'] as $k0 => $v0) {
+				// process all columns first
+				$row = [];
+				foreach ($data['columns'] as $k => $v) {
+					$inner_table = ['options' => [], 'width' => '100%', 'class' => 'list_header_inner'];
+					foreach ($v['elements'] as $k2 => $v2) {
+						// process options
+						if (!empty($v2['options']['options_model'])) {
+							$value = $this->render_list_container_default_options($v2['options'], $v0[$k2]);
+						} else {
+							$value = $v0[$k2] ?? null;
+						}
+						$inner_table['options'][$k . '_' . $k2][1] = ['value' => '<b>' . $v2['options']['label_name'] . ':</b>', 'nowrap' => true, 'width' => '15%', 'align' => 'left'];
+						$inner_table['options'][$k . '_' . $k2][2] = ['value' => $value, 'nowrap' => true, 'width' => '85%', 'align' => 'left'];
+					}
+				}
+				$table['options'][$row_number_final . '_' . $k][1] = ['value' => format::id($row_number_final) . '.', 'nowrap' => true, 'width' => '1%'];
+				$table['options'][$row_number_final . '_' . $k][2] = ['value' => html::table($inner_table), 'nowrap' => true, 'width' => '99%'];
+				$row_number_final++;
+			}
 		}
-		return html::table($table);
+		return '<div class="numbers_frontend_form_list_table_wrapper_outer"><div class="numbers_frontend_form_list_table_wrapper_inner">' . html::table($table) . '</div></div>';
 	}
 
 	/**

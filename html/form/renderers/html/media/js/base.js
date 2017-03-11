@@ -373,8 +373,9 @@ numbers.form = {
 	list_filter_sort_toggle: function(form_or_element, show) {
 		var form = this.get_form(form_or_element);
 		var data = this.get_form_data(form_or_element);
-		if (!data.submitted) show = true;
-		if (show) {
+		if (data.has_errors) {
+			$('.numbers_form_filter_sort_container', form).show();
+		} else if (show) {
 			if (data.submitted) {
 				$('.numbers_form_filter_sort_container', form).hide();
 			} else {
