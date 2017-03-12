@@ -286,7 +286,7 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 		foreach ($options as $k => $v) {
 			$result.= '<li' . ($k == $last ? ' class="last"' : '') . '>' . i18n(null, $v) . '</li>';
 			if ($k != $last) {
-				$result.= '<li> / </li>';
+				$result.= '<li> \ </li>';
 			}
 		}
 		$result.= '</ul>';
