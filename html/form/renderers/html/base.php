@@ -351,11 +351,6 @@ class numbers_frontend_html_form_renderers_html_base {
 			'width' => '100%',
 			'options' => []
 		];
-		// action flags
-//		$actions = [];
-//		if (object_controller::can('record_view')) {
-//			$actions['view'] = true;
-//		}
 		// sort columns
 		foreach ($data['columns'] as $k => $v) {
 			array_key_sort($v['elements'], ['order' => SORT_ASC]);
@@ -365,21 +360,24 @@ class numbers_frontend_html_form_renderers_html_base {
 		// render list
 		if (empty($data['preview'])) {
 			// render columns
+			$temp_inner = '';
 			foreach ($data['columns'] as $k => $v) {
 				$inner_table = ['options' => [], 'width' => '100%', 'class' => 'list_header_inner'];
 				foreach ($v['elements'] as $k2 => $v2) {
 					$width = $v2['options']['width'] ?? ($v2['options']['percent'] . '%');
 					$inner_table['options'][1][$k2] = ['value' => i18n(null, $v2['options']['label_name']), 'nowrap' => true, 'width' => $width, 'tag' => 'th'];
 				}
-				$table['options']['header_' . $k][1] = ['value' => '&nbsp;', 'nowrap' => true, 'width' => '1%'];
-				$table['options']['header_' . $k][2] = ['value' => html::table($inner_table), 'nowrap' => true, 'width' => '99%'];
+				$temp_inner.= html::table($inner_table);
 			}
+			$table['options']['header'][1] = ['value' => '&nbsp;', 'nowrap' => true, 'width' => '1%'];
+			$table['options']['header'][2] = ['value' => $temp_inner, 'nowrap' => true, 'width' => '99%'];
 			// generate rows
 			$row_number_final = $data['offset'] + 1;
 			$cached_options = [];
 			foreach ($data['rows'] as $k0 => $v0) {
 				// process all columns first
 				$row = [];
+				$temp_inner = '';
 				foreach ($data['columns'] as $k => $v) {
 					$inner_table = ['options' => [], 'width' => '100%', 'class' => 'list_header_inner'];
 					foreach ($v['elements'] as $k2 => $v2) {
@@ -390,11 +388,16 @@ class numbers_frontend_html_form_renderers_html_base {
 							$value = $v0[$k2] ?? null;
 						}
 						$width = $v2['options']['width'] ?? ($v2['options']['percent'] . '%');
+						// urls
+						if (!empty($v2['options']['url_edit'])) {
+							$value = html::a(['href' => $this->render_url_edit_href($v0), 'value' => $value]);
+						}
 						$inner_table['options'][$k][$k2] = ['value' => $value, 'nowrap' => true, 'width' => $width, 'align' => $v2['options']['align'] ?? 'left'];
 					}
-					$table['options'][$row_number_final . '_' . $k][1] = ['value' => format::id($row_number_final) . '.', 'nowrap' => true, 'width' => '1%'];
-					$table['options'][$row_number_final . '_' . $k][2] = ['value' => html::table($inner_table), 'nowrap' => true, 'width' => '99%'];
+					$temp_inner.= html::table($inner_table);
 				}
+				$table['options'][$row_number_final][1] = ['value' => format::id($row_number_final) . '.', 'nowrap' => true, 'width' => '1%'];
+				$table['options'][$row_number_final][2] = ['value' => $temp_inner, 'nowrap' => true, 'width' => '99%'];
 				$row_number_final++;
 			}
 		} else { // preview
@@ -403,26 +406,49 @@ class numbers_frontend_html_form_renderers_html_base {
 			$cached_options = [];
 			foreach ($data['rows'] as $k0 => $v0) {
 				// process all columns first
-				$row = [];
+				$temp_inner = '';
 				foreach ($data['columns'] as $k => $v) {
 					$inner_table = ['options' => [], 'width' => '100%', 'class' => 'list_header_inner'];
 					foreach ($v['elements'] as $k2 => $v2) {
+						if (empty($v2['options']['label_name'])) continue;
 						// process options
 						if (!empty($v2['options']['options_model'])) {
 							$value = $this->render_list_container_default_options($v2['options'], $v0[$k2]);
 						} else {
 							$value = $v0[$k2] ?? null;
 						}
+						// urls
+						if (!empty($v2['options']['url_edit'])) {
+							$value = html::a(['href' => $this->render_url_edit_href($v0), 'value' => $value]);
+						}
 						$inner_table['options'][$k . '_' . $k2][1] = ['value' => '<b>' . $v2['options']['label_name'] . ':</b>', 'width' => '15%', 'align' => 'left'];
 						$inner_table['options'][$k . '_' . $k2][2] = ['value' => $value, 'nowrap' => true, 'width' => '85%', 'align' => 'left'];
 					}
+					$temp_inner.= html::table($inner_table);
 				}
 				$table['options'][$row_number_final . '_' . $k][1] = ['value' => format::id($row_number_final) . '.', 'nowrap' => true, 'width' => '1%'];
-				$table['options'][$row_number_final . '_' . $k][2] = ['value' => html::table($inner_table), 'nowrap' => true, 'width' => '99%'];
+				$table['options'][$row_number_final . '_' . $k][2] = ['value' => $temp_inner, 'nowrap' => true, 'width' => '99%'];
 				$row_number_final++;
 			}
 		}
 		return '<div class="numbers_frontend_form_list_table_wrapper_outer"><div class="numbers_frontend_form_list_table_wrapper_inner">' . html::table($table) . '</div></div>';
+	}
+
+	/**
+	 * Generate edit url
+	 *
+	 * @param array $values
+	 * @return string
+	 */
+	public function render_url_edit_href($values) {
+		$model = factory::model($this->object->form_parent->query_primary_model, true);
+		$pk = [];
+		foreach ($model->pk as $v) {
+			// skip tenant
+			if ($model->tenant && $v == $model->tenant_column) continue;
+			$pk[$v] = $values[$v];
+		}
+		return application::get('mvc.controller') . '/_edit?' . http_build_query2($pk);
 	}
 
 	/**
