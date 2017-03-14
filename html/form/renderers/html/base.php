@@ -47,7 +47,11 @@ class numbers_frontend_html_form_renderers_html_base {
 		// new record action
 		$mvc = application::get('mvc');
 		if (!empty($this->object->options['actions']['new'])) {
-			$onclick = 'return confirm(\'' . strip_tags(i18n(null, object_content_messages::confirm_blank)) . '\');';
+			if ($mvc['action'] != 'index') {
+				$onclick = 'return confirm(\'' . strip_tags(i18n(null, object_content_messages::confirm_blank)) . '\');';
+			} else {
+				$onclick = '';
+			}
 			$this->object->actions['form_new'] = ['value' => 'New', 'sort' => -31000, 'icon' => 'file-o', 'href' => $mvc['controller'] . '/_edit?' . $this->object::button_submit_blank . '=1', 'onclick' => $onclick, 'internal_action' => true];
 			// override
 			if (is_array($this->object->options['actions']['new'])) {
@@ -1298,7 +1302,21 @@ render_custom_renderer:
 				}
 				// translate place holder
 				if (array_key_exists('placeholder', $result_options)) {
-					if (!empty($result_options['placeholder'])) {
+					if ($result_options['field_name'] == 'full_text_search' && $result_options['placeholder'] === true) {
+						$temp_placeholder = [];
+						foreach ($result_options['full_text_search_columns'] as $v8) {
+							if (strpos($v8, '.') !== false) {
+								$v8 = explode('.', $v8);
+								$v8 = $v8[1];
+							}
+							if (!empty($this->object->fields[$v8]['options']['label_name'])) {
+								$temp_placeholder[] = i18n(null, $this->object->fields[$v8]['options']['label_name']);
+							}
+						}
+						if (!empty($temp_placeholder)) {
+							$result_options['placeholder'] = i18n(null, 'Search in [columns]', ['replace' => ['[columns]' => implode(', ', $temp_placeholder)]]);
+						}
+					} else if (!empty($result_options['placeholder'])) {
 						$result_options['placeholder'] = strip_tags(i18n(null, $result_options['placeholder']));
 					}
 				} else if (!empty($result_options['validator_method']) && empty($result_options['value']) && empty($result_options['multiple_column'])) {
