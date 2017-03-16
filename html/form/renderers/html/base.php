@@ -66,7 +66,11 @@ class numbers_frontend_html_form_renderers_html_base {
 		if (!empty($this->object->options['actions']['refresh'])) {
 			$url = $mvc['full'];
 			if ($this->object->values_loaded) {
-				$url.= '?' . http_build_query2($this->object->pk);
+				$pk = $this->object->pk;
+				if ($this->object->collection_object->primary_model->tenant) {
+					foreach ($pk as $k => $v) if ($k == $this->object->collection_object->primary_model->tenant_column) unset($pk[$k]);
+				}
+				$url.= '?' . http_build_query2($pk);
 			}
 			$this->object->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => 32000, 'icon' => 'refresh', 'href' => $url, 'internal_action' => true];
 			// override
@@ -500,7 +504,7 @@ render_custom_renderer:
 			}
 		}
 		// if its details we need to render it differently
-		if ($this->object->data[$container_link]['type'] == 'details') {
+		if (($this->object->data[$container_link]['type'] ?? '') == 'details') {
 			return $this->render_container_type_details($container_link);
 		}
 		// sorting rows
