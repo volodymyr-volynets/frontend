@@ -163,7 +163,7 @@ class numbers_frontend_html_renderers_class_html5 {
 	 * @var string
 	 */
 	public static $numbers = [
-		'preset', 'searchable', 'tree', 'placeholder', 'color_picker', 'optgroups', 'title', 'field_values_key', 'field_value_hash'
+		'placeholder', 'title', 'field_values_key', 'field_value_hash'
 	];
 
 	/**

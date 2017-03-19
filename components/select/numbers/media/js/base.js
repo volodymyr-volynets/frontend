@@ -12,14 +12,14 @@ var numbers_select = function (options) {
 	var result = new Object();
 	result.id = options.id;
 	result.elem = document.getElementById(options.id);
-	result.searchable = options.searchable ? options.searchable : (result.elem.getAttribute('searchable') == 'searchable' ? true : false);
-	result.preset = options.preset ? options.preset : (result.elem.getAttribute('preset') == 'preset' ? true : false);
+	result.searchable = options.searchable ? options.searchable : (result.elem.getAttribute('data-searchable') == 'searchable' ? true : false);
+	result.preset = options.preset ? options.preset : (result.elem.getAttribute('data-preset') == 'preset' ? true : false);
 	if (result.preset) {
 		result.searchable = true;
 	}
-	result.tree = options.tree ? options.tree : (result.elem.getAttribute('tree') == 'tree' ? true : false);
-	result.color_picker = options.color_picker ? options.color_picker : (result.elem.getAttribute('color_picker') == 'color_picker' ? true : false);
-	result.optgroups = result.elem.getAttribute('optgroups') == 'optgroups' ? true : false;
+	result.tree = options.tree ? options.tree : (result.elem.getAttribute('data-tree') == 'tree' ? true : false);
+	result.color_picker = options.color_picker ? options.color_picker : (result.elem.getAttribute('data-color_picker') == 'color_picker' ? true : false);
+	result.optgroups = result.elem.getAttribute('data-optgroups') == 'optgroups' ? true : false;
 	result.var_id = 'numbers_select_var_' + result.id;
 	result.div_id = options.id + '_select_div';
 	result.table_id = options.id + '_select_table';

@@ -274,23 +274,11 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 	 * @see html::radio()
 	 */
 	public static function checkbox($options = []) {
-		if (empty($options['value'])) {
-			$options['value'] = 1;
+		if (!empty($options['value'])) {
+			$options['checked'] = 'checked';
 		}
-		// we will check within an array automatically
-		if (!empty($options['checked'])) {
-			if (is_array($options['checked'])) {
-				if (in_array($options['value'], $options['checked'])) {
-					$options['checked'] = true;
-				} else {
-					unset($options['checked']);
-				}
-			} else {
-				$options['checked'] = true;
-			}
-		} else {
-			unset($options['checked']);
-		}
+		$options['value'] = 1;
+		// readonly
 		if (!empty($options['readonly'])) {
 			$options['disabled'] = 'disabled';
 		}
@@ -397,6 +385,13 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 				$result.= '<optgroup label="' . $v2['name'] . '" id="' . $k2 . '">';
 					$result.= self::generate_select_options($v2['options'], $value, $options);
 				$result.= '</optgroup>';
+			}
+		}
+		// convert certain keys
+		foreach (['preset', 'searchable', 'tree', 'color_picker', 'optgroups'] as $v) {
+			if (isset($options[$v])) {
+				$options['data-' . $v] = $options[$v];
+				unset($options[$v]);
 			}
 		}
 		return '<select ' . self::generate_attributes($options, 'select') . '>' . $result . '</select>';
