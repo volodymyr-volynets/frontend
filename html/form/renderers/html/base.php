@@ -1101,6 +1101,14 @@ render_custom_renderer:
 			call_user_func_array($this->object->wrapper_methods['override_field_value']['main'], [& $this, & $options, & $value, & $neighbouring_values]);
 		}
 		$result_options = $options['options'];
+		// process json_contains
+		if (!empty($result_options['json_contains'])) {
+			$temp = [];
+			foreach ($result_options['json_contains'] as $k => $v) {
+				$temp[$k] = array_key_get($neighbouring_values, $v);
+			}
+			$value = object_table_options::options_json_format_key($temp);
+		}
 		$options['options']['value'] = $value;
 		array_key_extract_by_prefix($result_options, 'label_');
 		$element_expand = !empty($result_options['expand']);

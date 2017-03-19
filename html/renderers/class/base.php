@@ -91,7 +91,7 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 				}
 				$v = implode(' ', $v);
 			}
-			$result[] = $k . '="' . addcslashes($v, '"') . '"';
+			$result[] = $k . '="' . htmlentities($v) . '"';
 		}
 		return implode(' ', $result);
 	}
@@ -131,10 +131,10 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 			}
 			foreach($v as $k2 => $v2) {
 				if (!is_array($v2) && $k2 != 'name') {
-					$temp.= ' ' . $k2 . '="' . $v2 . '"';
+					$temp.= ' ' . $k2 . '="' . htmlentities($v2) . '"';
 				}
 			}
-			$result.= '<option value="' . addslashes($k) . '"'. $selected . $temp . '>' . $text . '</option>';
+			$result.= '<option value="' . htmlentities($k) . '"'. $selected . $temp . '>' . $text . '</option>';
 		}
 		return $result;
 	}

@@ -320,7 +320,13 @@ var numbers_select = function (options) {
 			if (this.color_picker && this.elem.options[this.elem.selectedIndex].value != '') {
 				html+= '<span class="numbers_select_option_table_color" style="background-color:#' + this.elem.options[this.elem.selectedIndex].value + ';">&nbsp;</span> ';
 			}
-			html+= this.elem.options[this.elem.selectedIndex].text;
+			// grab text_selected first
+			var __selected_name = this.elem.options[this.elem.selectedIndex].getAttribute('__selected_name');
+			if (__selected_name) {
+				html+= __selected_name;
+			} else {
+				html+= this.elem.options[this.elem.selectedIndex].text;
+			}
 			this.replacement_div_elem.innerHTML = html;
 		}
 	};
@@ -412,6 +418,7 @@ var numbers_select = function (options) {
 				value: '',
 				text: 'All/None',
 				text_lower: '',
+				text_selected: null,
 				disabled: true,
 				inactive: false,
 				selected: false,
@@ -431,6 +438,7 @@ var numbers_select = function (options) {
 				value: this.elem.options[i].value,
 				text: this.elem.options[i].text,
 				text_lower: this.elem.options[i].text.toLowerCase(),
+				text_selected: this.elem.options[i].getAttribute('__selected_name'),
 				disabled: this.elem.options[i].disabled,
 				inactive: (parseInt(this.elem.options[i].getAttribute('inactive')) > 0) ? true : false,
 				selected: this.elem.options[i].selected,
@@ -451,6 +459,7 @@ var numbers_select = function (options) {
 							value: '',
 							text: optgroup_label,
 							text_lower: optgroup_label.toLowerCase(),
+							text_selected: null,
 							disabled: true,
 							inactive: false,
 							selected: false,
