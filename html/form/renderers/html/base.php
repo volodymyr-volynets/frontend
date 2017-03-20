@@ -1148,7 +1148,7 @@ render_custom_renderer:
 						}
 					}
 				}
-				$result_options['options'] = object_data_common::process_options($result_options['options_model'], $this, $result_options['options_params'], $value, $skip_values, $result_options['options_options']);
+				$result_options['options'] = object_data_common::process_options($result_options['options_model'], $this->object, $result_options['options_params'], $value, $skip_values, $result_options['options_options']);
 			} else {
 				// we need to inject form id into autocomplete
 				$result_options['form_id'] = "form_{$this->object->form_link}_form";
