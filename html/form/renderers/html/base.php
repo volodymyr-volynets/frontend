@@ -67,7 +67,7 @@ class numbers_frontend_html_form_renderers_html_base {
 			$url = $mvc['full'];
 			if ($this->object->values_loaded) {
 				$pk = $this->object->pk;
-				if ($this->object->collection_object->primary_model->tenant) {
+				if (!empty($this->object->collection_object->primary_model->tenant)) {
 					foreach ($pk as $k => $v) if ($k == $this->object->collection_object->primary_model->tenant_column) unset($pk[$k]);
 				}
 				$url.= '?' . http_build_query2($pk);
