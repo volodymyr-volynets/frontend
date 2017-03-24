@@ -1,6 +1,6 @@
 <?php
 
-class numbers_frontend_system_controller_error extends object_controller {
+class numbers_frontend_system_controller_error extends \Object\Controller {
 
 	public $title = 'Js Error Handler';
 

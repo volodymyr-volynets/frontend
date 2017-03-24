@@ -1,6 +1,6 @@
 <?php
 
-class numbers_frontend_system_controller_dev extends object_controller {
+class numbers_frontend_system_controller_dev extends \Object\Controller {
 
 	/**
 	 * A list of available topics wuld be here
