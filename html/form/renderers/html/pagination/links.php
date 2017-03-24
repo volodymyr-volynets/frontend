@@ -58,7 +58,7 @@ class numbers_frontend_html_list_pagination_links implements numbers_frontend_ht
 					$value = '<b>' . $value . '</b>';
 					$no_url = true;
 				}
-				$result[] = $left2 . ($no_url ? $value : html::a(['value' => $value, 'href' => 'javascript:void(0);', 'onclick' => $object->url . '(' . ($v * $object->limit) . ')'])) . $right2;
+				$result[] = $left2 . ($no_url ? $value : Html::a(['value' => $value, 'href' => 'javascript:void(0);', 'onclick' => $object->url . '(' . ($v * $object->limit) . ')'])) . $right2;
 			}
 		}
 		// generating grid
@@ -99,6 +99,6 @@ class numbers_frontend_html_list_pagination_links implements numbers_frontend_ht
 				]
 			]
 		];
-		return html::grid($grid);
+		return Html::grid($grid);
 	}
 }

@@ -9,7 +9,19 @@
 		}
 	],
 	"require": {
-		"php": ">=7.0.0"
+		"php": ">=7.0.0",
+		"oomphinc/composer-installers-extender": "~1.0"
 	},
-	"license": "Apache License 2.0"
+	"license": "Apache License 2.0",
+	"extra": {
+		"installer-types": ["library"],
+		"installer-paths": {
+			"vendor/Numbers/Frontend/": ["numbers/frontend"]
+		}
+	},
+	"autoload": {
+        "psr-4": {
+            "Numbers\\Frontend\\": ""
+        }
+    }
 }

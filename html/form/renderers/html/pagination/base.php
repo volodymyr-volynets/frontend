@@ -32,7 +32,7 @@ class numbers_frontend_html_form_renderers_html_pagination_base {
 				$sort.= i18n(null, 'Sort') . ': ';
 				$temp = [];
 				foreach ($options['sort'] as $k => $v) {
-					$temp[] = i18n(null, $k) . ' ' . html::icon(['type' => 'sort-alpha-' . ($v == SORT_ASC ? 'asc' : 'desc')]);
+					$temp[] = i18n(null, $k) . ' ' . Html::icon(['type' => 'sort-alpha-' . ($v == SORT_ASC ? 'asc' : 'desc')]);
 				}
 				$sort.= implode(', ', $temp);
 			$sort.= '</td></tr></table>';
@@ -50,9 +50,9 @@ class numbers_frontend_html_form_renderers_html_pagination_base {
 					$preview_value = 1;
 					$preview_title = i18n(null, 'Preview');
 				}
-				$displaying.= '<td>' . html::button2(['type' => 'default', 'title' => $preview_title, 'value' => html::icon(['type' => $preview_icon]), 'onclick' => "numbers.form.set_value(this.form, '__preview', {$preview_value}); numbers.form.trigger_submit(this.form, '__submit_button');"]) . '</td>';
+				$displaying.= '<td>' . Html::button2(['type' => 'default', 'title' => $preview_title, 'value' => Html::icon(['type' => $preview_icon]), 'onclick' => "numbers.form.set_value(this.form, '__preview', {$preview_value}); numbers.form.trigger_submit(this.form, '__submit_button');"]) . '</td>';
 				$displaying.= '<td>&nbsp;</td>';
-				$displaying.= '<td><div style="width: 80px;">' . html::select(['id' => 'page_sizes_' . $type, 'title' => i18n(null, 'Displaying rows'), 'options' => factory::model('numbers_framework_object_form_model_pagesizes', true)->options(['i18n' => 'skip_sorting']), 'value' => $options['limit'], 'no_choose' => true, 'onchange' => "numbers.form.set_value(this.form, '__offset', 0); numbers.form.set_value(this.form, '__limit', this.value); numbers.form.trigger_submit(this.form, '__submit_button');"]) . '</div></td>';
+				$displaying.= '<td><div style="width: 80px;">' . Html::select(['id' => 'page_sizes_' . $type, 'title' => i18n(null, 'Displaying rows'), 'options' => Factory::model('numbers_framework_object_form_model_pagesizes', true)->options(['i18n' => 'skip_sorting']), 'value' => $options['limit'], 'no_choose' => true, 'onchange' => "numbers.form.set_value(this.form, '__offset', 0); numbers.form.set_value(this.form, '__limit', this.value); numbers.form.trigger_submit(this.form, '__submit_button');"]) . '</div></td>';
 			$displaying.= '</tr>';
 		$displaying.= '</table>';
 		// navigation
@@ -61,11 +61,11 @@ class numbers_frontend_html_form_renderers_html_pagination_base {
 		$flag_last_row_exists = false;
 		$current_page = intval($options['offset'] / $options['limit']);
 		if ($current_page >= 1) {
-			$navigation[]= html::button2(['value' => i18n(null, 'First'), 'onclick' => "numbers.form.set_value(this.form, '__offset', 0); numbers.form.trigger_submit(this.form, '__submit_button');"]);
+			$navigation[]= Html::button2(['value' => i18n(null, 'First'), 'onclick' => "numbers.form.set_value(this.form, '__offset', 0); numbers.form.trigger_submit(this.form, '__submit_button');"]);
 		}
 		if ($current_page >= 2) {
 			$previous = (($current_page - 1) * $options['limit']);
-			$navigation[]= html::button2(['value' => i18n(null, 'Previous'), 'onclick' => "numbers.form.set_value(this.form, '__offset', {$previous}); numbers.form.trigger_submit(this.form, '__submit_button');"]);
+			$navigation[]= Html::button2(['value' => i18n(null, 'Previous'), 'onclick' => "numbers.form.set_value(this.form, '__offset', {$previous}); numbers.form.trigger_submit(this.form, '__submit_button');"]);
 		}
 		// select with number of pages
 		$pages = ceil($options['total'] / $options['limit']);
@@ -76,7 +76,7 @@ class numbers_frontend_html_form_renderers_html_pagination_base {
 			}
 			$navigation2 = i18n(null, 'Page') . ': ';
 			$previous = (($current_page - 1) * $options['limit']);
-			$navigation2.= '<div style="width: 100px; display: inline-block;">' . html::select(['id' => 'pages_' . $type, 'options' => $temp, 'value' => $options['offset'], 'no_choose' => true, 'onchange' => "numbers.form.set_value(this.form, '__offset', this.value); numbers.form.trigger_submit(this.form, '__submit_button');"]) . '</div>';
+			$navigation2.= '<div style="width: 100px; display: inline-block;">' . Html::select(['id' => 'pages_' . $type, 'options' => $temp, 'value' => $options['offset'], 'no_choose' => true, 'onchange' => "numbers.form.set_value(this.form, '__offset', this.value); numbers.form.trigger_submit(this.form, '__submit_button');"]) . '</div>';
 			$navigation[] = $navigation2;
 			// checking for next and last pages
 			$flag_next_row_exists = ($pages - $current_page - 2 > 0) ? true : false;
@@ -86,11 +86,11 @@ class numbers_frontend_html_form_renderers_html_pagination_base {
 		}
 		if ($flag_next_row_exists) {
 			$next = (($current_page + 1) * $options['limit']);
-			$navigation[]= html::button2(['value' => i18n(null, 'Next'), 'onclick' => "numbers.form.set_value(this.form, '__offset', {$next}); numbers.form.trigger_submit(this.form, '__submit_button');"]);
+			$navigation[]= Html::button2(['value' => i18n(null, 'Next'), 'onclick' => "numbers.form.set_value(this.form, '__offset', {$next}); numbers.form.trigger_submit(this.form, '__submit_button');"]);
 		}
 		if ($flag_last_row_exists) {
 			$last = (($pages - 1) * $options['limit']);
-			$navigation[]= html::button2(['value' => i18n(null, 'Last'), 'onclick' => "numbers.form.set_value(this.form, '__offset', {$last}); numbers.form.trigger_submit(this.form, '__submit_button');"]);
+			$navigation[]= Html::button2(['value' => i18n(null, 'Last'), 'onclick' => "numbers.form.set_value(this.form, '__offset', {$last}); numbers.form.trigger_submit(this.form, '__submit_button');"]);
 		}
 		// generating grid
 		$grid = [
@@ -141,6 +141,6 @@ class numbers_frontend_html_form_renderers_html_pagination_base {
 				]
 			]
 		];
-		return html::grid($grid);
+		return Html::grid($grid);
 	}
 }

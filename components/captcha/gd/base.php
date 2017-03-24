@@ -47,7 +47,7 @@ class numbers_frontend_components_captcha_gd_base implements numbers_frontend_co
 			return ob_get_clean();
 		} else {
 			// output image, important to set content type in application
-			application::set('flag.global.__content_type', 'image/png');
+			Application::set('flag.global.__content_type', 'image/png');
 			header("Content-type: image/png");
 			imagepng($image);
 			imagedestroy($image);
@@ -70,7 +70,7 @@ class numbers_frontend_components_captcha_gd_base implements numbers_frontend_co
 			 $result.= $letters[mt_rand(0, strlen($letters) - 1)];
 		}
 		// setting value in session
-		session::set(str_replace('_', '.', get_called_class()) . '.' . $captcha_link . '.password', $result);
+		Session::set(str_replace('_', '.', get_called_class()) . '.' . $captcha_link . '.password', $result);
 		return $result;
 	}
 
@@ -90,9 +90,9 @@ class numbers_frontend_components_captcha_gd_base implements numbers_frontend_co
 			'style' => $options['img_style'] ?? 'vertical-align: middle;',
 		];
 		if (!empty($options['only_image'])) {
-			return html::img($image_options);
+			return Html::img($image_options);
 		} else {
-			return '<table width="100%"><tr><td>' . html::input($options) . '</td><td width="1%">&nbsp;</td><td width="1%">' . html::img($image_options) . '</td></tr></table>';
+			return '<table width="100%"><tr><td>' . Html::input($options) . '</td><td width="1%">&nbsp;</td><td width="1%">' . Html::img($image_options) . '</td></tr></table>';
 		}
 	}
 
@@ -105,7 +105,7 @@ class numbers_frontend_components_captcha_gd_base implements numbers_frontend_co
 			'error' => [],
 			'placeholder' => ''
 		];
-		$password = session::get(['numbers', 'frontend', 'components', 'captcha', 'gd', 'base', $options['options']['id'], 'password']);
+		$password = Session::get(['numbers', 'frontend', 'components', 'captcha', 'gd', 'base', $options['options']['id'], 'password']);
 		$result['placeholder'] = 'Enter text here';
 		if (empty($value) || $value !== $password) {
 			$result['error'][] = 'Invalid captcha!';

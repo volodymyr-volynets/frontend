@@ -3,7 +3,7 @@
 class numbers_frontend_html_fontawesome_base {
 
 	/**
-	 * @see html::icon()
+	 * @see Html::icon()
 	 */
 	public static function icon($options = []) {
 		// if we are rendering image
@@ -17,7 +17,7 @@ class numbers_frontend_html_fontawesome_base {
 				return implode(' ', $options['class']);
 			} else {
 				$options['tag'] = $options['tag'] ?? 'i';
-				return html::tag($options);
+				return Html::tag($options);
 			}
 		}
 	}

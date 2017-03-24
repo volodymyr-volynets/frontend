@@ -3,13 +3,13 @@
 class numbers_frontend_components_wizard_numbers_base implements numbers_frontend_components_wizard_interface_base {
 
 	/**
-	 * see html::wizard();
+	 * see Html::wizard();
 	 */
 	public static function wizard($options = []) {
 		// if we have no options we render nothing
 		if (empty($options['options'])) return;
 		// include js & css files
-		layout::add_css('/numbers/media_submodules/numbers_frontend_components_wizard_numbers_media_css_base.css', 10000);
+		Layout::add_css('/numbers/media_submodules/numbers_frontend_components_wizard_numbers_media_css_base.css', 10000);
 		// font awesome icons
 		library::add('fontawesome');
 		// render

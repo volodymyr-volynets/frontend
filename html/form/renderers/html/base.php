@@ -25,8 +25,8 @@ class numbers_frontend_html_form_renderers_html_base {
 		$this->object->tabindex = 1;
 		// css & js
 		numbers_frontend_media_libraries_jssha_base::add();
-		layout::add_js('/numbers/media_submodules/numbers_frontend_html_form_renderers_html_media_js_base.js', -10000);
-		layout::add_css('/numbers/media_submodules/numbers_frontend_html_form_renderers_html_media_css_base.css', -10000);
+		Layout::add_js('/numbers/media_submodules/numbers_frontend_html_form_renderers_html_media_js_base.js', -10000);
+		Layout::add_css('/numbers/media_submodules/numbers_frontend_html_form_renderers_html_media_css_base.css', -10000);
 		// include master js
 		if (!empty($this->object->master_object) && method_exists($this->object->master_object, 'add_js')) {
 			$this->object->master_object->add_js();
@@ -34,18 +34,18 @@ class numbers_frontend_html_form_renderers_html_base {
 		// include js
 		$filename = str_replace('_form_', '_media_js_', $this->object->form_class) . '.js';
 		if (file_exists('./../libraries/vendor/' . str_replace('_', '/', $filename))) {
-			layout::add_js('/numbers/media_submodules/' . $filename);
+			Layout::add_js('/numbers/media_submodules/' . $filename);
 		}
 		$this->object->misc_settings['extended_js_class'] = 'numbers.' . $this->object->form_class;
 		// include css
 		$filename = str_replace('_form_', '_media_css_', $this->object->form_class) . '.css';
 		if (file_exists('./../libraries/vendor/' . str_replace('_', '/', $filename))) {
-			layout::add_css('/numbers/media_submodules/' . $filename);
+			Layout::add_css('/numbers/media_submodules/' . $filename);
 		}
 		// load mask
 		numbers_frontend_media_libraries_loadmask_base::add();
 		// new record action
-		$mvc = application::get('mvc');
+		$mvc = Application::get('mvc');
 		if (!empty($this->object->options['actions']['new'])) {
 			if ($mvc['action'] != 'index') {
 				$onclick = 'return confirm(\'' . strip_tags(i18n(null, object_content_messages::confirm_blank)) . '\');';
@@ -116,7 +116,7 @@ class numbers_frontend_html_form_renderers_html_base {
 						$this->object->current_tab[] = "{$tab_id}_{$k2}";
 						$labels = '';
 						foreach (['records', 'danger', 'warning', 'success', 'info'] as $v78) {
-							$labels.= html::label2(['type' => ($v78 == 'records' ? 'primary' : $v78), 'style' => 'display: none;', 'value' => 0, 'id' => implode('__', $this->object->current_tab) . '__' . $v78]);
+							$labels.= Html::label2(['type' => ($v78 == 'records' ? 'primary' : $v78), 'style' => 'display: none;', 'value' => 0, 'id' => implode('__', $this->object->current_tab) . '__' . $v78]);
 						}
 						$tab_header[$k2] = i18n(null, $v2['options']['label_name']) . $labels;
 						$tab_values[$k2] = '';
@@ -149,7 +149,7 @@ class numbers_frontend_html_form_renderers_html_base {
 					if ($have_tabs) {
 						$class = ['form-tabs'];
 						if (!empty($v['options']['class'])) $class[] = $v['options']['class'];
-						$result[$k]['html'] = html::tabs([
+						$result[$k]['html'] = Html::tabs([
 							'id' => $tab_id,
 							'class' => implode(' ', $class),
 							'header' => $tab_header,
@@ -184,14 +184,14 @@ class numbers_frontend_html_form_renderers_html_base {
 		if (!empty($this->object->errors['general'])) {
 			$messages = '';
 			foreach ($this->object->errors['general'] as $k => $v) {
-				$messages.= html::message(['options' => $v, 'type' => $k]);
+				$messages.= Html::message(['options' => $v, 'type' => $k]);
 			}
 			$result = '<div class="form_message_container">' . $messages . '</div>' . $result;
 		}
 		// couple hidden fields
-		$result.= html::hidden(['name' => '__form_link', 'value' => $this->object->form_link]);
-		$result.= html::hidden(['name' => '__form_values_loaded', 'value' => $this->object->values_loaded]);
-		$result.= html::hidden(['name' => '__form_onchange_field_values_key', 'value' => '']);
+		$result.= Html::hidden(['name' => '__form_link', 'value' => $this->object->form_link]);
+		$result.= Html::hidden(['name' => '__form_values_loaded', 'value' => $this->object->values_loaded]);
+		$result.= Html::hidden(['name' => '__form_onchange_field_values_key', 'value' => '']);
 		// form data in onload
 		$js_data = [
 			'submitted' => $this->object->submitted,
@@ -208,28 +208,28 @@ class numbers_frontend_html_form_renderers_html_base {
 		];
 		$js = "numbers.form.data['form_{$this->object->form_link}_form'] = " . json_encode($js_data) . ";\n";
 		$js.= "numbers.form.list_filter_sort_toggle('#form_{$this->object->form_link}_form', true);\n";
-		layout::onload($js);
+		Layout::onload($js);
 		// bypass values
 		if (!empty($this->object->options['bypass_hidden_values'])) {
 			foreach ($this->object->options['bypass_hidden_values'] as $k => $v) {
-				$result.= html::hidden(['name' => $k, 'value' => $v]);
+				$result.= Html::hidden(['name' => $k, 'value' => $v]);
 			}
 		}
 		if (!empty($this->object->options['bypass_hidden_from_input'])) {
 			foreach ($this->object->options['bypass_hidden_from_input'] as $v) {
-				$result.= html::hidden(['name' => $v, 'value' => $this->object->options['input'][$v] ?? '']);
+				$result.= Html::hidden(['name' => $v, 'value' => $this->object->options['input'][$v] ?? '']);
 			}
 		}
 		// js to update counters in tabs
 		if (!empty($this->object->errors['tabs'])) {
 			foreach ($this->object->errors['tabs'] as $k => $v) {
-				layout::onload("$('#{$k}').html($v); $('#{$k}').show();");
+				Layout::onload("$('#{$k}').html($v); $('#{$k}').show();");
 			}
 		}
 		// if we have form
 		if (empty($this->object->options['skip_form'])) {
-			$mvc = application::get('mvc');
-			$result = html::form([
+			$mvc = Application::get('mvc');
+			$result = Html::form([
 				'action' => $mvc['full'],
 				'name' => "form_{$this->object->form_link}_form",
 				'id' => "form_{$this->object->form_link}_form",
@@ -243,16 +243,16 @@ class numbers_frontend_html_form_renderers_html_base {
 				'success' => true,
 				'error' => [],
 				'html' => $result,
-				'js' => layout::$onload
+				'js' => Layout::$onload
 			];
-			layout::render_as($result, 'application/json');
+			Layout::render_as($result, 'application/json');
 		}
 		$result = "<div id=\"form_{$this->object->form_link}_form_mask\"><div id=\"form_{$this->object->form_link}_form_wrapper\">" . $result . '</div></div>';
 		// if we have segment
 		if (isset($this->object->options['segment'])) {
 			$temp = is_array($this->object->options['segment']) ? $this->object->options['segment'] : [];
 			$temp['value'] = $result;
-			$result = html::segment($temp);
+			$result = Html::segment($temp);
 		}
 		return $result;
 	}
@@ -268,11 +268,11 @@ class numbers_frontend_html_form_renderers_html_base {
 		// looping through data and building html
 		$temp = [];
 		foreach ($this->object->actions as $k => $v) {
-			$icon = !empty($v['icon']) ? (html::icon(['type' => $v['icon']]) . ' ') : '';
+			$icon = !empty($v['icon']) ? (Html::icon(['type' => $v['icon']]) . ' ') : '';
 			$onclick = !empty($v['onclick']) ? $v['onclick'] : '';
 			$value = !empty($v['value']) ? i18n(null, $v['value']) : '';
 			$href = $v['href'] ?? 'javascript:void(0);';
-			$temp[] = html::a(array('value' => $icon . $value, 'href' => $href, 'onclick' => $onclick));
+			$temp[] = Html::a(array('value' => $icon . $value, 'href' => $href, 'onclick' => $onclick));
 		}
 		return implode(' ', $temp);
 	}
@@ -301,14 +301,14 @@ class numbers_frontend_html_form_renderers_html_base {
 		// render pagination
 		if (!empty($options['pagination_top'])) {
 			$data['pagination_type'] = 'top';
-			$result['data']['html'].= factory::model($options['pagination_top'])->render($data);
+			$result['data']['html'].= Factory::model($options['pagination_top'])->render($data);
 		}
 		// render body
 		$result['data']['html'].= $this->render_list_container_default($data, $options);
 		// render pagination
 		if (!empty($options['pagination_bottom'])) {
 			$data['pagination_type'] = 'bottom';
-			$result['data']['html'].= factory::model($options['pagination_bottom'])->render($data);
+			$result['data']['html'].= Factory::model($options['pagination_bottom'])->render($data);
 		}
 		$result['success'] = true;
 		return $result;
@@ -338,7 +338,7 @@ class numbers_frontend_html_form_renderers_html_base {
 		}
 		$hash = sha1($options['options_model'] . serialize($params));
 		if (!isset($this->cached_options[$hash])) {
-			$method = factory::method($options['options_model'], null, true);
+			$method = Factory::method($options['options_model'], null, true);
 			$this->cached_options[$hash] = call_user_func_array($method, [['where' => $params, 'i18n' => true]]);
 		}
 		return $this->cached_options[$hash][$value]['name'] ?? null;
@@ -353,7 +353,7 @@ class numbers_frontend_html_form_renderers_html_base {
 		$result = '';
 		// if we have no rows we display a messsage
 		if ($data['num_rows'] == 0) {
-			return html::message(['type' => 'warning', 'options' => [i18n(null, object_content_messages::no_rows_found)]]);
+			return Html::message(['type' => 'warning', 'options' => [i18n(null, object_content_messages::no_rows_found)]]);
 		}
 		$table = [
 			'width' => '100%',
@@ -375,7 +375,7 @@ class numbers_frontend_html_form_renderers_html_base {
 					$width = $v2['options']['width'] ?? ($v2['options']['percent'] . '%');
 					$inner_table['options'][1][$k2] = ['value' => i18n(null, $v2['options']['label_name']), 'nowrap' => true, 'width' => $width, 'tag' => 'th'];
 				}
-				$temp_inner.= html::table($inner_table);
+				$temp_inner.= Html::table($inner_table);
 			}
 			$table['options']['header'][1] = ['value' => '&nbsp;', 'nowrap' => true, 'width' => '1%'];
 			$table['options']['header'][2] = ['value' => $temp_inner, 'nowrap' => true, 'width' => '99%'];
@@ -398,13 +398,13 @@ class numbers_frontend_html_form_renderers_html_base {
 						$width = $v2['options']['width'] ?? ($v2['options']['percent'] . '%');
 						// urls
 						if (!empty($v2['options']['url_edit'])) {
-							$value = html::a(['href' => $this->render_url_edit_href($v0), 'value' => $value]);
+							$value = Html::a(['href' => $this->render_url_edit_href($v0), 'value' => $value]);
 						}
 						$inner_table['options'][$k][$k2] = ['value' => $value, 'nowrap' => true, 'width' => $width, 'align' => $v2['options']['align'] ?? 'left'];
 					}
-					$temp_inner.= html::table($inner_table);
+					$temp_inner.= Html::table($inner_table);
 				}
-				$table['options'][$row_number_final][1] = ['value' => format::id($row_number_final) . '.', 'nowrap' => true, 'width' => '1%'];
+				$table['options'][$row_number_final][1] = ['value' => Format::id($row_number_final) . '.', 'nowrap' => true, 'width' => '1%'];
 				$table['options'][$row_number_final][2] = ['value' => $temp_inner, 'nowrap' => true, 'width' => '99%'];
 				$row_number_final++;
 			}
@@ -427,19 +427,19 @@ class numbers_frontend_html_form_renderers_html_base {
 						}
 						// urls
 						if (!empty($v2['options']['url_edit'])) {
-							$value = html::a(['href' => $this->render_url_edit_href($v0), 'value' => $value]);
+							$value = Html::a(['href' => $this->render_url_edit_href($v0), 'value' => $value]);
 						}
 						$inner_table['options'][$k . '_' . $k2][1] = ['value' => '<b>' . $v2['options']['label_name'] . ':</b>', 'width' => '15%', 'align' => 'left'];
 						$inner_table['options'][$k . '_' . $k2][2] = ['value' => $value, 'nowrap' => true, 'width' => '85%', 'align' => 'left'];
 					}
-					$temp_inner.= html::table($inner_table);
+					$temp_inner.= Html::table($inner_table);
 				}
-				$table['options'][$row_number_final . '_' . $k][1] = ['value' => format::id($row_number_final) . '.', 'nowrap' => true, 'width' => '1%'];
+				$table['options'][$row_number_final . '_' . $k][1] = ['value' => Format::id($row_number_final) . '.', 'nowrap' => true, 'width' => '1%'];
 				$table['options'][$row_number_final . '_' . $k][2] = ['value' => $temp_inner, 'nowrap' => true, 'width' => '99%'];
 				$row_number_final++;
 			}
 		}
-		return '<div class="numbers_frontend_form_list_table_wrapper_outer"><div class="numbers_frontend_form_list_table_wrapper_inner">' . html::table($table) . '</div></div>';
+		return '<div class="numbers_frontend_form_list_table_wrapper_outer"><div class="numbers_frontend_form_list_table_wrapper_inner">' . Html::table($table) . '</div></div>';
 	}
 
 	/**
@@ -449,14 +449,14 @@ class numbers_frontend_html_form_renderers_html_base {
 	 * @return string
 	 */
 	public function render_url_edit_href($values) {
-		$model = factory::model($this->object->form_parent->query_primary_model, true);
+		$model = Factory::model($this->object->form_parent->query_primary_model, true);
 		$pk = [];
 		foreach ($model->pk as $v) {
 			// skip tenant
 			if ($model->tenant && $v == $model->tenant_column) continue;
 			$pk[$v] = $values[$v];
 		}
-		return application::get('mvc.controller') . '/_edit?' . http_build_query2($pk);
+		return Application::get('mvc.controller') . '/_edit?' . http_build_query2($pk);
 	}
 
 	/**
@@ -486,12 +486,12 @@ class numbers_frontend_html_form_renderers_html_base {
 				}
 			} else {
 render_custom_renderer:
-				$method = factory::method($this->object->data[$container_link]['options']['custom_renderer']);
+				$method = Factory::method($this->object->data[$container_link]['options']['custom_renderer']);
 				// important to use $this if its the same class
 				if ($method[0] == $this->object->form_class) {
 					$method[0] = & $this->object->form_parent;
 				} else {
-					$method[0] = factory::model($method[0], true);
+					$method[0] = Factory::model($method[0], true);
 				}
 				$temp = call_user_func_array($method, [& $this]);
 				if (is_string($temp)) {
@@ -635,9 +635,9 @@ render_custom_renderer:
 		// empty_warning_message
 		if (empty($options['details_new_rows']) && empty($values) && isset($options['details_empty_warning_message'])) {
 			if (empty($options['details_empty_warning_message'])) {
-				return html::message(['type' => 'warning', 'options' => [object_content_messages::no_rows_found]]);
+				return Html::message(['type' => 'warning', 'options' => [object_content_messages::no_rows_found]]);
 			} else {
-				return html::message(['type' => 'warning', 'options' => [$options['details_empty_warning_message']]]);
+				return Html::message(['type' => 'warning', 'options' => [$options['details_empty_warning_message']]]);
 			}
 		}
 		// building table
@@ -670,7 +670,7 @@ render_custom_renderer:
 					$first_key = key($v2);
 					foreach ($v2 as $k3 => $v3) {
 						// hidden row
-						if ($k === $this->object::hidden && !application::get('flag.numbers.frontend.html.form.show_field_settings')) {
+						if ($k === $this->object::hidden && !Application::get('flag.numbers.frontend.html.form.show_field_settings')) {
 							$v3['options']['row_class'] = ($v3['options']['row_class'] ?? '') . ' grid_row_hidden';
 						}
 						$data['options'][$k][$k2][$k3] = [
@@ -684,7 +684,7 @@ render_custom_renderer:
 			// add a row to a table
 			$table['options']['__header'] = [
 				'row_number' => ['value' => '&nbsp;', 'width' => '1%'],
-				'row_data' => ['value' => html::grid($data), 'width' => (!empty($options['details_11']) ? '100%' : '98%')],
+				'row_data' => ['value' => Html::grid($data), 'width' => (!empty($options['details_11']) ? '100%' : '98%')],
 				'row_delete' => ['value' => '&nbsp;', 'width' => '1%'],
 			];
 		}
@@ -755,7 +755,7 @@ render_custom_renderer:
 					$first_key = key($v2);
 					if ($first_key == $this->object::separator_horisontal) {
 						$data['options'][$row_number . '_' . $k][$k2][0] = [
-							'value' => html::separator(['value' => $first['options']['label_name'], 'icon' => $first['options']['icon'] ?? null]),
+							'value' => Html::separator(['value' => $first['options']['label_name'], 'icon' => $first['options']['icon'] ?? null]),
 							'separator' => true
 						];
 					} else {
@@ -797,7 +797,7 @@ render_custom_renderer:
 							}
 							// hidden row
 							$hidden = false;
-							if ($k === $this->object::hidden && !application::get('flag.numbers.frontend.html.form.show_field_settings')) {
+							if ($k === $this->object::hidden && !Application::get('flag.numbers.frontend.html.form.show_field_settings')) {
 								$v3['options']['row_class'] = ($v3['options']['row_class'] ?? '') . ' grid_row_hidden';
 								$hidden = true;
 							}
@@ -844,7 +844,7 @@ render_custom_renderer:
 			if (!empty($this->object->detail_fields[$options['details_key']]['subdetails'])) {
 				$tab_id = "form_tabs_{$this->object->form_link}_subdetails_{$options['details_key']}_{$row_number}";
 				$tab_header = [
-					'tabs_subdetails_none' => html::icon(['type' => 'toggle-on'])
+					'tabs_subdetails_none' => Html::icon(['type' => 'toggle-on'])
 				];
 				$tab_values = [
 					'tabs_subdetails_none' => ''
@@ -867,7 +867,7 @@ render_custom_renderer:
 					$this->object->current_tab[] = "{$tab_id}_{$k10}";
 					$labels = '';
 					foreach (['records', 'danger', 'warning', 'success', 'info'] as $v78) {
-						$labels.= html::label2(['type' => ($v78 == 'records' ? 'primary' : $v78), 'style' => 'display: none;', 'value' => 0, 'id' => implode('__', $this->object->current_tab) . '__' . $v78]);
+						$labels.= Html::label2(['type' => ($v78 == 'records' ? 'primary' : $v78), 'style' => 'display: none;', 'value' => 0, 'id' => implode('__', $this->object->current_tab) . '__' . $v78]);
 					}
 					$tab_header[$k10] = i18n(null, $v10['options']['label_name']) . $labels;
 					$tab_values[$k10] = '';
@@ -894,7 +894,7 @@ render_custom_renderer:
 				if (!$have_tabs) {
 					$tab_options['tabs_subdetails_none']['hidden'] = true;
 				}
-				$subdetails = html::tabs([
+				$subdetails = Html::tabs([
 					'id' => $tab_id,
 					'header' => $tab_header,
 					'options' => $tab_values,
@@ -915,15 +915,15 @@ render_custom_renderer:
 			}
 			// delete link
 			if (empty($options['details_cannot_delete'])) {
-				$link = html::a(['href' => 'javascript:void(0);', 'value' => '<i class="fa fa-trash-o"></i>', 'onclick' => "if (confirm('" . strip_tags(i18n(null, object_content_messages::confirm_delete)) . "')) { numbers.form.details_delete_row('form_{$this->object->form_link}_form', '{$row_id}'); } return false;"]);
+				$link = Html::a(['href' => 'javascript:void(0);', 'value' => '<i class="fa fa-trash-o"></i>', 'onclick' => "if (confirm('" . strip_tags(i18n(null, object_content_messages::confirm_delete)) . "')) { numbers.form.details_delete_row('form_{$this->object->form_link}_form', '{$row_id}'); } return false;"]);
 			} else {
 				$link = '';
 				unset($table['header']['row_delete']);
 			}
 			// add a row to a table
 			$table['options'][$row_number] = [
-				'row_number' => ['value' => format::id($row_number) . '.', 'width' => '1%', 'row_id' => $row_id],
-				'row_data' => ['value' => html::grid($data), 'width' => (!empty($options['details_11']) ? '100%' : '98%')],
+				'row_number' => ['value' => Format::id($row_number) . '.', 'width' => '1%', 'row_id' => $row_id],
+				'row_data' => ['value' => Html::grid($data), 'width' => (!empty($options['details_11']) ? '100%' : '98%')],
 				'row_delete' => ['value' => $link, 'width' => '1%'],
 			];
 			$row_number++;
@@ -932,7 +932,7 @@ render_custom_renderer:
 				$processing_values = false;
 			}
 		} while(1);
-		return html::table($table);
+		return Html::table($table);
 	}
 
 	/**
@@ -990,7 +990,7 @@ render_custom_renderer:
 				$first_key = key($v2);
 				if ($first_key == $this->object::separator_horisontal) {
 					$data['options'][$k][$k2][0] = [
-						'value' => html::separator(['value' => $first['options']['label_name'], 'icon' => $first['options']['icon'] ?? null]),
+						'value' => Html::separator(['value' => $first['options']['label_name'], 'icon' => $first['options']['icon'] ?? null]),
 						'separator' => true
 					];
 				} else {
@@ -1003,7 +1003,7 @@ render_custom_renderer:
 						}
 						// hidden row
 						$hidden = false;
-						if ($v['key'] === $this->object::hidden && !application::get('flag.numbers.frontend.html.form.show_field_settings')) {
+						if ($v['key'] === $this->object::hidden && !Application::get('flag.numbers.frontend.html.form.show_field_settings')) {
 							$v3['options']['row_class'] = ($v3['options']['row_class'] ?? '') . ' grid_row_hidden';
 							$hidden = true;
 						} else if ($v['key'] === $this->object::hidden) {
@@ -1011,7 +1011,7 @@ render_custom_renderer:
 						}
 						// we do not show hidden fields
 						if (($v3['options']['method'] ?? '') == 'hidden') {
-							if (application::get('flag.numbers.frontend.html.form.show_field_settings')) {
+							if (Application::get('flag.numbers.frontend.html.form.show_field_settings')) {
 								$v3['options']['method'] = 'input';
 							} else {
 								$v3['options']['style'] = ($v3['options']['style'] ?? '') . 'display: none;';
@@ -1041,7 +1041,7 @@ render_custom_renderer:
 				}
 			}
 		}
-		return html::grid($data);
+		return Html::grid($data);
 	}
 
 	/**
@@ -1063,7 +1063,7 @@ render_custom_renderer:
 				} else if ($options['options']['required'] == 'c') {
 					$options['options']['required'] = 'conditional';
 				}
-				$value = html::mandatory([
+				$value = Html::mandatory([
 					'type' => $options['options']['required'],
 					'value' => $value,
 					'prepend' => $prepend
@@ -1073,7 +1073,7 @@ render_custom_renderer:
 			}
 			$label_options['value'] = $value;
 			$label_options['class'] = 'control-label';
-			return html::label($label_options);
+			return Html::label($label_options);
 		}
 	}
 
@@ -1092,7 +1092,7 @@ render_custom_renderer:
 		$options['options']['field_values_key'] = implode('[::]', $options['options']['field_values_key'] ?? [$options['options']['field_name']]);
 		// custom renderer
 		if (!empty($options['options']['custom_renderer'])) {
-			$method = factory::method($options['options']['custom_renderer'], null, true);
+			$method = Factory::method($options['options']['custom_renderer'], null, true);
 			$options_custom_renderer = $options;
 			call_user_func_array($method, [& $this, & $options, & $value, & $neighbouring_values]);
 		}
@@ -1148,7 +1148,7 @@ render_custom_renderer:
 						}
 					}
 				}
-				$result_options['options'] = object_data_common::process_options($result_options['options_model'], $this->object, $result_options['options_params'], $value, $skip_values, $result_options['options_options']);
+				$result_options['options'] = \Object\Data\Common::process_options($result_options['options_model'], $this->object, $result_options['options_params'], $value, $skip_values, $result_options['options_options']);
 			} else {
 				// we need to inject form id into autocomplete
 				$result_options['form_id'] = "form_{$this->object->form_link}_form";
@@ -1201,22 +1201,22 @@ render_custom_renderer:
 					];
 					$temp_expand_div_outer = [
 						'align' => 'left',
-						'value' => html::a($temp_expand_div_a) . '<br />' . html::div($temp_expand_div_inner)
+						'value' => Html::a($temp_expand_div_a) . '<br />' . Html::div($temp_expand_div_inner)
 					];
-					$value = html::div($temp_expand_div_outer);
+					$value = Html::div($temp_expand_div_outer);
 				} else {
 					$value = $temp_container_value;
 				}
 				$result_options['value'] = $value;
 				break;
 			case 'field':
-				$element_method = $result_options['method'] ?? 'html::input';
+				$element_method = $result_options['method'] ?? 'Html::input';
 				if (strpos($element_method, '::') === false) {
-					$element_method = 'html::' . $element_method;
+					$element_method = 'Html::' . $element_method;
 				}
 				// value in special order
 				$flag_translated = false;
-				if (in_array($element_method, ['html::a', 'html::submit', 'html::button', 'html::button2'])) {
+				if (in_array($element_method, ['Html::a', 'Html::submit', 'Html::button', 'Html::button2'])) {
 					// translate value
 					$result_options['value'] = i18n($result_options['i18n'] ?? null, $result_options['value'] ?? null);
 					// process confirm_message
@@ -1225,7 +1225,7 @@ render_custom_renderer:
 						$result_options['onclick'].= 'return confirm(\'' . strip_tags(i18n(null, $result_options['confirm_message'])) . '\');';
 					}
 					// processing onclick for buttons
-					if (in_array($element_method, ['html::submit', 'html::button', 'html::button2'])) {
+					if (in_array($element_method, ['Html::submit', 'Html::button', 'Html::button2'])) {
 						if (!empty($result_options['onclick']) && strpos($result_options['onclick'], 'this.form.submit();') !== false) {
 							$result_options['onclick'] = str_replace('this.form.submit();', "numbers.form.trigger_submit(this.form);", $result_options['onclick']) . ' return true;';
 						} else if (empty($result_options['onclick'])) {
@@ -1237,7 +1237,7 @@ render_custom_renderer:
 					$flag_translated = true;
 					// icon
 					if (!empty($result_options['icon'])) {
-						$result_options['value'] = html::icon(['type' => $result_options['icon']]) . ' ' . $result_options['value'];
+						$result_options['value'] = Html::icon(['type' => $result_options['icon']]) . ' ' . $result_options['value'];
 					}
 					// accesskey
 					if (isset($result_options['accesskey'])) {
@@ -1245,7 +1245,7 @@ render_custom_renderer:
 						$result_options['accesskey'] = $accesskey[2];
 						$result_options['title'] = ($result_options['title'] ?? '') . ' ' . i18n(null, 'Shortcut Key: ') . $accesskey[2];
 					}
-				} else if (in_array($element_method, ['html::div', 'html::span'])) {
+				} else if (in_array($element_method, ['Html::div', 'Html::span'])) {
 					if (!empty($result_options['i18n'])) {
 						$result_options['value'] = i18n($result_options['i18n'] ?? null, $result_options['value'] ?? null);
 						$flag_translated = true;
@@ -1272,14 +1272,14 @@ render_custom_renderer:
 									$this->object->process_params_and_depends($result_options['format_depends'], $neighbouring_values, $options, true);
 									$result_options['format_options'] = array_merge_hard($result_options['format_options'], $result_options['format_depends']);
 								}
-								$method = factory::method($result_options['format'], 'format');
+								$method = Factory::method($result_options['format'], 'format');
 								$result_options['value'] = call_user_func_array([$method[0], $method[1]], [$result_options['value'], $result_options['format_options']]);
 							}
 						}
 					}
 					// align
 					if (!empty($result_options['align'])) {
-						$result_options['style'] = ($result_options['style'] ?? '') . 'text-align:' . html::align($result_options['align']) . ';';
+						$result_options['style'] = ($result_options['style'] ?? '') . 'text-align:' . Html::align($result_options['align']) . ';';
 					}
 					// processing persistent
 					if (!empty($result_options['persistent']) && $this->object->values_loaded) {
@@ -1360,8 +1360,8 @@ render_custom_renderer:
 		}
 		// handling html_method
 		if (isset($element_method)) {
-			$method = factory::method($element_method, 'html');
-			$field_method_object = factory::model($method[0], true);
+			$method = Factory::method($element_method, 'html');
+			$field_method_object = Factory::model($method[0], true);
 			// todo: unset non html attributes
 			$value = $field_method_object->{$method[1]}($result_options);
 			// building navigation
@@ -1369,17 +1369,17 @@ render_custom_renderer:
 				$name = 'navigation[' . $result_options['name'] . ']';
 				$temp = '<table width="100%" dir="ltr">'; // always left to right
 					$temp.= '<tr>';
-						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[first]', 'value' => html::icon(['type' => 'step-backward']), 'onclick' => 'numbers.form.trigger_submit_on_button(this);', 'title' => i18n(null, 'First')]) . '</td>';
+						$temp.= '<td width="1%">' . Html::button2(['name' => $name . '[first]', 'value' => Html::icon(['type' => 'step-backward']), 'onclick' => 'numbers.form.trigger_submit_on_button(this);', 'title' => i18n(null, 'First')]) . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
-						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[previous]', 'value' => html::icon(['type' => 'caret-left']), 'onclick' => 'numbers.form.trigger_submit_on_button(this);', 'title' => i18n(null, 'Previous')]) . '</td>';
+						$temp.= '<td width="1%">' . Html::button2(['name' => $name . '[previous]', 'value' => Html::icon(['type' => 'caret-left']), 'onclick' => 'numbers.form.trigger_submit_on_button(this);', 'title' => i18n(null, 'Previous')]) . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
 						$temp.= '<td width="90%">' . $value . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
-						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[refresh]', 'value' => html::icon(['type' => 'refresh']), 'onclick' => 'numbers.form.trigger_submit_on_button(this);', 'title' => i18n(null, 'Refresh')]) . '</td>';
+						$temp.= '<td width="1%">' . Html::button2(['name' => $name . '[refresh]', 'value' => Html::icon(['type' => 'refresh']), 'onclick' => 'numbers.form.trigger_submit_on_button(this);', 'title' => i18n(null, 'Refresh')]) . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
-						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[next]', 'value' => html::icon(['type' => 'caret-right']), 'onclick' => 'numbers.form.trigger_submit_on_button(this);', 'title' => i18n(null, 'Next')]) . '</td>';
+						$temp.= '<td width="1%">' . Html::button2(['name' => $name . '[next]', 'value' => Html::icon(['type' => 'caret-right']), 'onclick' => 'numbers.form.trigger_submit_on_button(this);', 'title' => i18n(null, 'Next')]) . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
-						$temp.= '<td width="1%">' . html::button2(['name' => $name . '[last]', 'value' => html::icon(['type' => 'step-forward']), 'onclick' => 'numbers.form.trigger_submit_on_button(this);', 'title' => i18n(null, 'Last')]) . '</td>';
+						$temp.= '<td width="1%">' . Html::button2(['name' => $name . '[last]', 'value' => Html::icon(['type' => 'step-forward']), 'onclick' => 'numbers.form.trigger_submit_on_button(this);', 'title' => i18n(null, 'Last')]) . '</td>';
 					$temp.= '</tr>';
 				$temp.= '</table>';
 				$value = $temp;
@@ -1390,11 +1390,11 @@ render_custom_renderer:
 			$value.= $html_suffix;
 		}
 		// if we need to display settings
-		if (application::get('flag.numbers.frontend.html.form.show_field_settings')) {
+		if (Application::get('flag.numbers.frontend.html.form.show_field_settings')) {
 			$id_original = $result_options['id'] . '__settings_original';
 			$id_modified = $result_options['id'] . '__settings_modified';
-			$value.= html::a(['href' => 'javascript:void(0);', 'onclick' => "$('#{$id_original}').toggle();", 'value' => html::label2(['type' => 'primary', 'value' => count($options['options'])])]);
-			$value.= html::a(['href' => 'javascript:void(0);', 'onclick' => "$('#{$id_modified}').toggle();", 'value' => html::label2(['type' => 'warning', 'value' => count($result_options)])]);
+			$value.= Html::a(['href' => 'javascript:void(0);', 'onclick' => "$('#{$id_original}').toggle();", 'value' => Html::label2(['type' => 'primary', 'value' => count($options['options'])])]);
+			$value.= Html::a(['href' => 'javascript:void(0);', 'onclick' => "$('#{$id_modified}').toggle();", 'value' => Html::label2(['type' => 'warning', 'value' => count($result_options)])]);
 			$value.= '<div id="' . $id_original . '" style="display:none; position: absolute; text-align: left; width: 500px; z-index: 32000;">' . print_r2($options['options'], '', true) . '</div>';
 			$value.= '<div id="' . $id_modified . '" style="display:none; position: absolute; text-align: left; width: 500px; z-index: 32000;">' . print_r2($result_options, '', true) . '</div>';
 		}

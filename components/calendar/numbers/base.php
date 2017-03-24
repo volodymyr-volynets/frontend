@@ -3,13 +3,13 @@
 class numbers_frontend_components_calendar_numbers_base implements numbers_frontend_components_calendar_interface_base {
 
 	/**
-	 * see html::calendar()
+	 * see Html::calendar()
 	 */
 	public static function calendar($options = []) {
 		// include js & css files
 		if (empty($options['readonly'])) {
-			layout::add_js('/numbers/media_submodules/numbers_frontend_components_calendar_numbers_media_js_base.js');
-			layout::add_css('/numbers/media_submodules/numbers_frontend_components_calendar_numbers_media_css_base.css');
+			Layout::add_js('/numbers/media_submodules/numbers_frontend_components_calendar_numbers_media_js_base.js');
+			Layout::add_css('/numbers/media_submodules/numbers_frontend_components_calendar_numbers_media_css_base.css');
 		}
 		// font awesome icons
 		library::add('fontawesome');
@@ -18,7 +18,7 @@ class numbers_frontend_components_calendar_numbers_base implements numbers_front
 		$widget_options = [
 			'id' => $options['id'],
 			'type' => $type,
-			'format' => $options['calendar_format'] ?? format::get_date_format($type),
+			'format' => $options['calendar_format'] ?? Format::get_date_format($type),
 			'date_week_start_day' => $options['calendar_date_week_start_day'] ?? 1,
 			'date_disable_week_days' => $options['calendar_date_disable_week_days'] ?? null,
 			'master_id' => $options['calendar_master_id'] ?? null,
@@ -26,15 +26,15 @@ class numbers_frontend_components_calendar_numbers_base implements numbers_front
 		];
 		$options['type'] = 'text';
 		// determine input size
-		$placeholder = format::get_date_placeholder($widget_options['format']);
+		$placeholder = Format::get_date_placeholder($widget_options['format']);
 		$options['size'] = strlen($placeholder);
 		// set placeholder
-		if (!empty($options['placeholder']) && $options['placeholder'] == 'format::get_date_placeholder') {
+		if (!empty($options['placeholder']) && $options['placeholder'] == 'Format::get_date_placeholder') {
 			$options['placeholder'] = $placeholder;
 			$options['title'] = ($options['title'] ?? '') . ' (' . $placeholder . ')';
 		}
 		if (isset($options['calendar_icon']) && ($options['calendar_icon'] == 'left' || $options['calendar_icon'] == 'right')) {
-			$position = html::align($options['calendar_icon']);
+			$position = Html::align($options['calendar_icon']);
 			$icon_type = $type == 'time' ? 'clock-o' : 'calendar';
 			unset($options['calendar_icon']);
 			if (empty($options['readonly'])) {
@@ -42,17 +42,17 @@ class numbers_frontend_components_calendar_numbers_base implements numbers_front
 			} else {
 				$icon_onclick = null;
 			}
-			$icon_value = html::span(['onclick' => $icon_onclick, 'class' => 'numbers_calendar_icon numbers_prevent_selection', 'value' => html::icon(['type' => $icon_type])]);
-			$result = html::input_group(['value' => html::input($options), $position => $icon_value, 'dir' => 'ltr']);
+			$icon_value = Html::span(['onclick' => $icon_onclick, 'class' => 'numbers_calendar_icon numbers_prevent_selection', 'value' => Html::icon(['type' => $icon_type])]);
+			$result = Html::input_group(['value' => Html::input($options), $position => $icon_value, 'dir' => 'ltr']);
 			$div_id = $options['id'] . '_div_holder';
-			$result.= html::div(['id' => $div_id, 'class' => 'numbers_calendar_div_holder']);
+			$result.= Html::div(['id' => $div_id, 'class' => 'numbers_calendar_div_holder']);
 			$widget_options['holder_div_id'] = $div_id;
 		} else {
-			$result = html::input($options);
+			$result = Html::input($options);
 		}
 		// we do not render a widget if readonly
 		if (empty($options['readonly'])) {
-			layout::onload('numbers_calendar(' . json_encode($widget_options) . ');');
+			Layout::onload('numbers_calendar(' . json_encode($widget_options) . ');');
 		}
 		return $result;
 	}

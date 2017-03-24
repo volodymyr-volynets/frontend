@@ -250,7 +250,7 @@ numbers.format = {
 	/**
 	 * Number
 	 *
-	 * @see format::amount()
+	 * @see Format::amount()
 	 */
 	number: function(amount, options) {
 		if (!options) options = {};
@@ -261,12 +261,12 @@ numbers.format = {
 	/**
 	 * Quantity
 	 *
-	 * @see format::amount()
+	 * @see Format::amount()
 	 */
 	quantity: function(amount, options) {
 		if (!options) options = {};
 		options.symbol = false;
-		options.decimals = numbers.object_data_domains.get_setting('quantity', 'scale');
+		options.decimals = numbers.\Object\Data\Domains.get_setting('quantity', 'scale');
 		return this.amount(amount, options);
 	},
 
@@ -279,7 +279,7 @@ numbers.format = {
 	 */
 	currency_rate: function(amount, options = []) {
 		if (!options) options = {};
-		options.decimals = numbers.object_data_domains.get_setting('currency_rate', 'scale');
+		options.decimals = numbers.\Object\Data\Domains.get_setting('currency_rate', 'scale');
 		return this.amount(amount, options);
 	},
 

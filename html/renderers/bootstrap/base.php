@@ -3,7 +3,7 @@
 class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_html_renderers_class_base implements numbers_frontend_html_renderers_interface_base {
 
 	/**
-	 * @see html::segment()
+	 * @see Html::segment()
 	 */
 	public static function segment($options = []) {
 		$value = $options['value'] ?? '';
@@ -21,7 +21,7 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 		$result = '<div ' . self::generate_attributes($options) . '>';
 			if ($header != null) {
 				if (is_array($header)) {
-					$icon = !empty($header['icon']) ? (html::icon($header['icon']) . ' ') : null;
+					$icon = !empty($header['icon']) ? (Html::icon($header['icon']) . ' ') : null;
 					$result.= '<div class="panel-heading">' . $icon . i18n(null, $header['title']) . '</div>';
 				} else {
 					$result.= '<div class="panel-heading">' . i18n(null, $header) . '</div>';
@@ -30,7 +30,7 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 			$result.= '<div class="panel-body">' . $value . '</div>';
 			if ($footer != null) {
 				if (is_array($footer)) {
-					$icon = !empty($footer['icon']) ? (html::icon($footer['icon']) . ' ') : null;
+					$icon = !empty($footer['icon']) ? (Html::icon($footer['icon']) . ' ') : null;
 					$result.= '<div class="panel-footer">' . $icon . i18n(null, $footer['title']) . '</div>';
 				} else {
 					$result.= '<div class="panel-footer">' . i18n(null, $footer) . '</div>';
@@ -41,7 +41,7 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 	}
 
 	/**
-	 * @see html::input()
+	 * @see Html::input()
 	 */
 	public static function input($options = []) {
 		if (!in_array($options['type'] ?? 'text', ['button', 'submit']) && empty($options['skip_form_control'])) {
@@ -51,7 +51,7 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 	}
 
 	/**
-	 * @see html::textarea()
+	 * @see Html::textarea()
 	 */
 	public static function textarea($options = []) {
 		$options['class'] = array_add_token($options['class'] ?? [], 'form-control', ' ');
@@ -59,7 +59,7 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 	}
 
 	/**
-	 * @see html::input_group()
+	 * @see Html::input_group()
 	 */
 	public static function input_group($options = []) {
 		$temp = [];
@@ -72,7 +72,7 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 						$options[$k0] = [$options[$k0]];
 					}
 					foreach ($options[$k0] as $k => $v) {
-						$temp[] = html::span(['value' => $v, 'class' => 'input-group-addon']);
+						$temp[] = Html::span(['value' => $v, 'class' => 'input-group-addon']);
 					}
 				}
 			}
@@ -80,11 +80,11 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 		unset($options['left'], $options['right']);
 		$options['value'] = implode('', $temp);
 		$options['class'] = 'input-group';
-		return html::div($options);
+		return Html::div($options);
 	}
 
 	/**
-	 * @see html::select()
+	 * @see Html::select()
 	 */
 	public static function select($options = []) {
 		$options['class'] = array_add_token($options['class'] ?? [], 'form-control', ' ');
@@ -92,7 +92,7 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 	}
 
 	/**
-	 * @see html::form()
+	 * @see Html::form()
 	 */
 	public static function form($options = []) {
 		$options['role'] = 'form';
@@ -100,7 +100,7 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 	}
 
 	/**
-	 * @see html::button()
+	 * @see Html::button()
 	 */
 	public static function button($options = []) {
 		$type = $options['type'] ?? 'default';
@@ -109,7 +109,7 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 	}
 
 	/**
-	 * @see html::button2()
+	 * @see Html::button2()
 	 */
 	public static function button2($options = []) {
 		$type = $options['type'] ?? 'default';
@@ -118,7 +118,7 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 	}
 
 	/**
-	 * @see html::a()
+	 * @see Html::a()
 	 */
 	public static function a($options = []) {
 		if (isset($options['type'])) {
@@ -129,7 +129,7 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 	}
 
 	/**
-	 * @see html::submit()
+	 * @see Html::submit()
 	 */
 	public static function submit($options = []) {
 		$type = $options['type'] ?? 'default';
@@ -138,7 +138,7 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 	}
 
 	/**
-	 * @see html::table()
+	 * @see Html::table()
 	 */
 	public static function table($options = []) {
 		if (!isset($options['class'])) {
@@ -149,11 +149,11 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 	}
 
 	/**
-	 * @see html::grid()
+	 * @see Html::grid()
 	 */
 	public static function grid($options = []) {
-		$rtl = i18n::rtl();
-		$grid_columns = application::get('flag.numbers.framework.html.options.grid_columns') ?? 12;
+		$rtl = I18n::rtl();
+		$grid_columns = Application::get('flag.numbers.framework.html.options.grid_columns') ?? 12;
 		$rows = isset($options['options']) ? $options['options'] : [];
 		unset($options['options']);
 		$result = '';
@@ -165,10 +165,10 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 					$field_sizes[] = $v3['options']['percent'] ?? null;
 				}
 			}
-			$field_new_sizes = html::percentage_to_grid_columns($field_sizes);
+			$field_new_sizes = Html::percentage_to_grid_columns($field_sizes);
 			// count number of fields
 			$count_fields = count($v);
-			//$count_class = html::number_to_word($count_fields);
+			//$count_class = Html::number_to_word($count_fields);
 			// find all row classes
 			$row_class = '';
 			foreach ($v as $k2 => $v2) {
@@ -243,7 +243,7 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 							if (($v3['label'] ?? '') . '' != '') {
 								// if label is not wrapped into label we autowrap
 								if (strpos($v3['label'], '<label') === false) {
-									$v3['label'] = html::label(['value' => $v3['label']]);
+									$v3['label'] = Html::label(['value' => $v3['label']]);
 								}
 								$result.= $v3['label'];
 							} else if ($flag_have_label) {
@@ -262,7 +262,7 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 						}
 						// description after error message
 						if (!empty($v3['description'])) {
-							$result.= html::text(['type' => 'muted', 'value' => $v3['description']]);
+							$result.= Html::text(['type' => 'muted', 'value' => $v3['description']]);
 						}
 					$result.= '</div>';
 					$index++;
@@ -276,7 +276,7 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 	}
 
 	/**
-	 * @see html::breadcrumbs()
+	 * @see Html::breadcrumbs()
 	 */
 	public static function breadcrumbs($options) {
 		$result = '';
@@ -308,10 +308,10 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 			$name.= '<br/>' . $item['name_extension'];
 		}
 		if (!empty($item['icon'])) {
-			$name = html::icon(['type' => $item['icon']]) . ' ' . $name;
+			$name = Html::icon(['type' => $item['icon']]) . ' ' . $name;
 		}
 		//'data-toggle' => 'dropdown'
-		$result = html::a(['href' => $item['url'] ?? 'javascript:void(0);', 'class' => 'dropdown-toggle', 'value' => $name . $caret]);
+		$result = Html::a(['href' => $item['url'] ?? 'javascript:void(0);', 'class' => 'dropdown-toggle', 'value' => $name . $caret]);
 		$result.= '<ul class="dropdown-menu">';
 			foreach ($item['options'] as $k2 => $v2) {
 				$class = !empty($v2['options']) ? ' class="dropdown-submenu"' : '';
@@ -325,12 +325,12 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 							$name.= '<br/>' . $v2['name_extension'];
 						}
 						if (!empty($v2['icon'])) {
-							$name = html::icon(['type' => $v2['icon']]) . ' ' . $name;
+							$name = Html::icon(['type' => $v2['icon']]) . ' ' . $name;
 						}
 						if (!empty($v2['url'])) {
-							$result.= html::a(['href' => $v2['url'], 'title' => $v2['title'] ?? null, 'value' => $name]);
+							$result.= Html::a(['href' => $v2['url'], 'title' => $v2['title'] ?? null, 'value' => $name]);
 						} else {
-							$result.= html::div(['title' => $v2['title'] ?? null, 'value' => $name]);
+							$result.= Html::div(['title' => $v2['title'] ?? null, 'value' => $name]);
 						}
 					}
 				$result.= '</li>';
@@ -340,7 +340,7 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 	}
 
 	/**
-	 * @see html::menu()
+	 * @see Html::menu()
 	 */
 	public static function menu($options = []) {
 		$items = $options['options'] ?? [];
@@ -370,10 +370,10 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 									// create name
 									$name = i18n(null, $v['name']);
 									if (!empty($v['icon'])) {
-										$name = html::icon(['type' => $v['icon']]) . ' ' . $name;
+										$name = Html::icon(['type' => $v['icon']]) . ' ' . $name;
 									}
 									if (!empty($v['url'])) {
-										$result.= html::a(['href' => $v['url'], 'value' => $name]);
+										$result.= Html::a(['href' => $v['url'], 'value' => $name]);
 									} else {
 										$result.= $name;
 									}
@@ -396,10 +396,10 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 											// create name
 											$name = i18n(null, $v['name']);
 											if (!empty($v['icon'])) {
-												$name = html::icon(['type' => $v['icon']]) . ' ' . $name;
+												$name = Html::icon(['type' => $v['icon']]) . ' ' . $name;
 											}
 											if (!empty($v['url'])) {
-												$result.= html::a(['href' => $v['url'], 'value' => $name]);
+												$result.= Html::a(['href' => $v['url'], 'value' => $name]);
 											} else {
 												$result.= $name;
 											}
@@ -424,10 +424,10 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 											$name.= '<br/>' . $v['name_extension'];
 										}
 										if (!empty($v['icon'])) {
-											$name = html::icon(['type' => $v['icon']]) . ' ' . $name;
+											$name = Html::icon(['type' => $v['icon']]) . ' ' . $name;
 										}
 										if (!empty($v['url'])) {
-											$result.= html::a(['href' => $v['url'], 'value' => $name]);
+											$result.= Html::a(['href' => $v['url'], 'value' => $name]);
 										} else {
 											$result.= $name;
 										}
@@ -443,7 +443,7 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 	}
 
 	/**
-	 * @see html::message()
+	 * @see Html::message()
 	 */
 	public static function message($options = []) {
 		$value = isset($options['options']) ? $options['options'] : [];
@@ -457,7 +457,7 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 	}
 
 	/**
-	 * @see html::modal()
+	 * @see Html::modal()
 	 */
 	public static function modal($options = []) {
 		$options['class'] = $options['class'] ?? '';
@@ -494,27 +494,27 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 	}
 
 	/**
-	 * @see html::text();
+	 * @see Html::text();
 	 */
 	public static function text($options = []) {
 		$options['tag'] = $options['tag'] ?? 'p';
 		$options['type'] = 'text-' . ($options['type'] ?? 'primary');
 		$options['class'] = array_add_token($options['class'] ?? [], [$options['type']], ' ');
-		return html::tag($options);
+		return Html::tag($options);
 	}
 
 	/**
-	 * @see html::label2()
+	 * @see Html::label2()
 	 */
 	public static function label2($options = []) {
 		$options['tag'] = $options['tag'] ?? 'span';
 		$options['type'] = 'label-' . ($options['type'] ?? 'primary');
 		$options['class'] = array_add_token($options['class'] ?? [], [$options['type'], 'label'], ' ');
-		return html::tag($options);
+		return Html::tag($options);
 	}
 
 	/**
-	 * @see html::tabs();
+	 * @see Html::tabs();
 	 */
 	public static function tabs($options = []) {
 		$header = $options['header'] ?? [];
@@ -528,7 +528,7 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 		}
 		$result = '';
 		$result.= '<div id="' . $id . '" class="' . ($options['class'] ?? '') . '">';
-			$result.= html::hidden(['name' => $active_id, 'id' => $active_id, 'value' => $active_tab]);
+			$result.= Html::hidden(['name' => $active_id, 'id' => $active_id, 'value' => $active_tab]);
 			$tabs = [];
 			$panels = [];
 			$class = $li_class = $id . '_tab_li';
@@ -581,12 +581,12 @@ class numbers_frontend_html_renderers_bootstrap_base extends numbers_frontend_ht
 				e.preventDefault();
 			});
 TTT;
-		layout::onload($js);
+		Layout::onload($js);
 		return $result;
 	}
 
 	/**
-	 * @see html::pills();
+	 * @see Html::pills();
 	 */
 	public static function pills($options = []) {
 		Throw new Exception('Pills?');

@@ -6,6 +6,6 @@ class numbers_frontend_media_cdn_tinymce implements numbers_frontend_media_cdn_i
 	 * Add media to layout
 	 */
 	public static function add() {
-		layout::add_js('//cdn.tinymce.com/4/tinymce.min.js', 5000);
+		Layout::add_js('//cdn.tinymce.com/4/tinymce.min.js', 5000);
 	}
 }

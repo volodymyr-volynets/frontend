@@ -66,10 +66,10 @@ class numbers_frontend_html_renderers_semanticui_base extends numbers_frontend_h
 					$field_sizes[] = $v3['options']['percent'] ?? null;
 				}
 			}
-			$field_new_sizes = html::percentage_to_grid_columns($field_sizes);
+			$field_new_sizes = Html::percentage_to_grid_columns($field_sizes);
 			// count number of fields
 			$count_fields = count($v);
-			$count_class = html::number_to_word($count_fields);
+			$count_class = Html::number_to_word($count_fields);
 			$result.= '<div class="' . $count_class . ' fields">';
 			// we need to determine if we have label in the row
 			$flag_have_label = false;
@@ -85,7 +85,7 @@ class numbers_frontend_html_renderers_semanticui_base extends numbers_frontend_h
 			foreach ($v as $k2 => $v2) {
 				$flag_first_field = true;
 				foreach ($v2 as $k3 => $v3) {
-					$temp = html::number_to_word($field_new_sizes['data'][$index]);
+					$temp = Html::number_to_word($field_new_sizes['data'][$index]);
 					$result.= '<div class="' . $temp . ' wide field">';
 					// label
 					if ($flag_first_field) {

@@ -45,7 +45,7 @@ class numbers_frontend_html_report_base {
 	 * @throws Exception
 	 */
 	public function __construct($header) {
-		$header['datetime'] = isset($header['datetime']) ? $header['datetime'] : format::now();
+		$header['datetime'] = isset($header['datetime']) ? $header['datetime'] : Format::now();
 		if (empty($header['name'])) Throw new Exception('Name?');
 		// font
 		$header['font_name'] = isset($header['font_name']) ? $header['font_name'] : 'helvetica';
@@ -152,7 +152,7 @@ class numbers_frontend_html_report_base {
 						$pdf->AddPage($this->header['pdf']['orientation'], '', true);
 
 						// drawing header
-						$pdf->MultiCell(40, 5, format::datetime(format::now()), 0, 'L', 1, 0, 5, 5, true, 0, false, true, 10, 'T');
+						$pdf->MultiCell(40, 5, Format::datetime(Format::now()), 0, 'L', 1, 0, 5, 5, true, 0, false, true, 10, 'T');
 						// company + book name
 						$pw = $pdf->getPageWidth();
 						$pdf->SetFont($this->header['pdf']['font']['family'], 'B', $this->header['pdf']['font']['size']);
@@ -163,7 +163,7 @@ class numbers_frontend_html_report_base {
 						$pdf->MultiCell(40, 5, 'Page ' . $page_counter, 0, 'R', 1, 0, $pw - 45, 5, true, 0, false, true, 10, 'T');
 						// report name
 						$pdf->SetFont($this->header['pdf']['font']['family'], 'B', $this->header['pdf']['font']['size']);
-						$report_name = $this->header['name'] . ' (' . implode('-', application::get(array('mvc', 'controllers'))) . ')';
+						$report_name = $this->header['name'] . ' (' . implode('-', Application::get(array('mvc', 'controllers'))) . ')';
 						$pdf->MultiCell($pw - 10, 5, $report_name, 0, 'L', 1, 0, 5, 10, true, 0, false, true, 10, 'T');
 
 						if (isset($this->header['description'])) {
@@ -319,13 +319,13 @@ class numbers_frontend_html_report_base {
 				// generating header
 				$header = [];
 				$header[$sheet][] = [
-					format::datetime(format::now()),
+					Format::datetime(Format::now()),
 					'',
 					$session->company_name . ': ' .	$session->book_name, // todo: fix here
 					'',
 					'Page 1'
 				];
-				$controllers = application::get(['mvc', 'controllers']);
+				$controllers = Application::get(['mvc', 'controllers']);
 				$header[$sheet][] = [strip_tags($this->header['name']) . ' (' . implode('-', $controllers) . ')'];
 				if (isset($this->header['description'])) {
 					$header[$sheet][] = [$this->header['description']];
@@ -358,7 +358,7 @@ class numbers_frontend_html_report_base {
 				}
 
 				// get output buffering
-				helper_ob::clean_all();
+				Helper_Ob::clean_all();
 				// content
 				switch ($type) {
 					case 'xlsx':
@@ -402,7 +402,7 @@ class numbers_frontend_html_report_base {
 								$value = $v2['v'] ?? null;
 								if (!empty($v2['h'])) {
 									$v2['h']['value'] = $value;
-									$value = html::a($v2['h']);
+									$value = Html::a($v2['h']);
 								}
 								if (!empty($v2['a'])) $align = $v2['a'];
 								if (!empty($v2['l'])) $title = $v2['l'];
@@ -423,20 +423,20 @@ class numbers_frontend_html_report_base {
 					$table['options'][$counter] = $row;
 					$counter++;
 				}
-				$result = html::table($table);
+				$result = Html::table($table);
 				// printable export
 				if ($type == 'html2') {
 					$header = [
 						'options' => []
 					];
 					$header['options'][] = [
-						0 => format::datetime(format::now()),
+						0 => Format::datetime(Format::now()),
 						1 => '',
 						2 => $session->company_name . ': ' .	$session->book_name, // todo: fix here
 						3 => '',
 						4 => 'Page 1'
 					];
-					$controllers = application::get(['mvc', 'controllers']);
+					$controllers = Application::get(['mvc', 'controllers']);
 					$header['options'][] = [['value' => strip_tags($this->header['name']) . ' (' . implode('-', $controllers) . ')', 'colspan' => 5]];
 					if (isset($this->header['description'])) {
 						$header['options'][] = [$this->header['description']];
@@ -450,8 +450,8 @@ class numbers_frontend_html_report_base {
 						}
 						$header['options'][] = ['&nbsp;'];
 					}
-					$header = html::table($header);
-					layout::render_as($header . $result, 'text/html');
+					$header = Html::table($header);
+					Layout::render_as($header . $result, 'text/html');
 				}
 		}
 		return $result;

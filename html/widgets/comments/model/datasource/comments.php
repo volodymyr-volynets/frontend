@@ -6,7 +6,7 @@ class numbers_frontend_html_widgets_comments_model_datasource_comments extends o
 	public $cache_tags = [];
 	public $cache_memory = false;
 	public function query($options = []) {
-		$model = factory::model($options['model']);
+		$model = Factory::model($options['model']);
 		$db = $model->db_object();
 		$where = null;
 		if (!empty($options['where'])) {

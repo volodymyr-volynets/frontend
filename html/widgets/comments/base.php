@@ -29,7 +29,7 @@ class numbers_frontend_html_widgets_comments_base {
 		$result = '';
 		// action bar
 		$result.= '<div style="text-align: right;">';
-			$result.= html::a(array('value' => html::icon(['type' => 'comment']) . ' ' . i18n(null, 'New'), 'href' => 'javascript:void(0);', 'onclick' => "numbers.frontend_form.trigger_submit('#form_numbers_frontend_html_widgets_comments_model_form_comment_form', false, true); numbers.modal.show('widgets_comments_{$this->widget_link}_comment');"));
+			$result.= Html::a(array('value' => Html::icon(['type' => 'comment']) . ' ' . i18n(null, 'New'), 'href' => 'javascript:void(0);', 'onclick' => "numbers.frontend_form.trigger_submit('#form_numbers_frontend_html_widgets_comments_model_form_comment_form', false, true); numbers.modal.show('widgets_comments_{$this->widget_link}_comment');"));
 		$result.= '</div>';
 		$result.= '<hr class="simple" />';
 		// form
@@ -67,13 +67,13 @@ TTT;
 			'on_success_js' => "numbers.modal.hide('widgets_comments_{$this->widget_link}_comment');" . $js
 		]);
 		$body = $form->render();
-		$footer = html::button2([
+		$footer = Html::button2([
 			'name' => 'submit_comment',
 			'value' => i18n(null, 'Submit'),
 			'type' => 'primary',
 			'onclick' => "numbers.frontend_form.trigger_submit('#form_numbers_frontend_html_widgets_comments_model_form_comment_form', true); return false;"
 		]);
-		$result.= html::modal(['id' => "widgets_comments_{$this->widget_link}_comment", 'class' => 'large', 'title' => i18n(null, 'Add Comment'), 'body' => $body, 'footer' => $footer]);
+		$result.= Html::modal(['id' => "widgets_comments_{$this->widget_link}_comment", 'class' => 'large', 'title' => i18n(null, 'Add Comment'), 'body' => $body, 'footer' => $footer]);
 		// list of comments in descending order
 		$where = [];
 		foreach ($this->options['map'] as $k => $v) {
@@ -104,25 +104,25 @@ TTT;
 				}
 				$table['options'][$v['id']] = [
 					'id' => ['value' => $row_number . '.', 'row_style' => $row_style, 'row_class' => "widgets_comments_{$this->widget_link}_list_hiden " . ($v['important'] ? 'success' : null)],
-					'inserted' => format::datetime($v['inserted']),
+					'inserted' => Format::datetime($v['inserted']),
 					'important' => ['value' => $v['important'] ? i18n(null, 'Yes') : ''],
 					'em_entity_name' => ['value' => $v['em_entity_name'], 'width' => '10%', 'nowrap' => true],
 					'comment_value' => nl2br($v['comment_value'])
 				];
 				$row_number++;
 			}
-			$result_list = html::table($table);
+			$result_list = Html::table($table);
 			// link to show all rows
 			$total_comments = count($data);
 			if ($total_comments > 10) {
-				$result_list.= '<div style="text-align: right;">' . html::a(['href' => 'javascript:void(0);', 'value' => i18n(null, '[count] comment(s) are hidden. Show all comments.', ['replace' => ['[count]' => ($total_comments - 10)]]), 'onclick' => "$('.widgets_comments_{$this->widget_link}_list_hiden').show(); $(this).hide();"]) . '</div>';
+				$result_list.= '<div style="text-align: right;">' . Html::a(['href' => 'javascript:void(0);', 'value' => i18n(null, '[count] comment(s) are hidden. Show all comments.', ['replace' => ['[count]' => ($total_comments - 10)]]), 'onclick' => "$('.widgets_comments_{$this->widget_link}_list_hiden').show(); $(this).hide();"]) . '</div>';
 			}
 		} else {
-			$result_list = html::message(['type' => 'warning', 'options' => [i18n(null, object_content_messages::no_rows_found)]]);
+			$result_list = Html::message(['type' => 'warning', 'options' => [i18n(null, object_content_messages::no_rows_found)]]);
 		}
 		// if we are making an ajax call
 		if (!empty($this->options['input']['__ajax']) && ($this->options['input']['__ajax_form_id'] ?? '') == "widgets_comments_{$this->widget_link}_list") {
-			layout::render_as([
+			Layout::render_as([
 				'success' => true,
 				'error' => [],
 				'html' => $result_list,
@@ -137,10 +137,10 @@ TTT;
 		if (isset($this->options['segment'])) {
 			$temp = is_array($this->options['segment']) ? $this->options['segment'] : [];
 			$temp['value'] = $result;
-			$result = html::segment($temp);
+			$result = Html::segment($temp);
 		}
 		// anchor
-		$result = html::a(['name' => "widgets_comments_{$this->widget_link}_anchor"]) . $result;
+		$result = Html::a(['name' => "widgets_comments_{$this->widget_link}_anchor"]) . $result;
 		return $result;
 	}
 }

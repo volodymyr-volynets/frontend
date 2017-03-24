@@ -44,11 +44,11 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 	}
 
 	/**
-	 * @see html::div()
+	 * @see Html::div()
 	 */
 	public static function div($options = []) {
 		$options['tag'] = 'div';
-		return html::tag($options);
+		return Html::tag($options);
 	}
 
 	/**
@@ -59,15 +59,15 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 	 */
 	public static function label($options = []) {
 		$options['tag'] = 'label';
-		return html::tag($options);
+		return Html::tag($options);
 	}
 
 	/**
-	 * @see html::span()
+	 * @see Html::span()
 	 */
 	public static function span($options = []) {
 		$options['tag'] = 'span';
-		return html::tag($options);
+		return Html::tag($options);
 	}
 
 	/**
@@ -140,7 +140,7 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 	}
 
 	/**
-	 * @see html::a()
+	 * @see Html::a()
 	 */
 	public static function a($options = []) {
 		$value = isset($options['value']) ? $options['value'] : '';
@@ -153,7 +153,7 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 	}
 
 	/**
-	 * @see html::img()
+	 * @see Html::img()
 	 */
 	public static function img($options = []) {
 		$options['border'] = isset($options['border']) ? $options['border'] : 0;
@@ -161,7 +161,7 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 	}
 
 	/**
-	 * @see html::script()
+	 * @see Html::script()
 	 */
 	public static function script($options = []) {
 		$value = isset($options['value']) ? $options['value'] : '';
@@ -184,7 +184,7 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 	}
 
 	/**
-	 * @see html::input()
+	 * @see Html::input()
 	 */
 	public static function input($options = []) {
 		$options['type'] = $options['input_type'] ?? $options['type'] ?? 'text';
@@ -217,8 +217,8 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 			unset($options['autofocus']);
 		}
 		// rtl
-		$rtl = i18n::rtl(false);
-		if (i18n::rtl()) {
+		$rtl = I18n::rtl(false);
+		if (I18n::rtl()) {
 			if (isset($options['style'])) $options['style'] = str_replace(['text-align:right;', 'text-align: right;'], 'text-align:left;', $options['style']);
 			// let browser decide the direction based on content
 			$rtl = ' dir="auto" ';
@@ -229,7 +229,7 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 	}
 
 	/**
-	 * @see html::input_group()
+	 * @see Html::input_group()
 	 */
 	public static function input_group($options = []) {
 		$temp = [];
@@ -242,7 +242,7 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 						$options[$k0] = [$options[$k0]];
 					}
 					foreach ($options[$k0] as $k => $v) {
-						$temp[] = html::span(['value' => $v, 'class' => 'input_group_' . $k0]);
+						$temp[] = Html::span(['value' => $v, 'class' => 'input_group_' . $k0]);
 					}
 				}
 			}
@@ -250,11 +250,11 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 		unset($options['left'], $options['right']);
 		$options['value'] = implode('', $temp);
 		$options['class'] = 'input_group';
-		return html::div($options);
+		return Html::div($options);
 	}
 
 	/**
-	 * @see html::radio()
+	 * @see Html::radio()
 	 */
 	public static function radio($options = []) {
 		if (!empty($options['checked'])) {
@@ -267,11 +267,11 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 		}
 		unset($options['options'], $options['readonly']);
 		$options['type'] = 'radio';
-		return html::input($options);
+		return Html::input($options);
 	}
 
 	/**
-	 * @see html::radio()
+	 * @see Html::radio()
 	 */
 	public static function checkbox($options = []) {
 		if (!empty($options['value'])) {
@@ -284,15 +284,15 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 		}
 		unset($options['options'], $options['readonly']);
 		$options['type'] = 'checkbox';
-		return html::input($options);
+		return Html::input($options);
 	}
 
 	/**
-	 * @see html::password()
+	 * @see Html::password()
 	 */
 	public static function password($options = []) {
 		$options['type'] = 'password';
-		return html::input($options);
+		return Html::input($options);
 	}
 
 	/**
@@ -303,7 +303,7 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 	 */
 	public static function file($options = []) {
 		$options['type'] = 'file';
-		return html::input($options);
+		return Html::input($options);
 	}
 
 	/**
@@ -314,7 +314,7 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 	 */
 	public static function hidden($options = []) {
 		$options['type'] = 'hidden';
-		return html::input($options);
+		return Html::input($options);
 	}
 
 	/**
@@ -336,7 +336,7 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 	}
 
 	/**
-	 * @see html::select()
+	 * @see Html::select()
 	 */
 	public static function select($options = []) {
 		$multiselect = null;
@@ -362,7 +362,7 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 		}
 		// readonly
 		if (!empty($options['readonly'])) {
-			layout::onload("$('#{$options['id']} option:not(:selected)').prop('disabled', true);");
+			Layout::onload("$('#{$options['id']} option:not(:selected)').prop('disabled', true);");
 		}
 		// options & optgroups
 		$optgroups_array = !empty($options['optgroups']) ? $options['optgroups'] : [];
@@ -405,21 +405,21 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 	 */
 	public static function multiselect($options = []) {
 		$options['multiple'] = 1;
-		return html::select($options);
+		return Html::select($options);
 	}
 
 	/**
-	 * @see html::button()
+	 * @see Html::button()
 	 */
 	public static function button($options = []) {
 		$options['type'] = $options['input_type'] ?? $options['type'] ?? 'button';
 		$options['value'] = $options['value'] ?? strip_tags(i18n(null, 'Submit'));
 		$options['class'] = $options['class'] ?? 'button';
-		return html::input($options);
+		return Html::input($options);
 	}
 
 	/**
-	 * @see html::button2()
+	 * @see Html::button2()
 	 */
 	public static function button2($options = []) {
 		$options['type'] = $options['input_type'] ?? $options['type'] ?? 'submit';
@@ -430,17 +430,17 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 	}
 
 	/**
-	 * @see html::submit()
+	 * @see Html::submit()
 	 */
 	public static function submit($options = []) {
 		$options['type'] = 'submit';
 		$options['value'] = $options['value'] ?? strip_tags(i18n(null, 'Submit'));
 		$options['class'] = $options['class'] ?? 'button';
-		return html::input($options);
+		return Html::input($options);
 	}
 
 	/**
-	 * @see html::form()
+	 * @see Html::form()
 	 */
 	public static function form($options = []) {
 		$options['method'] = isset($options['method']) ? $options['method'] : 'post';
@@ -462,7 +462,7 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 	}
 
 	/**
-	 * @see html::table()
+	 * @see Html::table()
 	 */
 	public static function table($options = []) {
 		$rows = isset($options['options']) ? $options['options'] : [];
@@ -490,7 +490,7 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 							unset($v['value'], $v['tag']);
 							// we add align to the style
 							if (!empty($v['align'])) {
-								$v['align'] = html::align($v['align']);
+								$v['align'] = Html::align($v['align']);
 								$v['style'] = ($v['style'] ?? '') . 'text-align:' . $v['align'] . ';';
 							}
 							$temp2.= '<' . $tag . ' ' . self::generate_attributes($v, $tag) . '>' . $temp_value . '</' . $tag . '>';
@@ -539,7 +539,7 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 						}
 						// we add align to the style
 						if (!empty($v[$k2]['align'])) {
-							$v[$k2]['align'] = html::align($v[$k2]['align']);
+							$v[$k2]['align'] = Html::align($v[$k2]['align']);
 							$v[$k2]['style'] = ($v[$k2]['style'] ?? '') . 'text-align:' . $v[$k2]['align'] . ';';
 						}
 						$temp2.= '<' . $tag . ' ' . self::generate_attributes($v[$k2], $tag) . '>' . $temp_value . '</' . $tag . '>';
@@ -558,7 +558,7 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 	}
 
 	/**
-	 * @see html::grid()
+	 * @see Html::grid()
 	 */
 	public static function grid($options = []) {
 		$rows = isset($options['options']) ? $options['options'] : [];
@@ -587,14 +587,14 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 							'colspan' => 24 // maximum grid count
 						];
 					} else {
-						$data['options'][$k][$index] = html::table($cell);
+						$data['options'][$k][$index] = Html::table($cell);
 					}
 					$data['header'][$index] = $index;
 					$index++;
 				}
 			}
 		}
-		return html::table($data);
+		return Html::table($data);
 	}
 
 	/**
@@ -611,7 +611,7 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 	}
 
 	/**
-	 * @see html::ul()
+	 * @see Html::ul()
 	 */
 	public static function ul($options = []) {
 		$value = !empty($options['options']) ? $options['options'] : [];
@@ -631,7 +631,7 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 	}
 
 	/**
-	 * @see html::mandatory()
+	 * @see Html::mandatory()
 	 */
 	public static function mandatory($options = []) {
 		$asterisk = '';
@@ -657,7 +657,7 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 				];
 			}
 			$options['value']['tag'] = $options['tag'];
-			return html::tag($options['value']);
+			return Html::tag($options['value']);
 		} else {
 			return $asterisk;
 		}
@@ -676,7 +676,7 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 	}
 
 	/**
-	 * @see html::message()
+	 * @see Html::message()
 	 */
 	public static function message($options = []) {
 		$value = isset($options['options']) ? $options['options'] : [];
@@ -690,7 +690,7 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 	}
 
 	/**
-	 * @see html::segment()
+	 * @see Html::segment()
 	 */
 	public static function segment($options = []) {
 		$value = $options['value'] ?? '';
@@ -750,11 +750,11 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 	 * @return string
 	 */
 	public static function calendar($options = []) {
-		return html::input($options);
+		return Html::input($options);
 	}
 
 	/**
-	 * @see html::icon()
+	 * @see Html::icon()
 	 */
 	public static function icon($options = []) {
 		// if we are rendering image
@@ -777,16 +777,16 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 					$options['height'] = $matches[1];
 				}
 			}
-			return html::img($options);
+			return Html::img($options);
 		} else if (isset($options['type'])) {
 			$options['class'] = array_add_token($options['class'] ?? [], 'icon ' . $options['type'], ' ');
 			$options['tag'] = $options['tag'] ?? 'i';
-			return html::tag($options);
+			return Html::tag($options);
 		}
 	}
 
 	/**
-	 * @see html::menu()
+	 * @see Html::menu()
 	 */
 	public static function menu($options = []) {
 		//Throw new Exception('Menu?');
@@ -794,7 +794,7 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 	}
 
 	/**
-	 * @see html::modal()
+	 * @see Html::modal()
 	 */
 	public static function modal($options = []) {
 		//Throw new Exception('Modal?');
@@ -802,28 +802,28 @@ class numbers_frontend_html_renderers_class_base implements numbers_frontend_htm
 	}
 
 	/**
-	 * @see html::tabs();
+	 * @see Html::tabs();
 	 */
 	public static function tabs($options = []) {
 		Throw new Exception('Tabs?');
 	}
 
 	/**
-	 * @see html::pills();
+	 * @see Html::pills();
 	 */
 	public static function pills($options = []) {
 		Throw new Exception('Pills?');
 	}
 
 	/**
-	 * @see html::separator()
+	 * @see Html::separator()
 	 */
 	public static function separator($options = []) {
 		$value = $options['value'] ?? null;
 		$icon = $options['icon'] ?? null;
 		$result = '';
 		$result.= '<table width="100%">';
-			$result.= '<tr><td width="50%"><hr/></td><td width="1%" nowrap><b>' . html::name($value, $icon) . '</b></td><td width="50%"><hr/></td></tr>';
+			$result.= '<tr><td width="50%"><hr/></td><td width="1%" nowrap><b>' . Html::name($value, $icon) . '</b></td><td width="50%"><hr/></td></tr>';
 		$result.= '</table>';
 		return $result;
 	}

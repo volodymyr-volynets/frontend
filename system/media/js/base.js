@@ -176,7 +176,7 @@ var numbers = {
 	 *
 	 * @type object
 	 */
-	object_data_domains: {
+	\Object\Data\Domains: {
 
 		/**
 		 * Data
