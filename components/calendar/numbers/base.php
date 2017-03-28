@@ -3,7 +3,7 @@
 class numbers_frontend_components_calendar_numbers_base implements numbers_frontend_components_calendar_interface_base {
 
 	/**
-	 * see Html::calendar()
+	 * see \HTML::calendar()
 	 */
 	public static function calendar($options = []) {
 		// include js & css files
@@ -34,7 +34,7 @@ class numbers_frontend_components_calendar_numbers_base implements numbers_front
 			$options['title'] = ($options['title'] ?? '') . ' (' . $placeholder . ')';
 		}
 		if (isset($options['calendar_icon']) && ($options['calendar_icon'] == 'left' || $options['calendar_icon'] == 'right')) {
-			$position = Html::align($options['calendar_icon']);
+			$position = \HTML::align($options['calendar_icon']);
 			$icon_type = $type == 'time' ? 'clock-o' : 'calendar';
 			unset($options['calendar_icon']);
 			if (empty($options['readonly'])) {
@@ -42,13 +42,13 @@ class numbers_frontend_components_calendar_numbers_base implements numbers_front
 			} else {
 				$icon_onclick = null;
 			}
-			$icon_value = Html::span(['onclick' => $icon_onclick, 'class' => 'numbers_calendar_icon numbers_prevent_selection', 'value' => Html::icon(['type' => $icon_type])]);
-			$result = Html::input_group(['value' => Html::input($options), $position => $icon_value, 'dir' => 'ltr']);
+			$icon_value = \HTML::span(['onclick' => $icon_onclick, 'class' => 'numbers_calendar_icon numbers_prevent_selection', 'value' => \HTML::icon(['type' => $icon_type])]);
+			$result = \HTML::input_group(['value' => \HTML::input($options), $position => $icon_value, 'dir' => 'ltr']);
 			$div_id = $options['id'] . '_div_holder';
-			$result.= Html::div(['id' => $div_id, 'class' => 'numbers_calendar_div_holder']);
+			$result.= \HTML::div(['id' => $div_id, 'class' => 'numbers_calendar_div_holder']);
 			$widget_options['holder_div_id'] = $div_id;
 		} else {
-			$result = Html::input($options);
+			$result = \HTML::input($options);
 		}
 		// we do not render a widget if readonly
 		if (empty($options['readonly'])) {

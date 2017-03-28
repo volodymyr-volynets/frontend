@@ -106,7 +106,7 @@ numbers.format = {
 		}
 		if (!type) type = 'date';
 		// convert numbers
-		date = this.number_to_from_native_language(date.toString(), {}, true);
+		date = this.numberToFromNativeLanguage(date.toString(), {}, true);
 		date = date.replace(i18n(null, 'am'), 'am').replace(i18n(null, 'pm'), 'pm');
 		// parse date
 		var msec = Date.parse(date);
@@ -135,7 +135,7 @@ numbers.format = {
 			amount = amount.replace(new RegExp(locale_options.mon_decimal_point, 'g'), '.');
 		}
 		// convert number from native locale
-		amount = this.number_to_from_native_language(amount, options, true);
+		amount = this.numberToFromNativeLanguage(amount, options, true);
 		// get rid of all non digits
 		amount = amount.replace(/[^\d.]/g, '');
 		if (negative) {
@@ -290,7 +290,7 @@ numbers.format = {
 	 * @param array options
 	 */
 	id: function(id, options) {
-		return this.number_to_from_native_language(id, options);
+		return this.numberToFromNativeLanguage(id, options);
 	},
 
 	/**
@@ -300,7 +300,7 @@ numbers.format = {
 	 * @param array $options
 	 * @return string
 	 */
-	number_to_from_native_language: function(number, options, from) {
+	numberToFromNativeLanguage: function(number, options, from) {
 		if (numbers.format.__custom) {
 			if (!from) {
 				if (numbers.format.__custom.amount) {
@@ -381,7 +381,7 @@ numbers.format = {
 			var number = amount;
 		}
 		// convert number to native locale
-		number = this.number_to_from_native_language(number);
+		number = this.numberToFromNativeLanguage(number);
 		// format based on settings
 		var cs_precedes = negative ? format.locale_options.n_cs_precedes : format.locale_options.p_cs_precedes;
 		var sep_by_space = negative ? format.locale_options.n_sep_by_space : format.locale_options.p_sep_by_space;

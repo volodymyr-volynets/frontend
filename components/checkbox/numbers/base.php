@@ -3,7 +3,7 @@
 class numbers_frontend_components_checkbox_numbers_base implements numbers_frontend_components_checkbox_interface_base {
 
 	/**
-	 * see Html::checkbox();
+	 * see \HTML::checkbox();
 	 */
 	public static function checkbox($options = []) {
 		// include js & css files
@@ -23,6 +23,6 @@ class numbers_frontend_components_checkbox_numbers_base implements numbers_front
 		}
 		// must gain proper class from previous submodule
 		$options['flag_call_previous_parent'] = true;
-		return Html::checkbox($options);
+		return \HTML::checkbox($options);
 	}
 }

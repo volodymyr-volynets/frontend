@@ -90,14 +90,14 @@ class numbers_frontend_components_captcha_gd_base implements numbers_frontend_co
 			'style' => $options['img_style'] ?? 'vertical-align: middle;',
 		];
 		if (!empty($options['only_image'])) {
-			return Html::img($image_options);
+			return \HTML::img($image_options);
 		} else {
-			return '<table width="100%"><tr><td>' . Html::input($options) . '</td><td width="1%">&nbsp;</td><td width="1%">' . Html::img($image_options) . '</td></tr></table>';
+			return '<table width="100%"><tr><td>' . \HTML::input($options) . '</td><td width="1%">&nbsp;</td><td width="1%">' . \HTML::img($image_options) . '</td></tr></table>';
 		}
 	}
 
 	/**
-	 * @see object_validator_base::validate()
+	 * @see \Object\Validator\Base::validate()
 	 */
 	public function validate(string $value, array $options = []) : array {
 		$result = [

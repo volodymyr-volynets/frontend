@@ -3,7 +3,7 @@
 class numbers_frontend_components_select_numbers_base implements numbers_frontend_components_select_interface_base {
 
 	/**
-	 * see Html::select();
+	 * see \HTML::select();
 	 */
 	public static function select($options = []) {
 		// we do not process readonly selects
@@ -21,11 +21,11 @@ class numbers_frontend_components_select_numbers_base implements numbers_fronten
 		}
 		// must gain proper class from previous submodule
 		$options['flag_call_previous_parent'] = true;
-		return Html::select($options);
+		return \HTML::select($options);
 	}
 
 	/**
-	 * see Html::multiselect();
+	 * see \HTML::multiselect();
 	 */
 	public static function multiselect($options = []) {
 		$options['multiple'] = 1;

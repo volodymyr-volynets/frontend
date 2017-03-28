@@ -44,18 +44,18 @@ class numbers_frontend_system_controller_dev extends \Object\Controller {
 		$temp = [];
 		foreach ($data as $k => $v) {
 			if (isset($v['options'])) {
-				$value = Html::a(['href' => $v['href'], 'value' => $v['name']]);
+				$value = \HTML::a(['href' => $v['href'], 'value' => $v['name']]);
 				$temp2 = [];
 				foreach ($v['options'] as $k2 => $v2) {
-					$temp2[] = Html::a(['href' => $v2['href'], 'value' => $v2['name']]);
+					$temp2[] = \HTML::a(['href' => $v2['href'], 'value' => $v2['name']]);
 				}
-				$value.= Html::ul(['options' => $temp2]);
+				$value.= \HTML::ul(['options' => $temp2]);
 				$temp[] = $value;
 			} else {
-				$temp[] = Html::a(['href' => $v['href'], 'value' => $v['name']]);
+				$temp[] = \HTML::a(['href' => $v['href'], 'value' => $v['name']]);
 			}
 		}
-		echo Html::ul(['options' => $temp]);
+		echo \HTML::ul(['options' => $temp]);
 	}
 
 	/**
@@ -70,7 +70,7 @@ class numbers_frontend_system_controller_dev extends \Object\Controller {
 	 * Frontend action
 	 */
 	public function action_frontend() {
-		$input = request::input();
+		$input = \Request::input();
 
 		// legend
 		echo self::render_topic('frontend');
@@ -130,66 +130,66 @@ class numbers_frontend_system_controller_dev extends \Object\Controller {
 		}
 
 		// form
-		$ms = 'Name: ' . Html::select([
+		$ms = 'Name: ' . \HTML::select([
 			'name' => 'name',
 			'options' => $frontend_frameworks,
 			'no_choose' => true,
 			'value' => $input['name']
 		]) . ' ';
-		$ms.= Html::submit(['name' => 'submit_yes']);
-		echo Html::form(['name' => 'db', 'action' => '#db_test', 'value' => $ms]);
+		$ms.= \HTML::submit(['name' => 'submit_yes']);
+		echo \HTML::form(['name' => 'db', 'action' => '#db_test', 'value' => $ms]);
 	}
 
 	/**
 	 * Names action
 	 */
 	public function action_names() {
-		$input = request::input();
+		$input = \Request::input();
 
 		// legend
 		echo self::render_topic('names');
 
 		// code naming conventions
-		echo Html::a(['name' => 'code']);
+		echo \HTML::a(['name' => 'code']);
 		echo '<h3>Naming Conventions: Code</h3>';
 		echo object_name_code::explain(null, ['html' => true]);
 
 		// testing form
-		echo Html::a(['name' => 'code_test']);
+		echo \HTML::a(['name' => 'code_test']);
 		echo '<h3>Test name</h3>';
 		if (!empty($input['submit_yes'])) {
 			$result = object_name_code::check($input['type'] ?? null, $input['name'] ?? null);
 			if (!$result['success']) {
-				echo Html::message(['options' => $result['error'], 'type' => 'danger']);
+				echo \HTML::message(['options' => $result['error'], 'type' => 'danger']);
 			} else {
-				echo Html::message(['options' => 'Name is good!', 'type' => 'success']);
+				echo \HTML::message(['options' => 'Name is good!', 'type' => 'success']);
 			}
 		}
-		$ms = 'Name: ' . Html::input(['name' => 'name', 'value' => $input['name'] ?? null]) . ' ';
-		$ms.= 'Type: ' . Html::select(['name' => 'type', 'options' => object_name_code::$types, 'value' => $input['type'] ?? null]) . ' ';
-		$ms.= Html::submit(['name' => 'submit_yes']);
-		echo Html::form(['name' => 'code', 'action' => '#code_test', 'value' => $ms]);
+		$ms = 'Name: ' . \HTML::input(['name' => 'name', 'value' => $input['name'] ?? null]) . ' ';
+		$ms.= 'Type: ' . \HTML::select(['name' => 'type', 'options' => object_name_code::$types, 'value' => $input['type'] ?? null]) . ' ';
+		$ms.= \HTML::submit(['name' => 'submit_yes']);
+		echo \HTML::form(['name' => 'code', 'action' => '#code_test', 'value' => $ms]);
 
 		// database naming convention
 		echo '<br/><br/><hr/>';
-		echo Html::a(['name' => 'db']);
+		echo \HTML::a(['name' => 'db']);
 		echo '<h3>Naming Conventions: Database</h3>';
 		echo object_name_db::explain(null, ['html' => true]);
 
 		// testing form
-		echo Html::a(['name' => 'db_test']);
+		echo \HTML::a(['name' => 'db_test']);
 		echo '<h3>Test name</h3>';
 		if (!empty($input['submit_yes2'])) {
 			$result = object_name_db::check($input['type2'] ?? null, $input['name2'] ?? null);
 			if (!$result['success']) {
-				echo Html::message(['options' => $result['error'], 'type' => 'danger']);
+				echo \HTML::message(['options' => $result['error'], 'type' => 'danger']);
 			} else {
-				echo Html::message(['options' => 'Name is good!', 'type' => 'success']);
+				echo \HTML::message(['options' => 'Name is good!', 'type' => 'success']);
 			}
 		}
-		$ms = 'Name: ' . Html::input(['name' => 'name2', 'value' => $input['name2'] ?? null]) . ' ';
-		$ms.= 'Type: ' . Html::select(['name' => 'type2', 'options' => object_name_db::$types, 'value' => $input['type2'] ?? null]) . ' ';
-		$ms.= Html::submit(['name' => 'submit_yes2']);
-		echo Html::form(['name' => 'db', 'action' => '#db_test', 'value' => $ms]);
+		$ms = 'Name: ' . \HTML::input(['name' => 'name2', 'value' => $input['name2'] ?? null]) . ' ';
+		$ms.= 'Type: ' . \HTML::select(['name' => 'type2', 'options' => object_name_db::$types, 'value' => $input['type2'] ?? null]) . ' ';
+		$ms.= \HTML::submit(['name' => 'submit_yes2']);
+		echo \HTML::form(['name' => 'db', 'action' => '#db_test', 'value' => $ms]);
 	}
 }

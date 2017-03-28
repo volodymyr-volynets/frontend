@@ -3,7 +3,7 @@
 class numbers_frontend_components_wizard_numbers_base implements numbers_frontend_components_wizard_interface_base {
 
 	/**
-	 * see Html::wizard();
+	 * see \HTML::wizard();
 	 */
 	public static function wizard($options = []) {
 		// if we have no options we render nothing
