@@ -1,6 +1,7 @@
 <?php
 
-class numbers_frontend_components_captcha_gd_base implements numbers_frontend_components_captcha_interface_base {
+namespace Numbers\Frontend\Components\Captcha\GD;
+class Base implements \Numbers\Frontend\Components\Captcha\Interface2\Base {
 
 	/**
 	 * Draw
@@ -37,7 +38,7 @@ class numbers_frontend_components_captcha_gd_base implements numbers_frontend_co
 			$x = $x_start + ($x_len * $i);
 			$y = rand($y_start + $font_size, $y_end);
 			$angle = rand(-30, 30);
-			imagettftext($image, $font_size, $angle, $x, $y, $color, __DIR__ . '/fonts/arial.ttf', $word[$i]);
+			imagettftext($image, $font_size, $angle, $x, $y, $color, __DIR__ . '/Fonts/arial.ttf', $word[$i]);
 		}
 		// returning image
 		if (!empty($options['return_image'])) {
@@ -63,14 +64,14 @@ class numbers_frontend_components_captcha_gd_base implements numbers_frontend_co
 	 * @param int $length
 	 * @return string
 	 */
-	public static function generate_password($captcha_link, $letters = null, $length = 5) {
+	public static function generatePassword($captcha_link, $letters = null, $length = 5) {
 		$letters = isset($letters) ? $letters : '123456789';
 		$result = '';
 		for ($i = 0; $i < $length; $i++) {
 			 $result.= $letters[mt_rand(0, strlen($letters) - 1)];
 		}
 		// setting value in session
-		Session::set(str_replace('_', '.', get_called_class()) . '.' . $captcha_link . '.password', $result);
+		\Session::set(str_replace('\\', '.', get_called_class()) . '.' . $captcha_link . '.password', $result);
 		return $result;
 	}
 
@@ -83,7 +84,7 @@ class numbers_frontend_components_captcha_gd_base implements numbers_frontend_co
 	public static function captcha(array $options = []) : string {
 		$captcha_link = $options['id'] ?? 'default';
 		// generating password
-		$password = self::generate_password($captcha_link, $options['password_letters'] ?? null, $options['password_length'] ?? 5);
+		$password = self::generatePassword($captcha_link, $options['password_letters'] ?? null, $options['password_length'] ?? 5);
 		array_key_unset($options, ['password_letters', 'password_length']);
 		$image_options = [
 			'src' => 'data:image/png;base64,' . base64_encode(self::draw($password, ['return_image' => true])),
@@ -105,7 +106,7 @@ class numbers_frontend_components_captcha_gd_base implements numbers_frontend_co
 			'error' => [],
 			'placeholder' => ''
 		];
-		$password = Session::get(['numbers', 'frontend', 'components', 'captcha', 'gd', 'base', $options['options']['id'], 'password']);
+		$password = \Session::get("Numbers.Frontend.Components.Captcha.GD.Base.{$options['options']['id']}.password");
 		$result['placeholder'] = 'Enter text here';
 		if (empty($value) || $value !== $password) {
 			$result['error'][] = 'Invalid captcha!';

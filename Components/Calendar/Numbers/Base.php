@@ -1,24 +1,25 @@
 <?php
 
-class numbers_frontend_components_calendar_numbers_base implements numbers_frontend_components_calendar_interface_base {
+namespace  Numbers\Frontend\Components\Calendar\Numbers;
+class Base implements \Numbers\Frontend\Components\Calendar\Interface2\Base {
 
 	/**
 	 * see \HTML::calendar()
 	 */
-	public static function calendar($options = []) {
+	public static function calendar(array $options = []) : string {
 		// include js & css files
 		if (empty($options['readonly'])) {
-			\Layout::addJs('/numbers/media_submodules/numbers_frontend_components_calendar_numbers_media_js_base.js');
-			Layout::add_css('/numbers/media_submodules/numbers_frontend_components_calendar_numbers_media_css_base.css');
+			\Layout::addJs('/numbers/media_submodules/Numbers_Frontend_Components_Calendar_Numbers_Media_JS_Base.js');
+			\Layout::addCss('/numbers/media_submodules/Numbers_Frontend_Components_Calendar_Numbers_Media_CSS_Base.css');
 		}
 		// font awesome icons
-		library::add('fontawesome');
+		\Library::add('FontAwesome');
 		// widget parameters
 		$type = $options['calendar_type'] ?? $options['type'] ?? 'date';
 		$widget_options = [
 			'id' => $options['id'],
 			'type' => $type,
-			'format' => $options['calendar_format'] ?? Format::get_date_format($type),
+			'format' => $options['calendar_format'] ?? \Format::getDateFormat($type),
 			'date_week_start_day' => $options['calendar_date_week_start_day'] ?? 1,
 			'date_disable_week_days' => $options['calendar_date_disable_week_days'] ?? null,
 			'master_id' => $options['calendar_master_id'] ?? null,
@@ -26,7 +27,7 @@ class numbers_frontend_components_calendar_numbers_base implements numbers_front
 		];
 		$options['type'] = 'text';
 		// determine input size
-		$placeholder = Format::get_date_placeholder($widget_options['format']);
+		$placeholder = \Format::getDatePlaceholder($widget_options['format']);
 		$options['size'] = strlen($placeholder);
 		// set placeholder
 		if (!empty($options['placeholder']) && $options['placeholder'] == 'Format::get_date_placeholder') {
@@ -43,7 +44,7 @@ class numbers_frontend_components_calendar_numbers_base implements numbers_front
 				$icon_onclick = null;
 			}
 			$icon_value = \HTML::span(['onclick' => $icon_onclick, 'class' => 'numbers_calendar_icon numbers_prevent_selection', 'value' => \HTML::icon(['type' => $icon_type])]);
-			$result = \HTML::input_group(['value' => \HTML::input($options), $position => $icon_value, 'dir' => 'ltr']);
+			$result = \HTML::inputGroup(['value' => \HTML::input($options), $position => $icon_value, 'dir' => 'ltr']);
 			$div_id = $options['id'] . '_div_holder';
 			$result.= \HTML::div(['id' => $div_id, 'class' => 'numbers_calendar_div_holder']);
 			$widget_options['holder_div_id'] = $div_id;
@@ -52,7 +53,7 @@ class numbers_frontend_components_calendar_numbers_base implements numbers_front
 		}
 		// we do not render a widget if readonly
 		if (empty($options['readonly'])) {
-			Layout::onload('numbers_calendar(' . json_encode($widget_options) . ');');
+			\Layout::onload('numbers_calendar(' . json_encode($widget_options) . ');');
 		}
 		return $result;
 	}

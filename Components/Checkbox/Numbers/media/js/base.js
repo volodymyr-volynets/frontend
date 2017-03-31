@@ -7,7 +7,7 @@
  *		label_off - off label
  *		oposite_checkbox - show oposite labels
  */
-var numbers_checkbox = function (options) {
+var NumbersCheckbox = function (options) {
 	// initializing object
 	var result = new Object();
 	result.id = options.id;
@@ -28,9 +28,9 @@ var numbers_checkbox = function (options) {
 	container.className = 'numbers_frontend_components_select_numbers_base_group';
 	container.id = result.div_id;
 	container.innerHTML = '<div class="numbers_frontend_components_select_numbers_base_wrapper">\n\
-								<div class="numbers_frontend_components_select_numbers_base_toggle_on numbers_prevent_selection">' + numbers.i18n.get(null, label_on) + '</div>\n\
+								<div class="numbers_frontend_components_select_numbers_base_toggle_on numbers_prevent_selection">' + Numbers.I18n.get(null, label_on) + '</div>\n\
 								<span class="numbers_frontend_components_select_numbers_base_toggle_middle numbers_prevent_selection">&nbsp;</span>\n\
-								<div class="numbers_frontend_components_select_numbers_base_toggle_off numbers_prevent_selection">' + numbers.i18n.get(null, label_off) + '</div>\n\
+								<div class="numbers_frontend_components_select_numbers_base_toggle_off numbers_prevent_selection">' + Numbers.I18n.get(null, label_off) + '</div>\n\
 							</div>';
 	result.elem.parentNode.insertBefore(container, result.elem.nextSibling);
 	// hide select element
@@ -72,7 +72,7 @@ var numbers_checkbox = function (options) {
  */
 if (window.jQuery) {
 	(function ($) {
-		$.fn.numbers_checkbox = function (options) {
+		$.fn.NumbersCheckbox = function (options) {
 			if (!options) options = {};
 			// loop through all elements
 			return this.each(function () {
@@ -82,7 +82,7 @@ if (window.jQuery) {
 					elem.attr('id', id);
 				}
 				options2.id = id;
-				numbers_checkbox(options2);
+				NumbersCheckbox(options2);
 			});
 		};
 	})(jQuery);

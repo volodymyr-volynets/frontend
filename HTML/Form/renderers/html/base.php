@@ -95,12 +95,12 @@ class Base {
 					$this->object->current_tab = [];
 					// list container
 					if ($k == $this->object::LIST_CONTAINER) {
-						$temp = $this->render_list_container($k);
+						$temp = $this->renderListContainer($k);
 						if ($temp['success']) {
 							$result[$k] = $temp['data'];
 						}
 					} else { // regular containers
-						$temp = $this->render_container($k);
+						$temp = $this->renderContainer($k);
 						if ($temp['success']) {
 							$result[$k] = $temp['data'];
 						}
@@ -138,7 +138,7 @@ class Base {
 						// render containers
 						array_key_sort($v2['elements'], ['order' => SORT_ASC]);
 						foreach ($v2['elements'] as $k3 => $v3) {
-							$temp = $this->render_container($v3['options']['container']);
+							$temp = $this->renderContainer($v3['options']['container']);
 							if ($temp['success']) {
 								$tab_values[$k2].= $temp['data']['html'];
 							}
@@ -177,7 +177,7 @@ class Base {
 		}
 		// rendering actions
 		if (!empty($this->object->actions)) {
-			$value = '<div style="text-align: right;">' . $this->render_actions() . '</div>';
+			$value = '<div style="text-align: right;">' . $this->renderActions() . '</div>';
 			$value.= '<hr class="simple" />';
 			$result = $value . $result;
 		}
@@ -263,7 +263,7 @@ class Base {
 	 *
 	 * @return string
 	 */
-	private function render_actions() {
+	private function renderActions() {
 		// sorting first
 		array_key_sort($this->object->actions, ['sort' => SORT_ASC], ['sort' => SORT_NUMERIC]);
 		// looping through data and building html
@@ -284,7 +284,7 @@ class Base {
 	 * @param type $container_link
 	 * @return array
 	 */
-	public function render_list_container(string $container_link) : array {
+	public function renderListContainer(string $container_link) : array {
 		$result = [
 			'success' => false,
 			'error' => [],
@@ -305,7 +305,7 @@ class Base {
 			$result['data']['html'].= \Factory::model($options['pagination_top'])->render($data);
 		}
 		// render body
-		$result['data']['html'].= $this->render_list_container_default($data, $options);
+		$result['data']['html'].= $this->renderListContainerDefault($data, $options);
 		// render pagination
 		if (!empty($options['pagination_bottom'])) {
 			$data['pagination_type'] = 'bottom';
@@ -329,7 +329,7 @@ class Base {
 	 * @param mixed $value
 	 * @return mixed
 	 */
-	private function render_list_container_default_options(array $options, $value) {
+	private function renderListContainerDefaultOptions(array $options, $value) {
 		if (strpos($options['options_model'], '::') === false) $options['options_model'].= '::options';
 		$params = $options['options_params'] ?? [];
 		if (!empty($options['options_depends'])) {
@@ -350,7 +350,7 @@ class Base {
 	 *
 	 * @return string
 	 */
-	private function render_list_container_default(& $data, & $options) {
+	private function renderListContainerDefault(& $data, & $options) {
 		$result = '';
 		// if we have no rows we display a messsage
 		if ($data['num_rows'] == 0) {
@@ -392,14 +392,14 @@ class Base {
 					foreach ($v['elements'] as $k2 => $v2) {
 						// process options
 						if (!empty($v2['options']['options_model'])) {
-							$value = $this->render_list_container_default_options($v2['options'], $v0[$k2]);
+							$value = $this->renderListContainerDefaultOptions($v2['options'], $v0[$k2]);
 						} else {
 							$value = $v0[$k2] ?? null;
 						}
 						$width = $v2['options']['width'] ?? ($v2['options']['percent'] . '%');
 						// urls
 						if (!empty($v2['options']['url_edit'])) {
-							$value = \HTML::a(['href' => $this->render_url_edit_href($v0), 'value' => $value]);
+							$value = \HTML::a(['href' => $this->renderURLEditHref($v0), 'value' => $value]);
 						}
 						$inner_table['options'][$k][$k2] = ['value' => $value, 'nowrap' => true, 'width' => $width, 'align' => $v2['options']['align'] ?? 'left'];
 					}
@@ -422,13 +422,13 @@ class Base {
 						if (empty($v2['options']['label_name'])) continue;
 						// process options
 						if (!empty($v2['options']['options_model'])) {
-							$value = $this->render_list_container_default_options($v2['options'], $v0[$k2]);
+							$value = $this->renderListContainerDefaultOptions($v2['options'], $v0[$k2]);
 						} else {
 							$value = $v0[$k2] ?? null;
 						}
 						// urls
 						if (!empty($v2['options']['url_edit'])) {
-							$value = \HTML::a(['href' => $this->render_url_edit_href($v0), 'value' => $value]);
+							$value = \HTML::a(['href' => $this->renderURLEditHref($v0), 'value' => $value]);
 						}
 						$inner_table['options'][$k . '_' . $k2][1] = ['value' => '<b>' . $v2['options']['label_name'] . ':</b>', 'width' => '15%', 'align' => 'left'];
 						$inner_table['options'][$k . '_' . $k2][2] = ['value' => $value, 'nowrap' => true, 'width' => '85%', 'align' => 'left'];
@@ -449,7 +449,7 @@ class Base {
 	 * @param array $values
 	 * @return string
 	 */
-	public function render_url_edit_href($values) {
+	public function renderURLEditHref($values) {
 		$model = \Factory::model($this->object->form_parent->query_primary_model, true);
 		$pk = [];
 		foreach ($model->pk as $v) {
@@ -465,7 +465,7 @@ class Base {
 	 *
 	 * @param string $container_link
 	 */
-	public function render_container($container_link) {
+	public function renderContainer($container_link) {
 		$result = [
 			'success' => false,
 			'error' => [],
@@ -506,7 +506,7 @@ render_custom_renderer:
 		}
 		// if its details we need to render it differently
 		if (($this->object->data[$container_link]['type'] ?? '') == 'details') {
-			return $this->render_container_type_details($container_link);
+			return $this->renderContainerTypeDetails($container_link);
 		}
 		// sorting rows
 		array_key_sort($this->object->data[$container_link]['rows'], ['order' => SORT_ASC]);
@@ -539,7 +539,7 @@ render_custom_renderer:
 		// rendering
 		foreach ($grouped as $k => $v) {
 			$first = current($v);
-			$result['data']['html'].= $this->{'render_row_' . $first['type']}($v, ['class' => $this->object->data[$container_link]['options']['class'] ?? null]);
+			$result['data']['html'].= $this->{'renderRow' . ucfirst($first['type'])}($v, ['class' => $this->object->data[$container_link]['options']['class'] ?? null]);
 		}
 		$result['success'] = true;
 		return $result;
@@ -551,7 +551,7 @@ render_custom_renderer:
 	 * @param string $container_link
 	 * @return array
 	 */
-	public function render_container_type_details($container_link) {
+	public function renderContainerTypeDetails($container_link) {
 		$result = [
 			'success' => false,
 			'error' => [],
@@ -578,7 +578,7 @@ render_custom_renderer:
 			}
 		}
 		// rendering
-		$result['data']['html'] = $this->render_container_type_details_rows($this->object->data[$container_link]['rows'], $data, $this->object->data[$container_link]['options']);
+		$result['data']['html'] = $this->renderContainerTypeDetailsRows($this->object->data[$container_link]['rows'], $data, $this->object->data[$container_link]['options']);
 		$result['success'] = true;
 		return $result;
 	}
@@ -590,7 +590,7 @@ render_custom_renderer:
 	 * @param array $options
 	 * @return array
 	 */
-	public function render_container_type_subdetails($container_link, $options = []) {
+	public function renderContainerTypeSubdetails($container_link, $options = []) {
 		$result = [
 			'success' => false,
 			'error' => [],
@@ -619,7 +619,7 @@ render_custom_renderer:
 		// merge options
 		$options2 = array_merge_hard($this->object->data[$container_link]['options'], $options);
 		// rendering
-		$result['data']['html'] = $this->render_container_type_details_rows($this->object->data[$container_link]['rows'], $data, $options2);
+		$result['data']['html'] = $this->renderContainerTypeDetailsRows($this->object->data[$container_link]['rows'], $data, $options2);
 		$result['success'] = true;
 		return $result;
 	}
@@ -631,7 +631,7 @@ render_custom_renderer:
 	 * @param array $values
 	 * @param array $options
 	 */
-	public function render_container_type_details_rows($rows, $values, $options = []) {
+	public function renderContainerTypeDetailsRows($rows, $values, $options = []) {
 		$result = '';
 		// empty_warning_message
 		if (empty($options['details_new_rows']) && empty($values) && isset($options['details_empty_warning_message'])) {
@@ -675,7 +675,7 @@ render_custom_renderer:
 							$v3['options']['row_class'] = ($v3['options']['row_class'] ?? '') . ' grid_row_hidden';
 						}
 						$data['options'][$k][$k2][$k3] = [
-							'label' => $this->render_element_name($first),
+							'label' => $this->renderElementName($first),
 							'options' => $v3['options'],
 							'row_class' => $v3['options']['row_class'] ?? null
 						];
@@ -822,13 +822,13 @@ render_custom_renderer:
 							// label
 							$label = null;
 							if ($options['details_rendering_type'] == 'grid_with_label') {
-								$label = $this->render_element_name($first);
+								$label = $this->renderElementName($first);
 							}
 							// add element to grid
 							$data['options'][$row_number . '_' . $k][$k2][$k3] = [
 								'error' => $error,
 								'label' => $label,
-								'value' => $this->render_element_value($value_options, $v0[$k3] ?? null, $v0),
+								'value' => $this->renderElementValue($value_options, $v0[$k3] ?? null, $v0),
 								'description' => $v3['options']['description'] ?? null,
 								'options' => $v3['options'],
 								'row_class' => ($value_options['options']['row_class'] ?? '') . (!($row_number % 2) ? ' grid_row_even' : ' grid_row_odd')
@@ -943,7 +943,7 @@ render_custom_renderer:
 	 * @param array $options
 	 * @return string
 	 */
-	public function render_row_grid($rows, $options = []) {
+	public function renderRowGrid($rows, $options = []) {
 		$data = [
 			'class' => $options['class'] ?? null,
 			'options' => []
@@ -965,7 +965,7 @@ render_custom_renderer:
 					}
 					$v2['options']['tabindex'] = $this->object->tabindex;
 					$this->object->tabindex++;
-					$buttons[$button_group][] = $this->render_element_value($v2);
+					$buttons[$button_group][] = $this->renderElementValue($v2);
 				}
 				// render button groups
 				foreach ($buttons as $k2 => $v2) {
@@ -1032,8 +1032,8 @@ render_custom_renderer:
 						$value = array_key_get($this->object->values, $v3['options']['values_key']);
 						$data['options'][$k][$k2][$k3] = [
 							'error' => $error,
-							'label' => $this->render_element_name($first),
-							'value' => $this->render_element_value($v3, $value, $neighbouring_values),
+							'label' => $this->renderElementName($first),
+							'value' => $this->renderElementValue($v3, $value, $neighbouring_values),
 							'description' => $v3['options']['description'] ?? null,
 							'options' => $v3['options'],
 							'row_class' => $v3['options']['row_class'] ?? null
@@ -1051,7 +1051,7 @@ render_custom_renderer:
 	 * @param array $options
 	 * @return string
 	 */
-	public function render_element_name($options) {
+	public function renderElementName($options) {
 		if (isset($options['options']['label_name']) || isset($options['options']['label_i18n'])) {
 			$value = i18n($options['options']['label_i18n'] ?? null, $options['options']['label_name']);
 			$prepend = isset($options['prepend_to_field']) ? $options['prepend_to_field'] : null;
@@ -1087,7 +1087,7 @@ render_custom_renderer:
 	 * @return string
 	 * @throws Exception
 	 */
-	public function render_element_value(& $options, $value = null, & $neighbouring_values = []) {
+	public function renderElementValue(& $options, $value = null, & $neighbouring_values = []) {
 		// field name and values_key
 		$options['options']['field_name'] = $options['options']['details_field_name'] ?? $options['options']['name'];
 		$options['options']['field_values_key'] = implode('[::]', $options['options']['field_values_key'] ?? [$options['options']['field_name']]);
@@ -1211,6 +1211,10 @@ render_custom_renderer:
 				$result_options['value'] = $value;
 				break;
 			case 'field':
+				// fix id
+				if ($result_options['name'][0] == '\\') {
+					$result_options['id'] = str_replace('\\', '_', $result_options['id']);
+				}
 				$element_method = $result_options['method'] ?? '\HTML::input';
 				if (strpos($element_method, '::') === false) {
 					$element_method = '\HTML::' . $element_method;

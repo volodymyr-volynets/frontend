@@ -1,17 +1,18 @@
 <?php
 
-class numbers_frontend_components_wizard_numbers_base implements numbers_frontend_components_wizard_interface_base {
+namespace Numbers\Frontend\Components\Wizard\Numbers;
+class Base implements \Numbers\Frontend\Components\Wizard\Interface2\Base {
 
 	/**
 	 * see \HTML::wizard();
 	 */
-	public static function wizard($options = []) {
+	public static function wizard(array $options = []) : string {
 		// if we have no options we render nothing
 		if (empty($options['options'])) return;
 		// include js & css files
-		Layout::add_css('/numbers/media_submodules/numbers_frontend_components_wizard_numbers_media_css_base.css', 10000);
+		\Layout::addCss('/numbers/media_submodules/Numbers_Frontend_Components_Wizard_Numbers_Media_CSS_Base.css', 10000);
 		// font awesome icons
-		library::add('fontawesome');
+		\Library::add('FontAwesome');
 		// render
 		$width = round(100 / count($options['options']), 2);
 		$result = '<table class="numbers_frontend_components_wizard_numbers_base">';
