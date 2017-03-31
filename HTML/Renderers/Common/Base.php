@@ -218,8 +218,8 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 			unset($options['autofocus']);
 		}
 		// rtl
-		$rtl = I18n::rtl(false);
-		if (I18n::rtl()) {
+		$rtl = \I18n::rtl(false);
+		if (\I18n::rtl()) {
 			if (isset($options['style'])) $options['style'] = str_replace(['text-align:right;', 'text-align: right;'], 'text-align:left;', $options['style']);
 			// let browser decide the direction based on content
 			$rtl = ' dir="auto" ';
@@ -377,14 +377,14 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 		}
 		// options first
 		if (!empty($options_array)) {
-			$result.= self::generate_select_options($options_array, $value, $options);
+			$result.= self::generateSelectOptions($options_array, $value, $options);
 		}
 		// optgroups second
 		if (!empty($optgroups_array)) {
 			$options['optgroups'] = 'optgroups';
 			foreach ($optgroups_array as $k2 => $v2) {
 				$result.= '<optgroup label="' . $v2['name'] . '" id="' . $k2 . '">';
-					$result.= self::generate_select_options($v2['options'], $value, $options);
+					$result.= self::generateSelectOptions($v2['options'], $value, $options);
 				$result.= '</optgroup>';
 			}
 		}

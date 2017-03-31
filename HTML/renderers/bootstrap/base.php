@@ -153,8 +153,8 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 	 * @see \HTML::grid()
 	 */
 	public static function grid(array $options = []) : string {
-		$rtl = I18n::rtl();
-		$grid_columns = Application::get('flag.numbers.framework.html.options.grid_columns') ?? 12;
+		$rtl = \I18n::rtl();
+		$grid_columns = \Application::get('flag.numbers.framework.html.options.grid_columns') ?? 12;
 		$rows = isset($options['options']) ? $options['options'] : [];
 		unset($options['options']);
 		$result = '';
@@ -166,7 +166,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 					$field_sizes[] = $v3['options']['percent'] ?? null;
 				}
 			}
-			$field_new_sizes = \HTML::percentage_to_grid_columns($field_sizes);
+			$field_new_sizes = \HTML::percentageToGridColumns($field_sizes);
 			// count number of fields
 			$count_fields = count($v);
 			//$count_class = \HTML::number_to_word($count_fields);
@@ -582,7 +582,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 				e.preventDefault();
 			});
 TTT;
-		Layout::onload($js);
+		\Layout::onload($js);
 		return $result;
 	}
 

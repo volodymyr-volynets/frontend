@@ -11,7 +11,7 @@ class Base {
 		if (isset($options['file'])) {
 			return \Numbers\Frontend\HTML\Renderers\Common\Base::icon($options);
 		} else if (isset($options['type'])) {
-			\Library::add('fontawesome');
+			\Library::add('FontAwesome');
 			// generating class & rendering tag
 			$options['class'] = array_add_token($options['class'] ?? [], 'fa fa-' . $options['type'], ' ');
 			if (!empty($options['class_only'])) {

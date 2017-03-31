@@ -87,7 +87,7 @@ function bootstrap_fix_navbar() {
  *
  * @type object
  */
-numbers.modal = {
+Numbers.Modal = {
 	/**
 	 * Show modal
 	 *
