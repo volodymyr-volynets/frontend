@@ -1108,7 +1108,7 @@ render_custom_renderer:
 			foreach ($result_options['json_contains'] as $k => $v) {
 				$temp[$k] = array_key_get($neighbouring_values, $v);
 			}
-			$value = \Object\Table_options::options_json_format_key($temp);
+			$value = \Object\Table\Options::optionJsonFormatKey($temp);
 		}
 		$options['options']['value'] = $value;
 		array_key_extract_by_prefix($result_options, 'label_');
