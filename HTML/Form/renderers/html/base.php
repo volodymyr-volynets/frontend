@@ -1149,6 +1149,7 @@ render_custom_renderer:
 						}
 					}
 				}
+				print_r2($skip_values);
 				$result_options['options'] = \Object\Data\Common::processOptions($result_options['options_model'], $this->object, $result_options['options_params'], $value, $skip_values, $result_options['options_options']);
 			} else {
 				// we need to inject form id into autocomplete
