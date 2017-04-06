@@ -47,13 +47,13 @@ class Base {
 		\Numbers\Frontend\Media\Libraries\LoadMask\Base::add();
 		// new record action
 		$mvc = \Application::get('mvc');
-		if (!empty($this->object->options['actions']['new'])) {
-			if ($mvc['action'] != 'index') {
+		if (!empty($this->object->options['actions']['new']) && \Application::$controller->can('Record_New', 'Edit')) {
+			if ($mvc['action'] != 'Index') {
 				$onclick = 'return confirm(\'' . strip_tags(i18n(null, \Object\Content\Messages::CONFIRM_BLANK)) . '\');';
 			} else {
 				$onclick = '';
 			}
-			$this->object->actions['form_new'] = ['value' => 'New', 'sort' => -31000, 'icon' => 'file-o', 'href' => $mvc['controller'] . '/_edit?' . $this->object::BUTTON_SUBMIT_BLANK . '=1', 'onclick' => $onclick, 'internal_action' => true];
+			$this->object->actions['form_new'] = ['value' => 'New', 'sort' => -31000, 'icon' => 'file-o', 'href' => $mvc['controller'] . '/_Edit?' . $this->object::BUTTON_SUBMIT_BLANK . '=1', 'onclick' => $onclick, 'internal_action' => true];
 			// override
 			if (is_array($this->object->options['actions']['new'])) {
 				$this->object->actions['form_new'] = array_merge($this->object->actions['form_new'], $this->object->options['actions']['new']);
@@ -398,7 +398,7 @@ class Base {
 						}
 						$width = $v2['options']['width'] ?? ($v2['options']['percent'] . '%');
 						// urls
-						if (!empty($v2['options']['url_edit'])) {
+						if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
 							$value = \HTML::a(['href' => $this->renderURLEditHref($v0), 'value' => $value]);
 						}
 						$inner_table['options'][$k][$k2] = ['value' => $value, 'nowrap' => true, 'width' => $width, 'align' => $v2['options']['align'] ?? 'left'];
@@ -427,7 +427,7 @@ class Base {
 							$value = $v0[$k2] ?? null;
 						}
 						// urls
-						if (!empty($v2['options']['url_edit'])) {
+						if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
 							$value = \HTML::a(['href' => $this->renderURLEditHref($v0), 'value' => $value]);
 						}
 						$inner_table['options'][$k . '_' . $k2][1] = ['value' => '<b>' . $v2['options']['label_name'] . ':</b>', 'width' => '15%', 'align' => 'left'];
@@ -1149,7 +1149,6 @@ render_custom_renderer:
 						}
 					}
 				}
-				print_r2($skip_values);
 				$result_options['options'] = \Object\Data\Common::processOptions($result_options['options_model'], $this->object, $result_options['options_params'], $value, $skip_values, $result_options['options_options']);
 			} else {
 				// we need to inject form id into autocomplete
