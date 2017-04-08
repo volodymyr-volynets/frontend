@@ -61,7 +61,7 @@ class Base {
 		}
 		// back to list
 		if (!empty($this->object->options['actions']['back'])) {
-			$this->object->actions['form_back'] = ['value' => 'Back', 'sort' => -32000, 'icon' => 'arrow-left', 'href' => $mvc['controller'] . '/_index', 'internal_action' => true];
+			$this->object->actions['form_back'] = ['value' => 'Back', 'sort' => -32000, 'icon' => 'arrow-left', 'href' => $mvc['controller'] . '/_Index', 'internal_action' => true];
 		}
 		// refresh action
 		if (!empty($this->object->options['actions']['refresh'])) {
@@ -342,7 +342,17 @@ class Base {
 			$method = \Factory::method($options['options_model'], null, true);
 			$this->cached_options[$hash] = call_user_func_array($method, [['where' => $params, 'i18n' => true]]);
 		}
-		return $this->cached_options[$hash][$value]['name'] ?? null;
+		if (is_array($value)) {
+			$temp = [];
+			foreach ($value as $v) {
+				if (isset($this->cached_options[$hash][$v]['name'])) {
+					$temp[]= $this->cached_options[$hash][$v]['name'];
+				}
+			}
+			return implode(\Format::$symbol_comma . ' ', $temp);
+		} else {
+			return $this->cached_options[$hash][$value]['name'] ?? null;
+		}
 	}
 
 	/**
@@ -457,7 +467,7 @@ class Base {
 			if ($model->tenant && $v == $model->tenant_column) continue;
 			$pk[$v] = $values[$v];
 		}
-		return \Application::get('mvc.controller') . '/_edit?' . http_build_query2($pk);
+		return \Application::get('mvc.controller') . '/_Edit?' . http_build_query2($pk);
 	}
 
 	/**
