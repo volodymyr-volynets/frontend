@@ -1,6 +1,7 @@
 <?php
 
-class numbers_frontend_html_fontawesome_model_icons extends \Object\Data {
+namespace Numbers\Frontend\HTML\FontAwesome\Model;
+class Icons extends \Object\Data {
 	public $column_key = 'no_data_fontawesome_icon_code';
 	public $column_prefix = 'no_data_fontawesome_icon_';
 	public $columns = [
