@@ -1108,8 +1108,8 @@ render_custom_renderer:
 			call_user_func_array($method, [& $this, & $options, & $value, & $neighbouring_values]);
 		}
 		// handling override_field_value method
-		if (!empty($this->object->wrapper_methods['override_field_value']['main'])) {
-			call_user_func_array($this->object->wrapper_methods['override_field_value']['main'], [& $this, & $options, & $value, & $neighbouring_values]);
+		if (!empty($this->object->wrapper_methods['overrideFieldValue']['main'])) {
+			call_user_func_array($this->object->wrapper_methods['overrideFieldValue']['main'], [& $this->object, & $options, & $value, & $neighbouring_values]);
 		}
 		$result_options = $options['options'];
 		// process json_contains
@@ -1158,6 +1158,11 @@ render_custom_renderer:
 							$skip_values = array_keys($this->object->misc_settings['details_unique_select'][$options['options']['details_key']][$options['options']['details_field_name']]);
 						}
 					}
+				}
+				// call override method
+				if (!empty($this->object->wrapper_methods['processOptionsModels']['main'])) {
+					$model = $this->object->wrapper_methods['processOptionsModels']['main'][0];
+					$model->{$this->object->wrapper_methods['processOptionsModels']['main'][1]}($this->object, $options['options']['field_name'], $options['options']['details_key'] ?? null, $options['options']['details_parent_key'] ?? null, $result_options['options_params']);
 				}
 				$result_options['options'] = \Object\Data\Common::processOptions($result_options['options_model'], $this->object, $result_options['options_params'], $value, $skip_values, $result_options['options_options']);
 			} else {

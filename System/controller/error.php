@@ -10,7 +10,7 @@ class numbers_frontend_system_controller_error extends \Object\Controller {
 	public function actionIndex() {
 		$input = \Request::input();
 		if (!empty($input['token'])) {
-			$crypt = new crypt();
+			$crypt = new \Crypt();
 			$token_data = $crypt->token_validate($input['token'], ['skip_time_validation' => true]);
 			if (!($token_data === false || $token_data['id'] !== 'general')) {
 				$input['data'] = json_decode($input['data'], true);
