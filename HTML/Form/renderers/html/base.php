@@ -1105,7 +1105,10 @@ render_custom_renderer:
 		if (!empty($options['options']['custom_renderer'])) {
 			$method = \Factory::method($options['options']['custom_renderer'], null, true);
 			$options_custom_renderer = $options;
-			call_user_func_array($method, [& $this, & $options, & $value, & $neighbouring_values]);
+			$temp = call_user_func_array($method, [& $this->object, & $options, & $value, & $neighbouring_values]);
+			if (!is_null($temp)) {
+				return $temp;
+			}
 		}
 		// handling override_field_value method
 		if (!empty($this->object->wrapper_methods['overrideFieldValue']['main'])) {
