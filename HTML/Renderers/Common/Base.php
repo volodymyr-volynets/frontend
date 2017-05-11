@@ -363,7 +363,7 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 		}
 		// readonly
 		if (!empty($options['readonly'])) {
-			Layout::onload("$('#{$options['id']} option:not(:selected)').prop('disabled', true);");
+			\Layout::onload("$('#{$options['id']} option:not(:selected)').prop('disabled', true);");
 		}
 		// options & optgroups
 		$optgroups_array = !empty($options['optgroups']) ? $options['optgroups'] : [];

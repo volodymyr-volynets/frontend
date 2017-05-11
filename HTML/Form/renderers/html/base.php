@@ -329,12 +329,12 @@ class Base {
 	 * @param mixed $value
 	 * @return mixed
 	 */
-	private function renderListContainerDefaultOptions(array $options, $value) {
+	private function renderListContainerDefaultOptions(array $options, $value, $neighbouring_values = []) {
 		if (strpos($options['options_model'], '::') === false) $options['options_model'].= '::options';
 		$params = $options['options_params'] ?? [];
 		if (!empty($options['options_depends'])) {
 			foreach ($options['options_depends'] as $k9 => $v9) {
-				$params[$k9] = $v0[$v9];
+				$params[$k9] = $neighbouring_values[$v9];
 			}
 		}
 		$hash = sha1($options['options_model'] . serialize($params));
@@ -402,7 +402,7 @@ class Base {
 					foreach ($v['elements'] as $k2 => $v2) {
 						// process options
 						if (!empty($v2['options']['options_model'])) {
-							$value = $this->renderListContainerDefaultOptions($v2['options'], $v0[$k2]);
+							$value = $this->renderListContainerDefaultOptions($v2['options'], $v0[$k2], $v0);
 						} else {
 							$value = $v0[$k2] ?? null;
 						}
@@ -432,7 +432,7 @@ class Base {
 						if (empty($v2['options']['label_name'])) continue;
 						// process options
 						if (!empty($v2['options']['options_model'])) {
-							$value = $this->renderListContainerDefaultOptions($v2['options'], $v0[$k2]);
+							$value = $this->renderListContainerDefaultOptions($v2['options'], $v0[$k2], $v0);
 						} else {
 							$value = $v0[$k2] ?? null;
 						}
@@ -777,19 +777,22 @@ render_custom_renderer:
 								// 1 to 1
 								if (!empty($options['details_11'])) {
 									$name = "{$options['details_key']}[{$k3}]";
-									$id = "form_{$this->object->form_link}_details_{$options['details_key']}_{$k3}";
+									$id01 = strtolower(str_replace('\\', '_', $options['details_key']));
+									$id = "form_{$this->object->form_link}_details_{$id01}_{$k3}";
 									$error_name = "{$options['details_key']}[{$k3}]";
 									$values_key = [$options['details_key'], $k3];
 									$field_values_key = [$options['details_key'], $k3];
 								} else { // 1 to M
 									$name = "{$options['details_key']}[{$i0}][{$k3}]";
-									$id = "form_{$this->object->form_link}_details_{$options['details_key']}_{$row_number}_{$k3}";
+									$id01 = strtolower(str_replace('\\', '_', $options['details_key']));
+									$id = "form_{$this->object->form_link}_details_{$id01}_{$row_number}_{$k3}";
 									$error_name = "{$options['details_key']}[{$k0}][{$k3}]";
 									$values_key = [$options['details_key'], $k0, $k3];
 									$field_values_key = [$options['details_key'], $i0, $k3];
 								}
 							} else {
 								$name = "{$options['details_parent_key']}[{$options['__parent_row_number']}][{$options['details_key']}][{$k0}][{$k3}]";
+								// todo fix id
 								$id = "form_{$this->object->form_link}_subdetails_{$options['details_parent_key']}_{$options['__parent_row_number']}_{$options['details_key']}_{$row_number}_{$k3}";
 								$error_name = "{$options['details_parent_key']}[{$options['__parent_key']}][{$options['details_key']}][{$k0}][{$k3}]";
 								$values_key = [$options['details_parent_key'], $options['__parent_key'], $options['details_key'], $k0, $k3];
@@ -894,7 +897,7 @@ render_custom_renderer:
 					$v10['__values'] = $v0[$v10['options']['details_key']] ?? [];
 					$v10['__parent_row_number'] = $row_number;
 					$v10['__parent_key'] = $k0;
-					$temp = $this->render_container_type_subdetails($v10['options']['container_link'], $v10);
+					$temp = $this->renderContainerTypeSubdetails($v10['options']['container_link'], $v10);
 					if ($temp['success']) {
 						$tab_values[$k10].= $temp['data']['html'];
 					}
