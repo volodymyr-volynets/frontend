@@ -30,7 +30,7 @@ class Base implements \Numbers\Frontend\Components\Calendar\Interface2\Base {
 		$placeholder = \Format::getDatePlaceholder($widget_options['format']);
 		$options['size'] = strlen($placeholder);
 		// set placeholder
-		if (!empty($options['placeholder']) && $options['placeholder'] == 'Format::get_date_placeholder') {
+		if (!empty($options['placeholder']) && $options['placeholder'] == 'Format::getDatePlaceholder') {
 			$options['placeholder'] = $placeholder;
 			$options['title'] = ($options['title'] ?? '') . ' (' . $placeholder . ')';
 		}
@@ -53,7 +53,7 @@ class Base implements \Numbers\Frontend\Components\Calendar\Interface2\Base {
 		}
 		// we do not render a widget if readonly
 		if (empty($options['readonly'])) {
-			\Layout::onload('numbers_calendar(' . json_encode($widget_options) . ');');
+			\Layout::onload('Numbers_Calendar(' . json_encode($widget_options) . ');');
 		}
 		return $result;
 	}

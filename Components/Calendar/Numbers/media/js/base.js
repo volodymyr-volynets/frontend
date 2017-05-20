@@ -15,14 +15,14 @@
  *		show_presets - whether we need to display presets panel
  *		holder_div_id - whether we have div holder
  */
-var numbers_calendar = function (options) {
+var Numbers_Calendar = function (options) {
 	// initializing object
 	var result = new Object();
 	result.id = options.id;
 	result.elem = document.getElementById(options.id);
 	result.var_id = 'numbers_calendar_var_' + result.id;
 	result.type = options.type ? options.type : 'date';
-	result.format = options.format ? options.format : numbers.format.get_date_format(result.type);
+	result.format = options.format ? options.format : Numbers.Format.getDateFormat(result.type);
 	result.div_id = options.id + '_calendar_div';
 	// we need to insert div element right after input
 	var div = document.createElement("div");
@@ -218,9 +218,9 @@ var numbers_calendar = function (options) {
 			delta = -event.detail / 2;
 		}
 		if (delta >= 0) {
-			this.prev_next(true, false);
+			this.prevNext(true, false);
 		} else {
-			this.prev_next(false, true);
+			this.prevNext(false, true);
 		}
 		this.flag_onscroll_lock = true;
 		setInterval(function(){ window[result.var_id].flag_onscroll_lock = false }, 500);
@@ -254,12 +254,12 @@ var numbers_calendar = function (options) {
 	/**
 	 * Load master/slave dates
 	 */
-	result.load_master_slave_datetime = function () {
+	result.loadMasterSlaveDatetime = function () {
 		this.master_datetime = null;
 		if (this.master_id) {
 			var tmp = document.getElementById(this.master_id).value;
 			if (tmp) {
-				var date = numbers.format.read_date(tmp, this.type);
+				var date = Numbers.Format.readDate(tmp, this.type);
 				if (date !== false) {
 					this.master_datetime = date;
 				}
@@ -269,7 +269,7 @@ var numbers_calendar = function (options) {
 		if (this.slave_id) {
 			var tmp = document.getElementById(this.slave_id).value;
 			if (tmp) {
-				var date = numbers.format.read_date(tmp, this.type);
+				var date = Numbers.Format.readDate(tmp, this.type);
 				if (date !== false) {
 					this.slave_datetime = date;
 				}
@@ -280,9 +280,9 @@ var numbers_calendar = function (options) {
 	/**
 	 * Update date
 	 */
-	result.update_date_selected = function () {
+	result.updateDateSelected = function () {
 		if (this.elem.value) {
-			var date = numbers.format.read_date(this.elem.value, this.type);
+			var date = Numbers.Format.readDate(this.elem.value, this.type);
 			if (date !== false) {
 				this.date_used = date;
 			}
@@ -321,7 +321,7 @@ var numbers_calendar = function (options) {
 	 * Check for flag_is_focused flag
 	 * @returns boolean
 	 */
-	result.check_if_focused = function () {
+	result.checkIfFocused = function () {
 		return this.flag_is_focused;
 	};
 
@@ -335,7 +335,7 @@ var numbers_calendar = function (options) {
 			this.flag_is_focused = false;
 			var that = this;
 			setTimeout(function () {
-				if (!that.check_if_focused()) {
+				if (!that.checkIfFocused()) {
 					that.close();
 				}
 			}, 100);
@@ -348,10 +348,10 @@ var numbers_calendar = function (options) {
 	 * This would be called when day is chosen
 	 * @param int day
 	 */
-	result.date_day_chosen = function (year, month, day) {
+	result.dateDayChosen = function (year, month, day) {
 		// for date type we autoclose the widget
 		if (this.type == 'date') {
-			this.update_input_element(new Date(year, month, day));
+			this.updateInputElement(new Date(year, month, day));
 			this.close();
 		} else if (this.type == 'datetime') {
 			// we must reset year/month/day in case we choose prev/next month
@@ -359,7 +359,7 @@ var numbers_calendar = function (options) {
 			this.date_month_elem.value = month;
 			this.date_day_elem.value = day;
 			this.date_used = new Date(year, month, day);
-			this.render_days();
+			this.renderDays();
 		}
 	};
 
@@ -367,7 +367,7 @@ var numbers_calendar = function (options) {
 	 * Check master/slave time
 	 * @returns boolean
 	 */
-	result.check_master_slave_time = function () {
+	result.checkMasterSlaveTime = function () {
 		// load date & time
 		var cur_date = this.get('date_object'), cur_disable = false;
 		if (this.master_datetime) {
@@ -392,9 +392,9 @@ var numbers_calendar = function (options) {
 	/**
 	 * This would be called when time is chosen
 	 */
-	result.time_chosen = function () {
-		if (this.check_master_slave_time()) {
-			this.update_input_element(this.get('date_object'));
+	result.timeChosen = function () {
+		if (this.checkMasterSlaveTime()) {
+			this.updateInputElement(this.get('date_object'));
 			this.close();
 		}
 	};
@@ -403,9 +403,12 @@ var numbers_calendar = function (options) {
 	 * This function would update input element
 	 * @param Date date_object
 	 */
-	result.update_input_element = function (date_object) {
-		var value = numbers.format.date_format(date_object, this.type, {format: this.format});
+	result.updateInputElement = function (date_object) {
+		var value = Numbers.Format.dateFormat(date_object, this.type, {format: this.format});
 		this.elem.value = value;
+		// onchange
+		var event = new Event('change');
+		this.elem.dispatchEvent(event);
 		// we need to trigger onchange event
 		this.elem.dispatchEvent(new Event('change', {bubbles: true}));
 	};
@@ -421,8 +424,8 @@ var numbers_calendar = function (options) {
 		// render skeleton
 		if (!this.flag_skeleton_rendered) {
 			// we need to determine selected date & used date
-			this.update_date_selected();
-			this.render_skeleton();
+			this.updateDateSelected();
+			this.renderSkeleton();
 			this.flag_skeleton_rendered = true;
 			// we need to initialize few elements
 			this.date_year_elem = document.getElementById(this.date_year_id);
@@ -442,11 +445,11 @@ var numbers_calendar = function (options) {
 		if (this.div_elem.style.display != 'none' && !only_show) {
 			this.close();
 		} else {
-			this.update_date_selected();
-			this.load_master_slave_datetime();
+			this.updateDateSelected();
+			this.loadMasterSlaveDatetime();
 			// render days only for date types
 			if (this.flag_skeleton_rendered && (this.type == 'date' || this.type == 'datetime')) {
-				this.render_days();
+				this.renderDays();
 			}
 			this.elem.focus();
 			this.flag_is_focused = true;
@@ -460,7 +463,7 @@ var numbers_calendar = function (options) {
 	 * Check if we can click prev button
 	 * @returns boolean
 	 */
-	result.date_can_prev = function () {
+	result.dateCanPrev = function () {
 		var year = parseInt(this.date_year_elem.value);
 		var month = parseInt(this.date_month_elem.value);
 		// checking for maxinum date
@@ -486,7 +489,7 @@ var numbers_calendar = function (options) {
 	 * Check if we can click next button
 	 * @returns boolean
 	 */
-	result.date_can_next = function () {
+	result.dateCanNext = function () {
 		var year = parseInt(this.date_year_elem.value);
 		var month = parseInt(this.date_month_elem.value);
 		// checking for maxinum date
@@ -512,11 +515,11 @@ var numbers_calendar = function (options) {
 	 * Handler for prev/next buttons
 	 * @param int next
 	 */
-	result.prev_next = function (next, prev) {
+	result.prevNext = function (next, prev) {
 		var year = parseInt(this.date_year_elem.value);
 		var month = parseInt(this.date_month_elem.value);
 		// next
-		if (next && this.date_can_next()) {
+		if (next && this.dateCanNext()) {
 			if (month == 11) {
 				month = 0;
 				year += 1;
@@ -525,7 +528,7 @@ var numbers_calendar = function (options) {
 			}
 		}
 		// prev
-		if (prev && this.date_can_prev()) {
+		if (prev && this.dateCanPrev()) {
 			if (month == 0) {
 				month = 11;
 				year -= 1;
@@ -536,7 +539,7 @@ var numbers_calendar = function (options) {
 		// putting values back
 		this.date_year_elem.value = year;
 		this.date_month_elem.value = month;
-		this.render_days();
+		this.renderDays();
 	};
 
 	/**
@@ -544,7 +547,7 @@ var numbers_calendar = function (options) {
 	 * @param string what
 	 * @param boolean down
 	 */
-	result.time_changed = function (what, down) {
+	result.timeChanged = function (what, down) {
 		var am_pm = parseInt(this.time_am_pm_elem.value);
 		var hour = parseInt(this.time_hour_elem.value);
 		var minute = parseInt(this.time_minute_elem.value);
@@ -597,7 +600,7 @@ var numbers_calendar = function (options) {
 		this.time_minute_elem.value = minute;
 		this.time_second_elem.value = second;
 		// check if we have time in range
-		this.check_master_slave_time();
+		this.checkMasterSlaveTime();
 	};
 
 	/**
@@ -605,15 +608,15 @@ var numbers_calendar = function (options) {
 	 *
 	 * @param int month
 	 */
-	result.month_changed = function (month) {
-		this.render_days();
+	result.monthChanged = function (month) {
+		this.renderDays();
 	};
 
 	/**
 	 * This will be called when user changes the year in select element
 	 * @param mixed year
 	 */
-	result.year_changed = function (year) {
+	result.yearChanged = function (year) {
 		// if user requested earlier dates
 		if (year == 'down') {
 			var prev_year = this.date_min_year - 1;
@@ -634,7 +637,7 @@ var numbers_calendar = function (options) {
 			this.date_max_year = i - 1;
 			this.date_year_elem.value = next_year;
 		}
-		this.render_days();
+		this.renderDays();
 	};
 
 	/**
@@ -647,14 +650,14 @@ var numbers_calendar = function (options) {
 	/**
 	 * Render skeleton
 	 */
-	result.render_skeleton = function () {
+	result.renderSkeleton = function () {
 		var html = '';
 		html += '<table dir="ltr">';
 		// date elements
 		if (this.type == 'date' || this.type == 'datetime') {
 			// date header
 			html += '<tr>';
-				html += '<td align="left" width="25"><span onclick="' + this.var_id + '.prev_next(0, 1);" id="' + this.id + '_calendar_header_prev" class="numbers_calendar_header_button"><i class="fa fa-chevron-left"></i></span></td>';
+				html += '<td align="left" width="25"><span onclick="' + this.var_id + '.prevNext(0, 1);" id="' + this.id + '_calendar_header_prev" class="numbers_calendar_header_button"><i class="fa fa-chevron-left"></i></span></td>';
 				html += '<td align="center">';
 					html += '<table width="100%">';
 						html += '<tr>';
@@ -662,7 +665,7 @@ var numbers_calendar = function (options) {
 								// hidden day element
 								html += '<input type="hidden" id="' + this.date_day_id + '" value="" />';
 								// month select
-								html += '<select id="' + this.date_month_id + '" class="numbers_calendar_header_date_select" onchange="' + this.var_id + '.month_changed(this.value);" onfocus="' + this.var_id + '.onfocus();" onblur="' + this.var_id + '.onfocus(true);">';
+								html += '<select id="' + this.date_month_id + '" class="numbers_calendar_header_date_select" onchange="' + this.var_id + '.monthChanged(this.value);" onfocus="' + this.var_id + '.onfocus();" onblur="' + this.var_id + '.onfocus(true);">';
 								// we need to select proper month
 								var selected_month = this.date_selected.getMonth();
 								for (var i in this.i18n.months.full) {
@@ -672,7 +675,7 @@ var numbers_calendar = function (options) {
 								html += '</td>';
 								html += '<td>';
 								// year select
-								html += '<select id="' + this.date_year_id + '" class="numbers_calendar_header_date_select" onchange="' + this.var_id + '.year_changed(this.value);" onfocus="' + this.var_id + '.onfocus();" onblur="' + this.var_id + '.onfocus(true);">';
+								html += '<select id="' + this.date_year_id + '" class="numbers_calendar_header_date_select" onchange="' + this.var_id + '.yearChanged(this.value);" onfocus="' + this.var_id + '.onfocus();" onblur="' + this.var_id + '.onfocus(true);">';
 								if (this.flag_date_year_down) {
 									html += '<option value="down">+++</option>';
 								}
@@ -688,7 +691,7 @@ var numbers_calendar = function (options) {
 						html += '</tr>';
 					html += '</table>';
 				html += '</td>';
-				html += '<td align="right" width="25"><span onclick="' + this.var_id + '.prev_next(1, 0);" id="' + this.id + '_calendar_header_next" class="numbers_calendar_header_button"><i class="fa fa-chevron-right"></i></a></td>';
+				html += '<td align="right" width="25"><span onclick="' + this.var_id + '.prevNext(1, 0);" id="' + this.id + '_calendar_header_next" class="numbers_calendar_header_button"><i class="fa fa-chevron-right"></i></a></td>';
 			html += '</tr>';
 			// date days
 			html += '<tr>';
@@ -719,16 +722,16 @@ var numbers_calendar = function (options) {
 			var hide_seconds = this.flag_time_seconds ? '' : ' style="display: none;"';
 			html += '<tr>';
 				html += '<td colspan="3" align="center">';
-					var rtl = numbers.i18n.rtl() ? ' dir="rtl" ' : '';
+					var rtl = Numbers.I18n.rtl() ? ' dir="rtl" ' : '';
 					html += '<table width="100%"' + rtl + '>';
 						html += '<tr>';
-							html += '<td align="center"><span onclick="' + this.var_id + '.time_changed(\'hour\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-up"></i></span></td>';
+							html += '<td align="center"><span onclick="' + this.var_id + '.timeChanged(\'hour\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-up"></i></span></td>';
 							html += '<td>&nbsp;</td>';
-							html += '<td align="center"><span onclick="' + this.var_id + '.time_changed(\'minute\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-up"></i></span></td>';
+							html += '<td align="center"><span onclick="' + this.var_id + '.timeChanged(\'minute\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-up"></i></span></td>';
 							html += '<td' + hide_seconds + '>&nbsp;</td>';
-							html += '<td align="center"' + hide_seconds + '><span onclick="' + this.var_id + '.time_changed(\'second\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-up"></i></span></td>';
-							html += '<td align="center"' + hide_am_pm + '><span onclick="' + this.var_id + '.time_changed(\'am_pm\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-up"></i></span></td>';
-							html += '<td align="center" width="33" rowspan="3" valign="middle"><span onclick="' + this.var_id + '.time_chosen();" id="' + this.time_go_id + '" class="numbers_calendar_time_button"><i class="fa fa-arrow-circle-o-right"></span></a></td>';
+							html += '<td align="center"' + hide_seconds + '><span onclick="' + this.var_id + '.timeChanged(\'second\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-up"></i></span></td>';
+							html += '<td align="center"' + hide_am_pm + '><span onclick="' + this.var_id + '.timeChanged(\'am_pm\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-up"></i></span></td>';
+							html += '<td align="center" width="33" rowspan="3" valign="middle"><span onclick="' + this.var_id + '.timeChosen();" id="' + this.time_go_id + '" class="numbers_calendar_time_button"><i class="fa fa-arrow-circle-o-right"></span></a></td>';
 						html += '</tr>';
 						html += '<tr>';
 							html += '<td align="center">';
@@ -780,12 +783,12 @@ var numbers_calendar = function (options) {
 							html += '</td>';
 						html += '</tr>';
 						html += '<tr>';
-							html += '<td align="center"><span onclick="' + this.var_id + '.time_changed(\'hour\', true);" class="numbers_calendar_header_button"><i class="fa fa-chevron-down"></i></span></td>';
+							html += '<td align="center"><span onclick="' + this.var_id + '.timeChanged(\'hour\', true);" class="numbers_calendar_header_button"><i class="fa fa-chevron-down"></i></span></td>';
 							html += '<td>&nbsp;</td>';
-							html += '<td align="center"><span onclick="' + this.var_id + '.time_changed(\'minute\', true);" class="numbers_calendar_header_button"><i class="fa fa-chevron-down"></i></a></td>';
+							html += '<td align="center"><span onclick="' + this.var_id + '.timeChanged(\'minute\', true);" class="numbers_calendar_header_button"><i class="fa fa-chevron-down"></i></a></td>';
 							html += '<td' + hide_seconds + '>&nbsp;</td>';
-							html += '<td align="center"' + hide_seconds + '><span onclick="' + this.var_id + '.time_changed(\'second\', true);" class="numbers_calendar_header_button"><i class="fa fa-chevron-down"></i></span></td>';
-							html += '<td align="center"' + hide_am_pm + '><span onclick="' + this.var_id + '.time_changed(\'am_pm\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-down"></i></span></td>';
+							html += '<td align="center"' + hide_seconds + '><span onclick="' + this.var_id + '.timeChanged(\'second\', true);" class="numbers_calendar_header_button"><i class="fa fa-chevron-down"></i></span></td>';
+							html += '<td align="center"' + hide_am_pm + '><span onclick="' + this.var_id + '.timeChanged(\'am_pm\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-down"></i></span></td>';
 						html += '</tr>';
 						// names
 						html += '<tr>';
@@ -818,7 +821,7 @@ var numbers_calendar = function (options) {
 	/**
 	 * Render date days
 	 */
-	result.render_days = function () {
+	result.renderDays = function () {
 		var year = parseInt(this.date_year_elem.value);
 		var month = parseInt(this.date_month_elem.value);
 		// get number of days in this month
@@ -832,7 +835,7 @@ var numbers_calendar = function (options) {
 		var prev_month_total_days = prev_moth_object.getDate();
 		var next_moth_object = new Date(year, month + 1, 1);
 		var week_days_hash = {}, week_days_index = 0;
-		var rtl = numbers.i18n.rtl() ? ' dir="rtl" ' : '';
+		var rtl = Numbers.I18n.rtl() ? ' dir="rtl" ' : '';
 		// rendering table
 		html = '<table class="numbers_calendar_date_days" cellpadding="2"' + rtl + '>';
 		// render header
@@ -879,7 +882,7 @@ var numbers_calendar = function (options) {
 					cur_year = prev_moth_object.getFullYear();
 					cur_month = prev_moth_object.getMonth();
 					value = prev_month_total_days - prev_days_left;
-					onclick = this.var_id + '.date_day_chosen(' + cur_year + ', ' + cur_month + ', ' + value + ');';
+					onclick = this.var_id + '.dateDayChosen(' + cur_year + ', ' + cur_month + ', ' + value + ');';
 					classes += ' numbers_calendar_date_day_prev';
 					prev_days_left--;
 					if (prev_days_left == -1) {
@@ -888,14 +891,14 @@ var numbers_calendar = function (options) {
 				} else if (flag_next_month) {
 					cur_year = next_moth_object.getFullYear();
 					cur_month = next_moth_object.getMonth();
-					onclick = this.var_id + '.date_day_chosen(' + cur_year + ', ' + cur_month + ', ' + next_days_start + ');';
+					onclick = this.var_id + '.dateDayChosen(' + cur_year + ', ' + cur_month + ', ' + next_days_start + ');';
 					value = next_days_start;
 					classes += ' numbers_calendar_date_day_prev';
 					next_days_start++;
 				} else {
 					cur_year = year;
 					cur_month = month;
-					onclick = this.var_id + '.date_day_chosen(' + year + ', ' + month + ', ' + cur_day + ');';
+					onclick = this.var_id + '.dateDayChosen(' + year + ', ' + month + ', ' + cur_day + ');';
 					value = cur_day;
 					// we need to prepend special class for current day
 					if (this.date_current.getFullYear() == year && this.date_current.getMonth() == month && this.date_current.getDate() == cur_day) {
@@ -946,8 +949,8 @@ var numbers_calendar = function (options) {
 		html += '</table>';
 		this.date_days_elem.innerHTML = html;
 		// handling prev/next buttons
-		document.getElementById(this.id + '_calendar_header_next').style.display = this.date_can_next() ? 'inline-block' : 'none';
-		document.getElementById(this.id + '_calendar_header_prev').style.display = this.date_can_prev() ? 'inline-block' : 'none';
+		document.getElementById(this.id + '_calendar_header_next').style.display = this.dateCanNext() ? 'inline-block' : 'none';
+		document.getElementById(this.id + '_calendar_header_prev').style.display = this.dateCanPrev() ? 'inline-block' : 'none';
 	};
 
 	// we need to set a variable in global scope
@@ -959,7 +962,7 @@ var numbers_calendar = function (options) {
  */
 if (window.jQuery) {
 	(function ($) {
-		$.fn.numbers_calendar = function (options) {
+		$.fn.numbersCalendar = function (options) {
 			if (!options) options = {};
 			// loop through all elements
 			return this.each(function () {
@@ -969,7 +972,7 @@ if (window.jQuery) {
 					elem.attr('id', id);
 				}
 				options2.id = id;
-				numbers_calendar(options2);
+				Numbers_Calendar(options2);
 			});
 		};
 	})(jQuery);

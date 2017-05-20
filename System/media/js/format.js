@@ -301,7 +301,7 @@ Numbers.Format = {
 	 * @return string
 	 */
 	numberToFromNativeLanguage: function(number, options, from) {
-		if (Numbers.format.__custom) {
+		if (Numbers.Format.__custom) {
 			if (!from) {
 				if (Numbers.Format.__custom.amount) {
 					number = Numbers.Format.__custom.amount(number, options);

@@ -16,7 +16,7 @@ class Base {
 	 * @param \Object\Form\Base $object
 	 * @return string
 	 */
-	public function render(\Object\Form\Base $object) : string {
+	public function render(\Object\Form\Base & $object) : string {
 		// save object
 		$this->object = $object;
 		// ajax requests from another form
@@ -208,7 +208,9 @@ class Base {
 			'hasErrors' => $this->object->hasErrors()
 		];
 		$js = "Numbers.Form.data['form_{$this->object->form_link}_form'] = " . json_encode($js_data) . ";\n";
-		$js.= "Numbers.Form.listFilterSortToggle('#form_{$this->object->form_link}_form', true);\n";
+		if (!$this->object->hasErrors()) {
+			$js.= "Numbers.Form.listFilterSortToggle('#form_{$this->object->form_link}_form', true);\n";
+		}
 		\Layout::onload($js);
 		// bypass values
 		if (!empty($this->object->options['bypass_hidden_values'])) {
@@ -381,7 +383,7 @@ class Base {
 			// render columns
 			$temp_inner = '';
 			foreach ($data['columns'] as $k => $v) {
-				$inner_table = ['options' => [], 'width' => '100%', 'class' => 'list_header_inner'];
+				$inner_table = ['options' => [], 'width' => '100%', 'class' => 'numbers_frontend_form_list_header_inner'];
 				foreach ($v['elements'] as $k2 => $v2) {
 					$width = $v2['options']['width'] ?? ($v2['options']['percent'] . '%');
 					$inner_table['options'][1][$k2] = ['value' => i18n(null, $v2['options']['label_name']), 'nowrap' => true, 'width' => $width, 'tag' => 'th'];
@@ -398,7 +400,7 @@ class Base {
 				$row = [];
 				$temp_inner = '';
 				foreach ($data['columns'] as $k => $v) {
-					$inner_table = ['options' => [], 'width' => '100%', 'class' => 'list_header_inner'];
+					$inner_table = ['options' => [], 'width' => '100%', 'class' => 'numbers_frontend_form_list_header_inner'];
 					foreach ($v['elements'] as $k2 => $v2) {
 						// process options
 						if (!empty($v2['options']['options_model'])) {
@@ -427,7 +429,7 @@ class Base {
 				// process all columns first
 				$temp_inner = '';
 				foreach ($data['columns'] as $k => $v) {
-					$inner_table = ['options' => [], 'width' => '100%', 'class' => 'list_header_inner'];
+					$inner_table = ['options' => [], 'width' => '100%', 'class' => 'numbers_frontend_form_list_header_inner'];
 					foreach ($v['elements'] as $k2 => $v2) {
 						if (empty($v2['options']['label_name'])) continue;
 						// process options
@@ -669,6 +671,7 @@ render_custom_renderer:
 		}
 		// header rows for table
 		if ($options['details_rendering_type'] == 'table') {
+			$data = [];
 			foreach ($rows as $k => $v) {
 				array_key_sort($v['elements'], ['order' => SORT_ASC]);
 				// group by
@@ -751,7 +754,8 @@ render_custom_renderer:
 			foreach ($rows as $k => $v) {
 				// row_id
 				if (empty($options['details_parent_key'])) {
-					$row_id = "form_{$this->object->form_link}_details_{$options['details_key']}_{$row_number}_row";
+					$row_id_temp = str_replace('\\', '_', $options['details_key']);
+					$row_id = "form_{$this->object->form_link}_details_{$row_id_temp}_{$row_number}_row";
 				} else {
 					$row_id = "form_{$this->object->form_link}_subdetails_{$options['details_parent_key']}_{$options['__parent_row_number']}_{$options['details_key']}_{$row_number}_row";
 				}
@@ -856,7 +860,8 @@ render_custom_renderer:
 			}
 			// subdetails
 			if (!empty($this->object->detail_fields[$options['details_key']]['subdetails'])) {
-				$tab_id = "form_tabs_{$this->object->form_link}_subdetails_{$options['details_key']}_{$row_number}";
+				$temp = str_replace('\\', '_', $options['details_key']);
+				$tab_id = "form_tabs_{$this->object->form_link}_subdetails_{$temp}_{$row_number}";
 				$tab_header = [
 					'tabs_subdetails_none' => \HTML::icon(['type' => 'toggle-on'])
 				];
@@ -878,16 +883,17 @@ render_custom_renderer:
 				$have_tabs = false;
 				foreach ($tab_sorted as $k10 => $v10) {
 					$v10 = $this->object->detail_fields[$options['details_key']]['subdetails'][$k10];
-					$this->object->current_tab[] = "{$tab_id}_{$k10}";
+					$tab_k10 = str_replace('\\', '_', $k10);
+					$this->object->current_tab[] = "{$tab_id}_{$tab_k10}";
 					$labels = '';
 					foreach (['records', 'danger', 'warning', 'success', 'info'] as $v78) {
 						$labels.= \HTML::label2(['type' => ($v78 == 'records' ? 'primary' : $v78), 'style' => 'display: none;', 'value' => 0, 'id' => implode('__', $this->object->current_tab) . '__' . $v78]);
 					}
-					$tab_header[$k10] = i18n(null, $v10['options']['label_name']) . $labels;
-					$tab_values[$k10] = '';
+					$tab_header[$tab_k10] = i18n(null, $v10['options']['label_name']) . $labels;
+					$tab_values[$tab_k10] = '';
 					// handling override_tabs method
-					if (!empty($this->object->wrapper_methods['override_tabs']['main'])) {
-						$tab_options[$k10] = call_user_func_array($this->object->wrapper_methods['override_tabs']['main'], [& $this, & $v10, & $k10, & $v0]);
+					if (!empty($this->object->wrapper_methods['overrideTabs']['main'])) {
+						$tab_options[$k10] = call_user_func_array($this->object->wrapper_methods['overrideTabs']['main'], [& $this, & $v10, & $k10, & $v0]);
 						if (empty($tab_options[$k10]['hidden'])) {
 							$have_tabs = true;
 						}
@@ -899,7 +905,7 @@ render_custom_renderer:
 					$v10['__parent_key'] = $k0;
 					$temp = $this->renderContainerTypeSubdetails($v10['options']['container_link'], $v10);
 					if ($temp['success']) {
-						$tab_values[$k10].= $temp['data']['html'];
+						$tab_values[$tab_k10].= $temp['data']['html'];
 					}
 					// we must unset it
 					array_pop($this->object->current_tab);
