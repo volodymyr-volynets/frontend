@@ -279,11 +279,7 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 			$options['checked'] = 'checked';
 		}
 		$options['value'] = 1;
-		// readonly
-		if (!empty($options['readonly'])) {
-			$options['disabled'] = 'disabled';
-		}
-		unset($options['options'], $options['readonly']);
+		unset($options['options']);
 		$options['type'] = 'checkbox';
 		return \HTML::input($options);
 	}
@@ -822,7 +818,11 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 		$icon = $options['icon'] ?? null;
 		$result = '';
 		$result.= '<table width="100%">';
-			$result.= '<tr><td width="50%"><hr/></td><td width="1%" nowrap><b>' . \HTML::name($value, $icon) . '</b></td><td width="50%"><hr/></td></tr>';
+			$result.= '<tr><td width="50%"><hr/></td>';
+				if (!empty($value) || !empty($icon)) {
+					$result.= '<td width="1%" nowrap><b>' . \HTML::name($value, $icon) . '</b></td>';
+				}
+			$result.= '<td width="50%"><hr/></td></tr>';
 		$result.= '</table>';
 		return $result;
 	}

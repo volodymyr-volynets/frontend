@@ -53,7 +53,13 @@ class Base {
 			} else {
 				$onclick = '';
 			}
-			$this->object->actions['form_new'] = ['value' => 'New', 'sort' => -31000, 'icon' => 'file-o', 'href' => $mvc['controller'] . '/_Edit?' . $this->object::BUTTON_SUBMIT_BLANK . '=1', 'onclick' => $onclick, 'internal_action' => true];
+			$params = [];
+			$params[$this->object::BUTTON_SUBMIT_BLANK] = 1;
+			// we need to pass module #
+			if ($this->object->collection_object->primary_model->module ?? false) {
+				$params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
+			}
+			$this->object->actions['form_new'] = ['value' => 'New', 'sort' => -31000, 'icon' => 'file-o', 'href' => $mvc['controller'] . '/_Edit?' . http_build_query2($params), 'onclick' => $onclick, 'internal_action' => true];
 			// override
 			if (is_array($this->object->options['actions']['new'])) {
 				$this->object->actions['form_new'] = array_merge($this->object->actions['form_new'], $this->object->options['actions']['new']);
@@ -61,19 +67,30 @@ class Base {
 		}
 		// back to list
 		if (!empty($this->object->options['actions']['back'])) {
-			$this->object->actions['form_back'] = ['value' => 'Back', 'sort' => -32000, 'icon' => 'arrow-left', 'href' => $mvc['controller'] . '/_Index', 'internal_action' => true];
+			$params = [];
+			// we need to pass module #
+			if ($this->object->collection_object->primary_model->module ?? false) {
+				$params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
+			}
+			$this->object->actions['form_back'] = ['value' => 'Back', 'sort' => -32000, 'icon' => 'arrow-left', 'href' => $mvc['controller'] . '/_Index?' . http_build_query2($params), 'internal_action' => true];
 		}
 		// refresh action
 		if (!empty($this->object->options['actions']['refresh'])) {
 			$url = $mvc['full'];
+			$params = [];
+			// add primary key
 			if ($this->object->values_loaded) {
-				$pk = $this->object->pk;
+				$params = $this->object->pk;
+				// remove tenant
 				if (!empty($this->object->collection_object->primary_model->tenant)) {
-					foreach ($pk as $k => $v) if ($k == $this->object->collection_object->primary_model->tenant_column) unset($pk[$k]);
+					unset($params[$this->object->collection_object->primary_model->tenant_column]);
 				}
-				$url.= '?' . http_build_query2($pk);
 			}
-			$this->object->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => 32000, 'icon' => 'refresh', 'href' => $url, 'internal_action' => true];
+			// we need to pass module #
+			if ($this->object->collection_object->primary_model->module ?? false) {
+				$params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
+			}
+			$this->object->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => 32000, 'icon' => 'refresh', 'href' => $mvc['full'] . '?' . http_build_query2($params), 'internal_action' => true];
 			// override
 			if (is_array($this->object->options['actions']['refresh'])) {
 				$this->object->actions['form_refresh'] = array_merge($this->object->actions['form_refresh'], $this->object->options['actions']['refresh']);
@@ -122,8 +139,8 @@ class Base {
 						$tab_header[$k2] = i18n(null, $v2['options']['label_name']) . $labels;
 						$tab_values[$k2] = '';
 						// handling override_tabs method
-						if (!empty($this->object->wrapper_methods['override_tabs']['main'])) {
-							$tab_options[$k2] = call_user_func_array($this->object->wrapper_methods['override_tabs']['main'], [& $this, & $v2, & $k2, & $this->object->values]);
+						if (!empty($this->object->wrapper_methods['overrideTabs']['main'])) {
+							$tab_options[$k2] = call_user_func_array($this->object->wrapper_methods['overrideTabs']['main'], [& $this->object, & $v2, & $k2, & $this->object->values]);
 							if (empty($tab_options[$k2]['hidden'])) {
 								$have_tabs = true;
 							}
@@ -720,6 +737,8 @@ render_custom_renderer:
 		do {
 			// we exit if there's no rows and if we have no values
 			if ($row_number > $max_rows) break;
+			// maximum number of rows
+			if (!empty($options['details_max_rows']) && $row_number > $options['details_max_rows']) break;
 			// render
 			$data = [
 				'options' => []
@@ -831,6 +850,7 @@ render_custom_renderer:
 							// need to set values_key
 							$value_options['options']['values_key'] = $values_key;
 							$value_options['options']['field_values_key'] = $field_values_key;
+							$value_options['options']['__detail_values'] = $options['__detail_values'] ?? null;
 							// tabindex but not for subdetails
 							if (!$hidden && empty($options['__parent_row_number'])) {
 								$value_options['options']['tabindex'] = $this->object->tabindex;
@@ -891,16 +911,17 @@ render_custom_renderer:
 					}
 					$tab_header[$tab_k10] = i18n(null, $v10['options']['label_name']) . $labels;
 					$tab_values[$tab_k10] = '';
-					// handling override_tabs method
+					// handling overrideTabs method
 					if (!empty($this->object->wrapper_methods['overrideTabs']['main'])) {
-						$tab_options[$k10] = call_user_func_array($this->object->wrapper_methods['overrideTabs']['main'], [& $this, & $v10, & $k10, & $v0]);
-						if (empty($tab_options[$k10]['hidden'])) {
+						$tab_options[$tab_k10] = call_user_func_array($this->object->wrapper_methods['overrideTabs']['main'], [& $this, & $v10, & $k10, & $v0]);
+						if (empty($tab_options[$tab_k10]['hidden'])) {
 							$have_tabs = true;
 						}
 					} else {
 						$have_tabs = true;
 					}
 					$v10['__values'] = $v0[$v10['options']['details_key']] ?? [];
+					$v10['__detail_values'] = $v0;
 					$v10['__parent_row_number'] = $row_number;
 					$v10['__parent_key'] = $k0;
 					$temp = $this->renderContainerTypeSubdetails($v10['options']['container_link'], $v10);
@@ -1109,7 +1130,7 @@ render_custom_renderer:
 	public function renderElementValue(& $options, $value = null, & $neighbouring_values = []) {
 		// field name and values_key
 		$options['options']['field_name'] = $options['options']['details_field_name'] ?? $options['options']['name'];
-		$options['options']['field_values_key'] = implode('[::]', $options['options']['field_values_key'] ?? [$options['options']['field_name']]);
+		$options['options']['data-field_values_key'] = implode('[::]', $options['options']['field_values_key'] ?? [$options['options']['field_name']]);
 		// custom renderer
 		if (!empty($options['options']['custom_renderer'])) {
 			$method = \Factory::method($options['options']['custom_renderer'], null, true);
@@ -1157,7 +1178,7 @@ render_custom_renderer:
 			$this->object->processParamsAndDepends($result_options['options_params'], $neighbouring_values, $options, false);
 			$result_options['options_params'] = array_merge_hard($result_options['options_params'], $result_options['options_depends']);
 			// we do not need options for autocomplete
-			if (strpos($result_options['method'], 'autocomplete') === false) {
+			if (strpos($result_options['method'] ?? '', 'autocomplete') === false) {
 				$skip_values = [];
 				if (!empty($options['options']['details_key'])) {
 					if (!empty($options['options']['details_parent_key'])) {

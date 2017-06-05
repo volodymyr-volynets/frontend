@@ -163,11 +163,7 @@ class HTML5 {
 	 *
 	 * @var string
 	 */
-	public static $numbers = [
-		'placeholder', 'title'
-		// todo: conver these to data-
-		//, 'field_values_key', 'field_value_hash'
-	];
+	public static $numbers = ['placeholder', 'title'];
 
 	/**
 	 * Check if its valid HTML 5 attribute

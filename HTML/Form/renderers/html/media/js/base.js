@@ -87,7 +87,7 @@ Numbers.Form = {
 			var form = form_or_element;
 		} else {
 			var form = form_or_element.closest('form');
-			$("[name='__form_onchange_field_values_key']", "#" + $(form).attr('id')).val(form_or_element.attr('field_values_key'));
+			$("[name='__form_onchange_field_values_key']", "#" + $(form).attr('id')).val(form_or_element.attr('data-field_values_key'));
 		}
 		// by default we call refresh
 		if (!button) {

@@ -1,6 +1,6 @@
 <?php
 
-class numbers_frontend_html_widgets_comments_model_datasource_comments extends \Object\Datasource {
+class numbers_frontend_html_widgets_comments_model_datasource_comments extends \Object\DataSource {
 	public $pk;
 	public $cache = false;
 	public $cache_tags = [];

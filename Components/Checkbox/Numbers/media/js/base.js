@@ -16,6 +16,7 @@ var NumbersCheckbox = function (options) {
 	result.div_id = options.id + '_checkbox_div';
 	result.checked = result.elem.checked;
 	result.oposite_checkbox = options.oposite_checkbox ? true : (result.elem.getAttribute('data-oposite_checkbox') ? true : false);
+	result.readonly = options.readonly ? true : (result.elem.getAttribute('readonly') == 'readonly' ? true : false);
 	// labels
 	var temp = result.elem.getAttribute('data-label_on');
 	var label_on = options.label_on ? options.label_on : (temp ? temp : 'Yes');
@@ -37,16 +38,20 @@ var NumbersCheckbox = function (options) {
 	result.elem.style.display = 'none';
 	// attach onclick event
 	result.div_elem = document.getElementById(result.div_id);
-	result.div_elem.onclick = function() {
-		result.onclick();
-	};
+	if (!result.readonly) {
+		result.div_elem.onclick = function() {
+			result.onclick();
+		};
+	}
 	result.onclick = function() {
 		if (this.checked) {
 			this.elem.checked = this.checked = false;
 		} else {
 			this.elem.checked = this.checked = true;
 		}
-		//this.elem.click();
+		// we need to trigger onchange event
+		$(this.elem).trigger('change');
+		// update checkbox
 		result.update();
 	}
 	// onclick processor
