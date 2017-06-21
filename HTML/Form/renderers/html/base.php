@@ -57,7 +57,7 @@ class Base {
 			$params[$this->object::BUTTON_SUBMIT_BLANK] = 1;
 			// we need to pass module #
 			if ($this->object->collection_object->primary_model->module ?? false) {
-				$params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
+				$params['__module_id'] = $params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
 			}
 			$this->object->actions['form_new'] = ['value' => 'New', 'sort' => -31000, 'icon' => 'file-o', 'href' => $mvc['controller'] . '/_Edit?' . http_build_query2($params), 'onclick' => $onclick, 'internal_action' => true];
 			// override
@@ -70,7 +70,7 @@ class Base {
 			$params = [];
 			// we need to pass module #
 			if ($this->object->collection_object->primary_model->module ?? false) {
-				$params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
+				$params['__module_id'] = $params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
 			}
 			$this->object->actions['form_back'] = ['value' => 'Back', 'sort' => -32000, 'icon' => 'arrow-left', 'href' => $mvc['controller'] . '/_Index?' . http_build_query2($params), 'internal_action' => true];
 		}
@@ -88,7 +88,7 @@ class Base {
 			}
 			// we need to pass module #
 			if ($this->object->collection_object->primary_model->module ?? false) {
-				$params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
+				$params['__module_id'] = $params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
 			}
 			$this->object->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => 32000, 'icon' => 'refresh', 'href' => $mvc['full'] . '?' . http_build_query2($params), 'internal_action' => true];
 			// override
@@ -473,7 +473,7 @@ class Base {
 	}
 
 	/**
-	 * Generate edit url
+	 * Generate edit URL
 	 *
 	 * @param array $values
 	 * @return string
@@ -485,6 +485,10 @@ class Base {
 			// skip tenant
 			if ($model->tenant && $v == $model->tenant_column) continue;
 			$pk[$v] = $values[$v];
+		}
+		// we need to pass module #
+		if ($model->module ?? false) {
+			$pk['__module_id'] = $values[$model->module_column];
 		}
 		return \Application::get('mvc.controller') . '/_Edit?' . http_build_query2($pk);
 	}
