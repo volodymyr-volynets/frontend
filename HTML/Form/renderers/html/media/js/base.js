@@ -49,7 +49,7 @@ Numbers.Form = {
 		var mask_id = form_id + '_mask';
 		$('#' + mask_id).mask({overlayOpacity: 0.25, delay: 0});
 		$.ajax({
-			url: numbers.controller_full,
+			url: Numbers.controller_full,
 			method: 'post',
 			data: $('#' + form_id).serialize() + '&__ajax=1&' + numbers_frontend_form_submit_hidden_initiator + '=1&__ajax_form_id=' + form_id,
 			dataType: 'json',
@@ -63,6 +63,9 @@ Numbers.Form = {
 						// we need to trigger resize to redraw a screen
 						$(window).trigger('resize');
 					}, 100);
+				} else {
+					// todo: open error dialog in popup window
+					print_r2(data.error);
 				}
 			},
 			error: function (jqXHR, textStatus, errorThrown) {

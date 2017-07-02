@@ -48,7 +48,7 @@ class Base {
 		// new record action
 		$mvc = \Application::get('mvc');
 		if (!empty($this->object->options['actions']['new']) && \Application::$controller->can('Record_New', 'Edit')) {
-			if ($mvc['action'] != 'Index') {
+			if ($mvc['action'] == 'Edit') {
 				$onclick = 'return confirm(\'' . strip_tags(i18n(null, \Object\Content\Messages::CONFIRM_BLANK)) . '\');';
 			} else {
 				$onclick = '';
@@ -65,7 +65,22 @@ class Base {
 				$this->object->actions['form_new'] = array_merge($this->object->actions['form_new'], $this->object->options['actions']['new']);
 			}
 		}
-		// back to list
+		// import action
+		if (!empty($this->object->options['actions']['import']) && \Application::$controller->can('Import_Records', 'Import')) {
+			$onclick = '';
+			$params = [];
+			$params[$this->object::BUTTON_SUBMIT_BLANK] = 1;
+			// we need to pass module #
+			if ($this->object->collection_object->primary_model->module ?? false) {
+				$params['__module_id'] = $params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
+			}
+			$this->object->actions['form_import'] = ['value' => 'Import', 'sort' => -30900, 'icon' => 'upload', 'href' => $mvc['controller'] . '/_Import?' . http_build_query2($params), 'onclick' => $onclick, 'internal_action' => true];
+			// override
+			if (is_array($this->object->options['actions']['import'])) {
+				$this->object->actions['form_import'] = array_merge($this->object->actions['form_import'], $this->object->options['actions']['import']);
+			}
+		}
+		// back to list/edit
 		if (!empty($this->object->options['actions']['back'])) {
 			$params = [];
 			// we need to pass module #
@@ -265,7 +280,7 @@ class Base {
 				'html' => $result,
 				'js' => \Layout::$onload
 			];
-			\Layout::render_as($result, 'application/json');
+			\Layout::renderAs($result, 'application/json');
 		}
 		$result = "<div id=\"form_{$this->object->form_link}_form_mask\"><div id=\"form_{$this->object->form_link}_form_wrapper\">" . $result . '</div></div>';
 		// if we have segment
@@ -1173,7 +1188,6 @@ render_custom_renderer:
 				$result_options['options_options'] = [];
 			}
 			$result_options['options_options']['i18n'] = $result_options['options_options']['i18n'] ?? true;
-			$result_options['options_options']['acl'] = $result_options['options_options']['acl'] ?? $this->object->acl;
 			if (empty($result_options['options_depends'])) {
 				$result_options['options_depends'] = [];
 			}
@@ -1315,7 +1329,7 @@ render_custom_renderer:
 						$result_options['value'] = '';
 					}
 					// we need to empty zero integers and sequences, before format
-					if (($result_options['php_type'] ?? '') == 'integer' && ($result_options['type'] ?? '') != 'boolean' && ($result_options['domain'] ?? '') != 'counter' && 'counter' && empty($result_options['value'])) {
+					if (($result_options['php_type'] ?? '') == 'integer' && ($result_options['type'] ?? '') != 'boolean' && ($result_options['domain'] ?? '') != 'counter' && empty($result_options['value'])) {
 						$result_options['value'] = '';
 					}
 					// format, not for selects/autocompletes/presets
