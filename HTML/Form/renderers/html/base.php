@@ -1400,7 +1400,12 @@ render_custom_renderer:
 							$result_options['placeholder'] = i18n(null, 'Search in [columns]', ['replace' => ['[columns]' => implode(', ', $temp_placeholder)]]);
 						}
 					} else if (!empty($result_options['placeholder'])) {
-						$result_options['placeholder'] = strip_tags(i18n(null, $result_options['placeholder']));
+						// skip timestamp
+						if ($result_options['placeholder'] == 'Format::getDatePlaceholder' && strpos($result_options['method'] ?? '', 'calendar') === false) {
+							$result_options['placeholder'] = \Format::getDatePlaceholder(\Format::getDateFormat($result_options['type']));
+						} else {
+							$result_options['placeholder'] = strip_tags(i18n(null, $result_options['placeholder']));
+						}
 					}
 				} else if (!empty($result_options['validator_method']) && empty($result_options['value']) && empty($result_options['multiple_column'])) {
 					$temp = \Object\Validator\Base::method($result_options['validator_method'], $result_options['value'], $result_options['validator_params'] ?? [], $options['options'], $neighbouring_values);

@@ -30,7 +30,7 @@ class Base implements \Numbers\Frontend\Components\Calendar\Interface2\Base {
 		$placeholder = \Format::getDatePlaceholder($widget_options['format']);
 		$options['size'] = strlen($placeholder);
 		// set placeholder
-		if (!empty($options['placeholder']) && $options['placeholder'] == 'Format::getDatePlaceholder') {
+		if (!empty($options['placeholder']) && strpos($options['placeholder'], 'Format::getDatePlaceholder') !== false) {
 			$options['placeholder'] = $placeholder;
 			$options['title'] = ($options['title'] ?? '') . ' (' . $placeholder . ')';
 		}

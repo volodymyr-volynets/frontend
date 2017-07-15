@@ -304,7 +304,11 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 		$level++;
 		$caret = $level == 1 ? ' <b class="caret"></b>' : '';
 		// create name
-		$name = i18n(null, $item['name']);
+		if (empty($item['i18n_done'])) {
+			$name = i18n(null, $item['name']);
+		} else {
+			$name = $item['name'];
+		}
 		if (!empty($item['name_extension'])) {
 			$name.= '<br/>' . $item['name_extension'];
 		}
@@ -314,6 +318,13 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 		//'data-toggle' => 'dropdown'
 		$result = \HTML::a(['href' => $item['url'] ?? 'javascript:void(0);', 'class' => 'dropdown-toggle', 'value' => $name . $caret]);
 		$result.= '<ul class="dropdown-menu">';
+			// sort
+			foreach ($item['options'] as $k2 => $v2) {
+				$item['options'][$k2]['name'] = i18n(null, $v2['name']);
+				$item['options'][$k2]['i18n_done'] = true;
+			}
+			array_key_sort($item['options'], ['name' => SORT_ASC], ['name' => SORT_NATURAL]);
+			// go though all options
 			foreach ($item['options'] as $k2 => $v2) {
 				$class = !empty($v2['options']) ? ' class="dropdown-submenu"' : '';
 				$result.= '<li' . $class . '>';
@@ -321,7 +332,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 						$result.= self::menu_submenu($v2, $level);
 					} else {
 						// create name
-						$name = i18n(null, $v2['name']);
+						$name = $v2['name'];
 						if (!empty($v2['name_extension'])) {
 							$name.= '<br/>' . $v2['name_extension'];
 						}
