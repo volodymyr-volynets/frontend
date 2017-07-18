@@ -10,8 +10,8 @@ class Icons extends \Object\Data {
 		'no_data_fontawesome_icon_unicode' => ['name' => 'Unicode', 'type' => 'text'],
 	];
 	public $options_map = [
-		'no_data_fontawesome_icon_code' => 'name',
-		'no_data_fontawesome_icon_code*' => 'icon_class'
+		'no_data_fontawesome_icon_name' => 'name',
+		'no_data_fontawesome_icon_code' => 'icon_class'
 	];
 	public $orderby = [
 		'no_data_fontawesome_icon_name' => SORT_ASC

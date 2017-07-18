@@ -65,6 +65,10 @@
 	padding-right: 0 !important;
 	padding-left: 10px !important;
 }
+.navbar-nav-hr-separator {
+	height: 3px;
+	margin: 0;
+}
 
 /* tabs */
 .tab-content {

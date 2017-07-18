@@ -65,7 +65,9 @@
 }
 .numbers_frontend_components_select_numbers_base_on .numbers_frontend_components_select_numbers_base_toggle_middle {
 	left: 0;
+	top: 0;
 }
 .numbers_frontend_components_select_numbers_base_off .numbers_frontend_components_select_numbers_base_toggle_middle {
 	right: 0;
+	top: 0;
 }

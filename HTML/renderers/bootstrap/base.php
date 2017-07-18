@@ -323,11 +323,21 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 				$item['options'][$k2]['name'] = i18n(null, $v2['name']);
 				$item['options'][$k2]['i18n_done'] = true;
 			}
-			array_key_sort($item['options'], ['name' => SORT_ASC], ['name' => SORT_NATURAL]);
+			// if we are sorting by order field
+			if (!empty($item['child_ordered'])) {
+				array_key_sort($item['options'], ['order' => SORT_ASC], ['name' => SORT_NUMERIC]);
+			} else {
+				array_key_sort($item['options'], ['name' => SORT_ASC], ['name' => SORT_NATURAL]);
+			}
 			// go though all options
 			foreach ($item['options'] as $k2 => $v2) {
 				$class = !empty($v2['options']) ? ' class="dropdown-submenu"' : '';
 				$result.= '<li' . $class . '>';
+					// separator
+					if (!empty($v2['separator'])) {
+						$result.= '<hr class="navbar-nav-hr-separator"/>';
+					}
+					// render options
 					if (!empty($v2['options'])) {
 						$result.= self::menu_submenu($v2, $level);
 					} else {

@@ -434,16 +434,22 @@ class Base {
 				foreach ($data['columns'] as $k => $v) {
 					$inner_table = ['options' => [], 'width' => '100%', 'class' => 'numbers_frontend_form_list_header_inner'];
 					foreach ($v['elements'] as $k2 => $v2) {
-						// process options
-						if (!empty($v2['options']['options_model'])) {
-							$value = $this->renderListContainerDefaultOptions($v2['options'], $v0[$k2], $v0);
+						// custom renderer
+						if (!empty($v2['options']['custom_renderer'])) {
+							$method = \Factory::method($v2['options']['custom_renderer'], null, true);
+							$value = call_user_func_array($method, [& $this->object, & $v2, & $v0[$k2], & $v0]);
 						} else {
-							$value = $v0[$k2] ?? null;
-						}
-						$width = $v2['options']['width'] ?? ($v2['options']['percent'] . '%');
-						// urls
-						if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
-							$value = \HTML::a(['href' => $this->renderURLEditHref($v0), 'value' => $value]);
+							// process options
+							if (!empty($v2['options']['options_model'])) {
+								$value = $this->renderListContainerDefaultOptions($v2['options'], $v0[$k2], $v0);
+							} else {
+								$value = $v0[$k2] ?? null;
+							}
+							$width = $v2['options']['width'] ?? ($v2['options']['percent'] . '%');
+							// urls
+							if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
+								$value = \HTML::a(['href' => $this->renderURLEditHref($v0), 'value' => $value]);
+							}
 						}
 						$inner_table['options'][$k][$k2] = ['value' => $value, 'nowrap' => true, 'width' => $width, 'align' => $v2['options']['align'] ?? 'left'];
 					}
