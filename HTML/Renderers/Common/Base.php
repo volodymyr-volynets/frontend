@@ -201,11 +201,13 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 		}
 		if (!empty($options['readonly'])) {
 			$options['readonly'] = 'readonly';
+			unset($options['placeholder']);
 		} else {
 			unset($options['readonly']);
 		}
 		if (!empty($options['disabled'])) {
 			$options['disabled'] = 'disabled';
+			unset($options['placeholder']);
 		} else {
 			unset($options['disabled']);
 		}

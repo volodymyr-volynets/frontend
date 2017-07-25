@@ -126,3 +126,7 @@ html[dir="rtl"] .numbers_select_option_table_level_last_left {
 .numbers_select_option_multiple_item_close {
 	color: inherit !important;
 }
+.numbers_select_option_table_data {
+	display: inline-block;
+	vertical-align: middle !important;
+}

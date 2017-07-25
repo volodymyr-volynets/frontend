@@ -646,7 +646,7 @@ var NumbersSelect = function (options) {
 						}
 						// see if we have semicolons in a content
 						if (this.data[i].text.indexOf(this.semicolon + ' ') != -1) {
-							cell = '<table><tr><td>' + this.data[i].text.split(this.semicolon + ' ').join('</td><td>' + this.semicolon + '&nbsp;</td><td>') + '</td></tr></table>';
+							cell = '<table class="numbers_select_option_table_data"><tr><td>' + this.data[i].text.split(this.semicolon + ' ').join('</td><td>' + this.semicolon + '&nbsp;</td><td>') + '</td></tr></table>';
 						} else {
 							cell = this.data[i].text;
 						}

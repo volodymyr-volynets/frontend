@@ -88,6 +88,10 @@ class Base {
 				$params['__module_id'] = $params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
 			}
 			$this->object->actions['form_back'] = ['value' => 'Back', 'sort' => -32000, 'icon' => 'arrow-left', 'href' => $mvc['controller'] . '/_Index?' . http_build_query2($params), 'internal_action' => true];
+			// override
+			if (is_array($this->object->options['actions']['back'])) {
+				$this->object->actions['form_back'] = array_merge($this->object->actions['form_back'], $this->object->options['actions']['back']);
+			}
 		}
 		// refresh action
 		if (!empty($this->object->options['actions']['refresh'])) {
