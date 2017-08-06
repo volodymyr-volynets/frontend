@@ -449,12 +449,12 @@ class Base {
 							} else {
 								$value = $v0[$k2] ?? null;
 							}
-							$width = $v2['options']['width'] ?? ($v2['options']['percent'] . '%');
 							// urls
 							if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
 								$value = \HTML::a(['href' => $this->renderURLEditHref($v0), 'value' => $value]);
 							}
 						}
+						$width = $v2['options']['width'] ?? ($v2['options']['percent'] . '%');
 						$inner_table['options'][$k][$k2] = ['value' => $value, 'nowrap' => true, 'width' => $width, 'align' => $v2['options']['align'] ?? 'left'];
 					}
 					$temp_inner.= \HTML::table($inner_table);
@@ -630,7 +630,17 @@ render_custom_renderer:
 			foreach ($this->object->misc_settings['details_unique_select'][$key] as $k => $v) {
 				foreach ($data as $k2 => $v2) {
 					if (!empty($v2[$k])) {
-						$this->object->misc_settings['details_unique_select'][$key][$k][$v2[$k]] = $v2[$k];
+						// process json options
+						if (!empty($this->object->detail_fields[$key]['elements'][$k]['options']['json_contains'])) {
+							$temp = [];
+							foreach ($this->object->detail_fields[$key]['elements'][$k]['options']['json_contains'] as $k01 => $v01) {
+								$temp[$k01] = array_key_get($v2, $v01);
+							}
+							$value = \Object\Table\Options::optionJsonFormatKey($temp);
+						} else { // regular values
+							$value = $v2[$k];
+						}
+						$this->object->misc_settings['details_unique_select'][$key][$k][$value] = $value;
 					}
 				}
 			}
@@ -691,14 +701,6 @@ render_custom_renderer:
 	 */
 	public function renderContainerTypeDetailsRows($rows, $values, $options = []) {
 		$result = '';
-		// empty_warning_message
-		if (empty($options['details_new_rows']) && empty($values) && isset($options['details_empty_warning_message'])) {
-			if (empty($options['details_empty_warning_message'])) {
-				return \HTML::message(['type' => 'warning', 'options' => [\Object\Content\Messages::NO_ROWS_FOUND]]);
-			} else {
-				return \HTML::message(['type' => 'warning', 'options' => [$options['details_empty_warning_message']]]);
-			}
-		}
 		// building table
 		$table = [
 			'header' => [
@@ -1002,6 +1004,18 @@ render_custom_renderer:
 				$processing_values = false;
 			}
 		} while(1);
+		// empty_warning_message
+		if (empty($options['details_new_rows']) && empty($values) && isset($options['details_empty_warning_message'])) {
+			if (empty($options['details_empty_warning_message']) || $options['details_empty_warning_message'] === true) {
+				$message = \HTML::message(['type' => 'warning', 'options' => [\Object\Content\Messages::NO_ROWS_FOUND]]);
+			} else {
+				$message = \HTML::message(['type' => 'warning', 'options' => [$options['details_empty_warning_message']]]);
+			}
+			$table['options'][PHP_INT_MAX] = [
+				'row_number' => ['value' => '&nbsp;', 'width' => '1%'],
+				'row_data' => $message
+			];
+		}
 		return \HTML::table($table);
 	}
 
