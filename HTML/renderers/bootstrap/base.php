@@ -60,7 +60,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 	}
 
 	/**
-	 * @see \HTML::input_group()
+	 * @see \HTML::inputGroup()
 	 */
 	public static function inputGroup(array $options = []) : string {
 		$temp = [];
@@ -300,7 +300,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 	 * @param array $item
 	 * @return string
 	 */
-	private static function menu_submenu($item, $level) {
+	private static function menuSubmenu($item, $level) {
 		$level++;
 		$caret = $level == 1 ? ' <b class="caret"></b>' : '';
 		// create name
@@ -309,9 +309,13 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 		} else {
 			$name = $item['name'];
 		}
-		if (!empty($item['name_extension'])) {
-			$name.= '<br/>' . $item['name_extension'];
+		// wrap name into span
+		$name = '<span id="menu_item_id_' . $item['menu_id'] . '">' . $name . '</span>';
+		// name generator
+		if (!empty($item['name_generator'])) {
+			\Layout::onLoad('Numbers.Menu.name_generator[' . $item['menu_id'] . '] = "' . $item['name_generator'] . '";');
 		}
+		// add icon
 		if (!empty($item['icon'])) {
 			$name = \HTML::icon(['type' => $item['icon']]) . ' ' . $name;
 		}
@@ -339,13 +343,17 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 					}
 					// render options
 					if (!empty($v2['options'])) {
-						$result.= self::menu_submenu($v2, $level);
+						$result.= self::menuSubmenu($v2, $level);
 					} else {
 						// create name
 						$name = $v2['name'];
-						if (!empty($v2['name_extension'])) {
-							$name.= '<br/>' . $v2['name_extension'];
+						// wrap name into span
+						$name = '<span id="menu_item_id_' . $v2['menu_id'] . '">' . $name . '</span>';
+						// name generator
+						if (!empty($v2['name_generator'])) {
+							\Layout::onLoad('Numbers.Menu.name_generator[' . $v2['menu_id'] . '] = "' . $v2['name_generator'] . '";');
 						}
+						// icon
 						if (!empty($v2['icon'])) {
 							$name = \HTML::icon(['type' => $v2['icon']]) . ' ' . $name;
 						}
@@ -387,7 +395,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 							$result.= '<li class="navbar-nav-li-level1" search-id="' . $index . '">';
 								// if we have options
 								if (!empty($v['options'])) {
-									$result.= self::menu_submenu($v, 0);
+									$result.= self::menuSubmenu($v, 0);
 								} else {
 									// create name
 									$name = i18n(null, $v['name']);
@@ -413,7 +421,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 									$result.= '<li class="navbar-nav-li-level1-others' . $class . '" search-id="' . $v['index'] . '">';
 										// if we have options
 										if (!empty($v['options'])) {
-											$result.= self::menu_submenu($v, 1);
+											$result.= self::menuSubmenu($v, 1);
 										} else {
 											// create name
 											$name = i18n(null, $v['name']);
@@ -438,13 +446,10 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 								$result.= '<li class="navbar-nav-li-level1">';
 									// if we have options
 									if (!empty($v['options'])) {
-										$result.= self::menu_submenu($v, 0);
+										$result.= self::menuSubmenu($v, 0);
 									} else {
 										// create name
 										$name = i18n(null, $v['name']);
-										if (!empty($v['name_extension'])) {
-											$name.= '<br/>' . $v['name_extension'];
-										}
 										if (!empty($v['icon'])) {
 											$name = \HTML::icon(['type' => $v['icon']]) . ' ' . $name;
 										}
@@ -461,6 +466,8 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 				$result.= '</div>';
 			$result.= '</div>';
 		$result.= '</div>';
+		// we must update menu items
+		\Layout::onload('Numbers.Menu.updateItems();');
 		return $result;
 	}
 

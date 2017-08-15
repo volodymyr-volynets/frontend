@@ -107,3 +107,38 @@ Numbers.Modal = {
 		$('.modal-backdrop').remove();
 	}
 };
+
+/**
+ * Menu
+ *
+ * @type object
+ */
+Numbers.Menu = {
+
+	/**
+	 * Name generator
+	 *
+	 * @type object
+	 */
+	name_generator: {},
+
+	/**
+	 * Update menu items
+	 */
+	updateItems: function() {
+		if (empty(this.name_generator)) return;
+		for (var i in this.name_generator) {
+			$.ajax({
+				url: this.name_generator[i],
+				method: 'post',
+				data: '__ajax=1',
+				dataType: 'json',
+				success: function (data) {
+					if (data.success) {
+						$('#menu_item_id_' + i).html(data.data);
+					}
+				}
+			});
+		}
+	}
+};

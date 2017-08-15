@@ -848,4 +848,16 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 	public static function br(array $options = []) : string {
 		return '<br ' . self::generateAttributes($options, 'br') . ' />';
 	}
+
+	/**
+	 * Bold
+	 *
+	 * @param array $options
+	 * @return string
+	 */
+	public static function b(array $options = []) : string {
+		$value = $options['value'];
+		unset($options['value']);
+		return '<b ' . self::generateAttributes($options, 'b') . '>' . $value . '</b>';
+	}
 }

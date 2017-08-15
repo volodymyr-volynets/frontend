@@ -3,7 +3,7 @@
  *
  * @type object
  */
-numbers.math = {
+Numbers.Math = {
 
 	/**
 	 * Scale
@@ -17,7 +17,7 @@ numbers.math = {
 	 *
 	 * @param int scale
 	 */
-	set_scale: function(scale) {
+	setScale: function(scale) {
 		scale = intval(scale.toString());
 		this.scale = scale;
 		bcscale(scale)
