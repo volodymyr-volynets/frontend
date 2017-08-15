@@ -438,25 +438,24 @@ class Base {
 				foreach ($data['columns'] as $k => $v) {
 					$inner_table = ['options' => [], 'width' => '100%', 'class' => 'numbers_frontend_form_list_header_inner'];
 					foreach ($v['elements'] as $k2 => $v2) {
+						$value = $v0[$k2] ?? null;
+						// format
+						if (!empty($v2['options']['format'])) {
+							$method = \Factory::method($v2['options']['format'], 'Format');
+							$value = call_user_func_array([$method[0], $method[1]], [$value, $v2['options']['format_options'] ?? []]);
+						}
 						// custom renderer
 						if (!empty($v2['options']['custom_renderer'])) {
 							$method = \Factory::method($v2['options']['custom_renderer'], null, true);
-							$value = call_user_func_array($method, [& $this->object, & $v2, & $v0[$k2], & $v0]);
+							$value = call_user_func_array($method, [& $this->object, & $v2, & $value, & $v0]);
 						} else {
 							// process options
 							if (!empty($v2['options']['options_model'])) {
-								$value = $this->renderListContainerDefaultOptions($v2['options'], $v0[$k2], $v0);
-							} else {
-								$value = $v0[$k2] ?? null;
+								$value = $this->renderListContainerDefaultOptions($v2['options'], $value, $v0);
 							}
 							// urls
 							if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
 								$value = \HTML::a(['href' => $this->renderURLEditHref($v0), 'value' => $value]);
-							}
-							// format
-							if (!empty($v2['options']['format'])) {
-								$method = \Factory::method($v2['options']['format'], 'Format');
-								$value = call_user_func_array([$method[0], $method[1]], [$value, $v2['options']['format_options'] ?? []]);
 							}
 						}
 						$width = $v2['options']['width'] ?? ($v2['options']['percent'] . '%');
@@ -479,25 +478,24 @@ class Base {
 					$inner_table = ['options' => [], 'width' => '100%', 'class' => 'numbers_frontend_form_list_header_inner'];
 					foreach ($v['elements'] as $k2 => $v2) {
 						if (empty($v2['options']['label_name'])) continue;
+						$value = $v0[$k2] ?? null;
+						// format
+						if (!empty($v2['options']['format'])) {
+							$method = \Factory::method($v2['options']['format'], 'Format');
+							$value = call_user_func_array([$method[0], $method[1]], [$value, $v2['options']['format_options'] ?? []]);
+						}
 						// custom renderer
 						if (!empty($v2['options']['custom_renderer'])) {
 							$method = \Factory::method($v2['options']['custom_renderer'], null, true);
-							$value = call_user_func_array($method, [& $this->object, & $v2, & $v0[$k2], & $v0]);
+							$value = call_user_func_array($method, [& $this->object, & $v2, & $value, & $v0]);
 						} else {
 							// process options
 							if (!empty($v2['options']['options_model'])) {
-								$value = $this->renderListContainerDefaultOptions($v2['options'], $v0[$k2], $v0);
-							} else {
-								$value = $v0[$k2] ?? null;
+								$value = $this->renderListContainerDefaultOptions($v2['options'], $value, $v0);
 							}
 							// urls
 							if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
 								$value = \HTML::a(['href' => $this->renderURLEditHref($v0), 'value' => $value]);
-							}
-							// format
-							if (!empty($v2['options']['format'])) {
-								$method = \Factory::method($v2['options']['format'], 'Format');
-								$value = call_user_func_array([$method[0], $method[1]], [$value, $v2['options']['format_options'] ?? []]);
 							}
 						}
 						$inner_table['options'][$k . '_' . $k2][1] = ['value' => '<b>' . $v2['options']['label_name'] . ':</b>', 'width' => '15%', 'align' => 'left'];
