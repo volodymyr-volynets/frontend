@@ -131,11 +131,11 @@ Numbers.Menu = {
 			$.ajax({
 				url: this.name_generator[i],
 				method: 'post',
-				data: '__ajax=1',
+				data: '__ajax=1&item=' + i,
 				dataType: 'json',
 				success: function (data) {
 					if (data.success) {
-						$('#menu_item_id_' + i).html(data.data);
+						$('#menu_item_id_' + data.item).html(data.data);
 					}
 				}
 			});

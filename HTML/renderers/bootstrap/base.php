@@ -450,6 +450,12 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 									} else {
 										// create name
 										$name = i18n(null, $v['name']);
+										// wrap name into span
+										$name = '<span id="menu_item_id_' . $v['menu_id'] . '">' . $name . '</span>';
+										// name generator
+										if (!empty($v['name_generator'])) {
+											\Layout::onLoad('Numbers.Menu.name_generator[' . $v['menu_id'] . '] = "' . $v['name_generator'] . '";');
+										}
 										if (!empty($v['icon'])) {
 											$name = \HTML::icon(['type' => $v['icon']]) . ' ' . $name;
 										}

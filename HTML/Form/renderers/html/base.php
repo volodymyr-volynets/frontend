@@ -440,7 +440,7 @@ class Base {
 					foreach ($v['elements'] as $k2 => $v2) {
 						$value = $v0[$k2] ?? null;
 						// format
-						if (!empty($v2['options']['format'])) {
+						if (!empty($v2['options']['format']) && empty($v2['options']['options_model'])) {
 							$method = \Factory::method($v2['options']['format'], 'Format');
 							$value = call_user_func_array([$method[0], $method[1]], [$value, $v2['options']['format_options'] ?? []]);
 						}
@@ -480,7 +480,7 @@ class Base {
 						if (empty($v2['options']['label_name'])) continue;
 						$value = $v0[$k2] ?? null;
 						// format
-						if (!empty($v2['options']['format'])) {
+						if (!empty($v2['options']['format']) && empty($v2['options']['options_model'])) {
 							$method = \Factory::method($v2['options']['format'], 'Format');
 							$value = call_user_func_array([$method[0], $method[1]], [$value, $v2['options']['format_options'] ?? []]);
 						}
