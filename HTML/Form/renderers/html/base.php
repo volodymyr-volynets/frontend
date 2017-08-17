@@ -547,6 +547,12 @@ class Base {
 				'css' => ''
 			]
 		];
+		// custom html
+		if (!empty($this->object->data[$container_link]['options']['__html'])) {
+			$result['data']['html'] = & $this->object->data[$container_link]['options']['__html'];
+			$result['success'] = true;
+			return $result;
+		}
 		// custom renderer
 		if (!empty($this->object->data[$container_link]['options']['custom_renderer'])) {
 			$separator = '';
@@ -1285,7 +1291,7 @@ render_custom_renderer:
 				// todo: pass $form_data_key from parent
 				$options_container['previous_key'] = $options['previous_key'];
 				// render container
-				$temp_container_value = $this->render_container($data['fm_part_child_container_name'], $parents, $options_container);
+				$temp_container_value = $this->renderContainer($data['fm_part_child_container_name'], $parents, $options_container);
 				if (!empty($html_expand)) {
 					// get part id
 					$temp_id = $this->object->id('part_details', [
