@@ -9,7 +9,6 @@
 	margin: 0;
 }
 .numbers_frontend_form_report_screen_table_global_row_header th {
-	text-align: center;
 	padding: 4px;
 	line-height: 1.42857143;
 }
@@ -23,17 +22,21 @@
 	background-color: #f9f9f9;
 }
 .numbers_frontend_form_report_screen_table_global_row_even {
-	border-top: 1px solid rgba(192, 192, 192, 0.20);
+	background-color: #ffffff;
 }
-.numbers_frontend_form_report_screen_table_global_separator {
-	
-}
+.numbers_frontend_form_report_screen_table_global_separator {}
 /* cell styles */
 .numbers_frontend_form_report_screen_cell_data {
-	/*border-top: 1px solid grey;*/
 	padding: 4px;
 	line-height: 1.42857143;
 	vertical-align: top;
+	min-height: 1em;
+}
+.numbers_frontend_form_report_screen_cell_odd {
+	background-color: #f9f9f9;
+}
+.numbers_frontend_form_report_screen_cell_even {
+	background-color: #ffffff;
 }
 .numbers_frontend_form_report_screen_cell_blank {
 	border: none;
@@ -51,6 +54,10 @@
 }
 .numbers_frontend_form_report_screen_cell_underline {
 	text-decoration: underline;
+}
+.numbers_frontend_form_report_screen_cell_as_header {
+	font-style: italic;
+	border-bottom: 1px solid #000;
 }
 .numbers_frontend_form_report_screen_cell_linethrough {
 	text-decoration: line-through;
