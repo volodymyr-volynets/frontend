@@ -24,6 +24,9 @@
 .numbers_frontend_form_report_screen_table_global_row_even {
 	background-color: #ffffff;
 }
+.numbers_frontend_form_report_screen_table_global_row_first_odd_even {
+	border-top: 1px solid rgba(192, 192, 192, 0.20);
+}
 .numbers_frontend_form_report_screen_table_global_separator {}
 /* cell styles */
 .numbers_frontend_form_report_screen_cell_data {

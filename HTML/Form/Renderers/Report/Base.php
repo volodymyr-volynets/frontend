@@ -6,7 +6,7 @@ class Base {
 	/**
 	 * Render
 	 *
-	 * @param \Object\Form\Base $object
+	 * @param \Object\Form\Builder\Report $object
 	 * @return string
 	 */
 	public function render(\Object\Form\Builder\Report & $object) : string {
@@ -30,9 +30,6 @@ class Base {
 			}
 			// loop though headers
 			foreach ($new_headers as $header_name => $header_data) {
-				// see if we need to skip some headers
-				if (!empty($object->data[$report_name]['header_options'][$header_name]['skip_rendering'])) continue;
-				//
 				$inner_table = ['options' => [], 'width' => '100%', 'class' => 'numbers_frontend_form_report_screen_table_global_row_header'];
 				if ($counter == 1) {
 					$inner_table['class'].= ' numbers_frontend_form_report_screen_table_global_row_header_first';
@@ -53,12 +50,12 @@ class Base {
 			foreach ($object->data[$report_name]['data'] as $row_number => $row_data) {
 				$temp_inner = '';
 				$class = '';
-				if (!empty($row_data[2])) {
+				if (!empty($row_data[2])) { // separator
 					$temp_inner.= '&nbsp;';
 					$class = 'numbers_frontend_form_report_screen_table_global_separator';
-				} else if (!empty($row_data[4])) {
+				} else if (!empty($row_data[4])) { // legend
 					$temp_inner.= $row_data[4];
-				} else {
+				} else { // regular rows
 					$inner_table = ['options' => [], 'width' => '100%', 'class' => 'numbers_frontend_report_data_inner'];
 					$header = $object->data[$report_name]['header'][$row_data[3]];
 					foreach ($header as $k2 => $v2) {
@@ -101,6 +98,9 @@ class Base {
 						$class.= ' numbers_frontend_form_report_screen_table_global_row_odd';
 					} else if ($row_data[1] == EVEN && $prev_odd_even != EVEN) {
 						$class.= ' numbers_frontend_form_report_screen_table_global_row_even';
+					}
+					if ($prev_odd_even != $row_data[1]) {
+						$class.= ' numbers_frontend_form_report_screen_table_global_row_first_odd_even';
 					}
 				}
 				$outer_table['options'][$row_number][2] = ['value' => $temp_inner, 'nowrap' => true, 'width' => '99%', 'class' => $class];

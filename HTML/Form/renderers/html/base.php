@@ -354,46 +354,6 @@ class Base {
 	}
 
 	/**
-	 * Cached options
-	 *
-	 * @var array
-	 */
-	private $cached_options = [];
-
-	/**
-	 * Render list one option
-	 *
-	 * @param array $options
-	 * @param mixed $value
-	 * @return mixed
-	 */
-	private function renderListContainerDefaultOptions(array $options, $value, $neighbouring_values = []) {
-		if (strpos($options['options_model'], '::') === false) $options['options_model'].= '::options';
-		$params = $options['options_params'] ?? [];
-		if (!empty($options['options_depends'])) {
-			foreach ($options['options_depends'] as $k9 => $v9) {
-				$params[$k9] = $neighbouring_values[$v9];
-			}
-		}
-		$hash = sha1($options['options_model'] . serialize($params));
-		if (!isset($this->cached_options[$hash])) {
-			$method = \Factory::method($options['options_model'], null, true);
-			$this->cached_options[$hash] = call_user_func_array($method, [['where' => $params, 'i18n' => true]]);
-		}
-		if (is_array($value)) {
-			$temp = [];
-			foreach ($value as $v) {
-				if (isset($this->cached_options[$hash][$v]['name'])) {
-					$temp[]= $this->cached_options[$hash][$v]['name'];
-				}
-			}
-			return implode(\Format::$symbol_comma . ' ', $temp);
-		} else {
-			return $this->cached_options[$hash][$value]['name'] ?? null;
-		}
-	}
-
-	/**
 	 * Data default renderer
 	 *
 	 * @return string
@@ -451,7 +411,7 @@ class Base {
 						} else {
 							// process options
 							if (!empty($v2['options']['options_model'])) {
-								$value = $this->renderListContainerDefaultOptions($v2['options'], $value, $v0);
+								$value = $this->object->renderListContainerDefaultOptions($v2['options'], $value, $v0);
 							}
 							// urls
 							if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
@@ -491,7 +451,7 @@ class Base {
 						} else {
 							// process options
 							if (!empty($v2['options']['options_model'])) {
-								$value = $this->renderListContainerDefaultOptions($v2['options'], $value, $v0);
+								$value = $this->object->renderListContainerDefaultOptions($v2['options'], $value, $v0);
 							}
 							// urls
 							if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
