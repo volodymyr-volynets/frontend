@@ -1,3 +1,10 @@
+.numbers_frontend_form_report_screen_wrapper_outer {
+	overflow-x: scroll;
+}
+.numbers_frontend_form_report_screen_wrapper_inner {
+	min-width: 1100px;
+	margin: 0 auto;
+}
 .numbers_frontend_form_report_screen_table_global, .numbers_frontend_form_report_screen_table_global table {
 	margin: 0;
 	padding: 0;

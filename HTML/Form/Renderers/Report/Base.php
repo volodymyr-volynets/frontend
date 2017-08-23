@@ -75,7 +75,7 @@ class Base {
 							if (!empty($value['url'])) {
 								$value = \HTML::a(['href' => $value['url'], 'value' => $value['value']]);
 							} else {
-								$value = $value['value'];
+								$value = $value['value'] ?? null;
 							}
 							// bold
 							if ($bold) $cell_class.= ' numbers_frontend_form_report_screen_cell_bold';
@@ -114,6 +114,6 @@ class Base {
 			}
 			$report_counter++;
 		}
-		return $result;
+		return '<div class="numbers_frontend_form_report_screen_wrapper_outer"><div class="numbers_frontend_form_report_screen_wrapper_inner">' . $result . '</div></div>';
 	}
 }
