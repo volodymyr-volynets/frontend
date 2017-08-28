@@ -787,7 +787,9 @@ render_custom_renderer:
 					$row_id_temp = str_replace('\\', '_', $options['details_key']);
 					$row_id = "form_{$this->object->form_link}_details_{$row_id_temp}_{$row_number}_row";
 				} else {
-					$row_id = "form_{$this->object->form_link}_subdetails_{$options['details_parent_key']}_{$options['__parent_row_number']}_{$options['details_key']}_{$row_number}_row";
+					$row_details_parent_key = str_replace('\\', '_', $options['details_parent_key']);
+					$row_details_key = str_replace('\\', '_', $options['details_key']);
+					$row_id = "form_{$this->object->form_link}_subdetails_{$row_details_parent_key}_{$options['__parent_row_number']}_{$row_details_key}_{$row_number}_row";
 				}
 				array_key_sort($v['elements'], ['order' => SORT_ASC]);
 				// group by
@@ -826,8 +828,9 @@ render_custom_renderer:
 								}
 							} else {
 								$name = "{$options['details_parent_key']}[{$options['__parent_row_number']}][{$options['details_key']}][{$k0}][{$k3}]";
-								// todo fix id
-								$id = "form_{$this->object->form_link}_subdetails_{$options['details_parent_key']}_{$options['__parent_row_number']}_{$options['details_key']}_{$row_number}_{$k3}";
+								$id01 = strtolower(str_replace('\\', '_', $options['details_parent_key']));
+								$id02 = strtolower(str_replace('\\', '_', $options['details_key']));
+								$id = "form_{$this->object->form_link}_subdetails_{$id01}_{$options['__parent_row_number']}_{$id02}_{$row_number}_{$k3}";
 								$error_name = "{$options['details_parent_key']}[{$options['__parent_key']}][{$options['details_key']}][{$k0}][{$k3}]";
 								$values_key = [$options['details_parent_key'], $options['__parent_key'], $options['details_key'], $k0, $k3];
 								$field_values_key = [$options['details_parent_key'], $options['__parent_row_number'], $options['details_key'], $k0, $k3];
