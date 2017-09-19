@@ -32,16 +32,14 @@ class Base {
 		if (!empty($this->object->master_object) && method_exists($this->object->master_object, 'addJs')) {
 			$this->object->master_object->addJs();
 		}
+		$this->object->misc_settings['extended_js_class'] = 'Numbers.' . str_replace('\\', '', $this->object->form_class);
 		// include js
-		$filename = str_replace('_form_', '_media_js_', $this->object->form_class) . '.js';
-		if (file_exists('./../libraries/vendor/' . str_replace('_', '/', $filename))) {
-			\Layout::addJs('/numbers/media_submodules/' . $filename);
+		if (!empty($this->object->options['include_js'])) {
+			\Layout::addJs($this->object->options['include_js']);
 		}
-		$this->object->misc_settings['extended_js_class'] = 'numbers.' . $this->object->form_class;
 		// include css
-		$filename = str_replace('_form_', '_media_css_', $this->object->form_class) . '.css';
-		if (file_exists('./../libraries/vendor/' . str_replace('_', '/', $filename))) {
-			\Layout::addCss('/numbers/media_submodules/' . $filename);
+		if (!empty($this->object->options['include_css'])) {
+			\Layout::addCss($this->object->options['include_css']);
 		}
 		// load mask
 		\Numbers\Frontend\Media\Libraries\LoadMask\Base::add();

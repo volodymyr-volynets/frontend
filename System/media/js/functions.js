@@ -307,3 +307,13 @@ var i18n_if = function(text, translate) {
 		return text;
 	}
 };
+
+/**
+ * Add slashes
+ *
+ * @param string str
+ * @return string
+ */
+function addslashes(text) {
+	return text.replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0');
+}

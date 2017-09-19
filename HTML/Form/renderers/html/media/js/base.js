@@ -166,8 +166,8 @@ Numbers.Form = {
 			if (type == 'reset') {
 				form_group.children('.numbers_field_error_messages').remove();
 			} else {
-				form_group.find('div[field_value_hash="' + hash + '"]').remove();
-				form_group.append('<div class="numbers_field_error_messages ' + text_class + '" field_value_hash="' + hash + '">' + message + '</div>');
+				form_group.find('div[data-field_value_hash="' + hash + '"]').remove();
+				form_group.append('<div class="numbers_field_error_messages ' + text_class + '" data-field_value_hash="' + hash + '">' + message + '</div>');
 			}
 			// update form group class
 			form_group.removeClass('has-warning has-error has-success');
@@ -245,9 +245,9 @@ Numbers.Form = {
 	 */
 	getName: function(element, neighbour, last) {
 		if (last) {
-			return this.get_path(element).pop();
+			return this.getPath(element).pop();
 		} else if (neighbour) {
-			var path = this.get_path(element, neighbour);
+			var path = this.getPath(element, neighbour);
 			if (path instanceof Array) {
 				var name = path.shift();
 				for (var i in path) {
@@ -272,7 +272,7 @@ Numbers.Form = {
 		if (path) {
 			return array_key_get(values, path);
 		} else if (element) {
-			return array_key_get(values, this.get_path(element, neighbour));
+			return array_key_get(values, this.getPath(element, neighbour));
 		}
 	},
 
@@ -292,7 +292,7 @@ Numbers.Form = {
 		} else {
 			var name = path;
 		}
-		$('[name="' + name + '"]', $(form)).val(value);
+		$('[name="' + addslashes(name) + '"]', $(form)).val(value);
 	},
 
 	/**

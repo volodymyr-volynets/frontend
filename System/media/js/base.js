@@ -202,6 +202,16 @@ var Numbers = {
 			}
 			return array_key_get(this.data, keys);
 		}
+	},
+
+	CountriesCurrencies: {
+
+		/**
+		 * Data
+		 *
+		 * @type object
+		 */
+		data: {}
 	}
 };
 
