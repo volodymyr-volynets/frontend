@@ -205,7 +205,7 @@ Numbers.Format = {
 		var format = array_key_get(Numbers, 'flag.global.format'), type;
 		// if currency code is passed we need to load symbol
 		if (options.currency_code) {
-			options.symbol = Numbers.CountriesCurrencies.data[options.currency_code].cy_currency_symbol;
+			options.symbol = Numbers.CountriesCurrencies.data[options.currency_code].symbol;
 		}
 		// user defined monetary options
 		if (!options.skip_user_settings) {
