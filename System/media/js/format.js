@@ -206,6 +206,7 @@ Numbers.Format = {
 		// if currency code is passed we need to load symbol
 		if (options.currency_code) {
 			options.symbol = Numbers.CountriesCurrencies.data[options.currency_code].symbol;
+			options.decimals = Numbers.CountriesCurrencies.data[options.currency_code].fraction_digits;
 		}
 		// user defined monetary options
 		if (!options.skip_user_settings) {

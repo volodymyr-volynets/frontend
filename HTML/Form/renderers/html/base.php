@@ -740,6 +740,8 @@ render_custom_renderer:
 			$max_rows = count($values);
 			if (empty($this->object->misc_settings['global']['readonly'])) {
 				$max_rows+= ($options['details_new_rows'] ?? 0);
+			} else {
+				$options['details_new_rows'] = 0;
 			}
 			$processing_values = !empty($values);
 		}
@@ -1334,7 +1336,7 @@ render_custom_renderer:
 						$result_options['value'] = '';
 					}
 					// we need to empty zero integers and sequences, before format
-					if (($result_options['php_type'] ?? '') == 'integer' && ($result_options['type'] ?? '') != 'boolean' && ($result_options['domain'] ?? '') != 'counter' && empty($result_options['value'])) {
+					if (($result_options['php_type'] ?? '') == 'integer' && ($result_options['type'] ?? '') != 'boolean' && ($result_options['domain'] ?? '') != 'counter' && empty($result_options['value']) && ($result_options['method'] ?? null) != 'hidden') {
 						$result_options['value'] = '';
 					}
 					// format, not for selects/autocompletes/presets
@@ -1380,7 +1382,7 @@ render_custom_renderer:
 						$result_options['maxlength'] = $result_options['length'];
 					}
 					// global readonly
-					if (!empty($this->object->misc_settings['global']['readonly']) && empty($result_options['navigation'])) {
+					if (!empty($this->object->misc_settings['global']['readonly']) && empty($result_options['navigation']) && $result_options['name'] != '__module_id') {
 						$result_options['readonly'] = true;
 					}
 					// title

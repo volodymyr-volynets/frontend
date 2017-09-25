@@ -41,6 +41,23 @@ Numbers.Math = {
 	},
 
 	/**
+	 * Is equal
+	 *
+	 * @param string arg1
+	 * @param string arg2
+	 * @param int scale
+	 * @returns bool
+	 */
+	isEqual: function(arg1, arg2, scale) {
+		if (typeof(scale) === 'undefined') {
+			scale = 13;
+		} else if (typeof scale !== 'number') {
+			scale = intval(scale.toString());
+		}
+		return (this.compare(arg1, arg2, scale) == 0);
+	},
+
+	/**
 	 * Add
 	 *
 	 * @param string arg1
