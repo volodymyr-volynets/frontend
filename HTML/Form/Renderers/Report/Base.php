@@ -64,6 +64,7 @@ class Base {
 						$value = $row_data[0][$v2['__index']] ?? null;
 						$align = $v2['data_align'] ?? '';
 						$bold = $v2['data_bold'] ?? false;
+						$total = $v2['data_total'] ?? false;
 						$underline = $v2['data_underline'] ?? false;
 						$as_header = $v2['data_as_header'] ?? false;
 						if (is_array($value)) {
@@ -71,6 +72,7 @@ class Base {
 							$bold = $value['bold'] ?? $bold;
 							$underline = $value['underline'] ?? $underline;
 							$as_header = $value['as_header'] ?? $as_header;
+							$total = $value['total'] ?? $total;
 							// url
 							if (!empty($value['url'])) {
 								$value = \HTML::a(['href' => $value['url'], 'value' => $value['value']]);
@@ -81,6 +83,7 @@ class Base {
 							if ($bold) $cell_class.= ' numbers_frontend_form_report_screen_cell_bold';
 							if ($underline) $cell_class.= ' numbers_frontend_form_report_screen_cell_underline';
 							if ($as_header) $cell_class.= ' numbers_frontend_form_report_screen_cell_as_header';
+							if ($total) $cell_class.= ' numbers_frontend_form_report_screen_cell_total';
 						}
 						if (isset($row_data[5]['cell_even']) && $value . '' != '') {
 							if ($row_data[5]['cell_even'] == ODD) {

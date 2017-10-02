@@ -404,7 +404,7 @@ class Base {
 						}
 						// custom renderer
 						if (!empty($v2['options']['custom_renderer'])) {
-							$method = \Factory::method($v2['options']['custom_renderer'], null, true);
+							$method = \Factory::method($v2['options']['custom_renderer'], null, true, [['skip_processing' => true]]);
 							$value = call_user_func_array($method, [& $this->object, & $v2, & $value, & $v0]);
 						} else {
 							// process options
@@ -530,7 +530,7 @@ render_custom_renderer:
 				} else {
 					$method[0] = \Factory::model($method[0], true);
 				}
-				$temp = call_user_func_array($method, [& $this]);
+				$temp = call_user_func_array($method, [& $this->object]);
 				if (is_string($temp)) {
 					$result['data']['html'] = $separator . $temp;
 					$result['success'] = true;
@@ -1159,7 +1159,7 @@ render_custom_renderer:
 		$options['options']['data-field_values_key'] = implode('[::]', $options['options']['field_values_key'] ?? [$options['options']['field_name']]);
 		// custom renderer
 		if (!empty($options['options']['custom_renderer'])) {
-			$method = \Factory::method($options['options']['custom_renderer'], null, true);
+			$method = \Factory::method($options['options']['custom_renderer'], null, true, [['skip_processing' => true]]);
 			$options_custom_renderer = $options;
 			$temp = call_user_func_array($method, [& $this->object, & $options, & $value, & $neighbouring_values]);
 			if (!is_null($temp)) {

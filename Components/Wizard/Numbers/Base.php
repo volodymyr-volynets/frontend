@@ -8,7 +8,7 @@ class Base implements \Numbers\Frontend\Components\Wizard\Interface2\Base {
 	 */
 	public static function wizard(array $options = []) : string {
 		// if we have no options we render nothing
-		if (empty($options['options'])) return;
+		if (empty($options['options'])) return '';
 		// include js & css files
 		\Layout::addCss('/numbers/media_submodules/Numbers_Frontend_Components_Wizard_Numbers_Media_CSS_Base.css', 10000);
 		// font awesome icons
