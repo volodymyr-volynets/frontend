@@ -558,8 +558,15 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 		// determine active tab
 		$active_id = $id . '_active_hidden';
 		$active_tab = $options['active_tab'] ?? \Request::input($active_id);
+		if (!empty($options['tab_options'][$active_tab]['hidden'])) {
+			$active_tab = null;
+		}
 		if (empty($active_tab)) {
-			$active_tab = key($header);
+			foreach ($header as $k => $v) {
+				if (!empty($options['tab_options'][$k]['hidden'])) continue;
+				$active_tab = $k;
+				break;
+			}
 		}
 		$result = '';
 		$result.= '<div id="' . $id . '" class="' . ($options['class'] ?? '') . '">';

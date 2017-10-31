@@ -109,6 +109,23 @@ Numbers.Math = {
 	},
 
 	/**
+	 * Divide
+	 *
+	 * @param string arg1
+	 * @param string arg2
+	 * @param int scale
+	 * @returns string
+	 */
+	divide: function(arg1, arg2, scale) {
+		if (typeof(scale) === 'undefined') {
+			scale = this.scale;
+		} else if (typeof scale !== 'number') {
+			scale = intval(scale.toString());
+		}
+		return bcdiv(arg1, arg2, scale);
+	},
+
+	/**
 	 * Double the scale
 	 *
 	 * @param mixed scale

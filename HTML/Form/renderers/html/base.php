@@ -969,7 +969,7 @@ render_custom_renderer:
 				];
 			}
 			// delete link
-			if (empty($options['details_cannot_delete'])) {
+			if (empty($options['details_cannot_delete']) && empty($this->object->misc_settings['global']['readonly'])) {
 				$link = \HTML::a(['href' => 'javascript:void(0);', 'value' => '<i class="fa fa-trash-o"></i>', 'onclick' => "if (confirm('" . strip_tags(i18n(null, \Object\Content\Messages::CONFIRM_DELETE)) . "')) { Numbers.Form.detailsDeleteRow('form_{$this->object->form_link}_form', '{$row_id}'); } return false;"]);
 			} else {
 				$link = '';
@@ -1118,7 +1118,7 @@ render_custom_renderer:
 	 * @return string
 	 */
 	public function renderElementName($options) {
-		if (isset($options['options']['label_name']) || isset($options['options']['label_i18n'])) {
+		if ((isset($options['options']['label_name']) && ($options['options']['label_name'] . '') != '') || isset($options['options']['label_i18n'])) {
 			$value = i18n($options['options']['label_i18n'] ?? null, $options['options']['label_name']);
 			$prepend = isset($options['prepend_to_field']) ? $options['prepend_to_field'] : null;
 			// todo: preset for attribute label_for = id
@@ -1294,7 +1294,7 @@ render_custom_renderer:
 				}
 				// value in special order
 				$flag_translated = false;
-				if (in_array($element_method, ['\HTML::a', '\HTML::submit', '\HTML::button', '\HTML::button2'])) {
+				if (in_array($element_method, ['\HTML::a', '\HTML::submit', '\HTML::button', '\HTML::button2', '\HTML::separator'])) {
 					// translate value
 					$result_options['value'] = i18n($result_options['i18n'] ?? null, $result_options['value'] ?? null);
 					// process confirm_message
@@ -1314,7 +1314,7 @@ render_custom_renderer:
 					}
 					$flag_translated = true;
 					// icon
-					if (!empty($result_options['icon'])) {
+					if (!empty($result_options['icon']) && $element_method != '\HTML::separator') {
 						$result_options['value'] = \HTML::icon(['type' => $result_options['icon']]) . ' ' . $result_options['value'];
 					}
 					// accesskey
