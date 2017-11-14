@@ -386,7 +386,8 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 						$result.= '<span class="icon-bar"></span>';
 						$result.= '<span class="icon-bar"></span>';
 					$result.= '</button>';
-					$result.= '<a class="navbar-brand" href="/">' . $brand . '</a>';
+					$brand_url = $options['brand_url'] ?? '/';
+					$result.= '<a class="navbar-brand" href="' . $brand_url . '">' . $brand . '</a>';
 				$result.= '</div>';
 				$result.= '<div class="collapse navbar-collapse navbar-nav-fix">';
 					$result.= '<ul class="nav navbar-nav">';
