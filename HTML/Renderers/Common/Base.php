@@ -302,6 +302,7 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 	 */
 	public static function file(array $options = []) : string {
 		$options['type'] = 'file';
+		unset($options['value']);
 		return \HTML::input($options);
 	}
 
