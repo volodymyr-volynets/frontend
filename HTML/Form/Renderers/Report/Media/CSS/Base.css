@@ -63,7 +63,7 @@
 	border-top: 3px double #000 !important;
 }
 .numbers_frontend_form_report_screen_cell_data.alarm {
-	color: red;
+	color: #ff0000;
 }
 .numbers_frontend_form_report_screen_cell_data.underline {
 	text-decoration: underline;
