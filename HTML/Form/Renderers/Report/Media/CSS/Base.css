@@ -26,10 +26,10 @@
 	border-bottom: 2px solid #000;
 }
 .numbers_frontend_form_report_screen_table_global_row_odd {
-	background-color: #f9f9f9;
+	/*background-color: #f9f9f9;*/
 }
 .numbers_frontend_form_report_screen_table_global_row_even {
-	background-color: #ffffff;
+	/*background-color: #ffffff;*/
 }
 .numbers_frontend_form_report_screen_table_global_row_first_odd_even {
 	border-top: 1px solid rgba(192, 192, 192, 0.20);
@@ -43,10 +43,10 @@
 	min-height: 1em;
 }
 .numbers_frontend_form_report_screen_cell_data.odd {
-	background-color: #f9f9f9;
+	/*background-color: #f9f9f9;*/
 }
 .numbers_frontend_form_report_screen_cell_data.even {
-	background-color: #ffffff;
+	/*background-color: #ffffff;*/
 }
 .numbers_frontend_form_report_screen_cell_data.blank {
 	border: none;
