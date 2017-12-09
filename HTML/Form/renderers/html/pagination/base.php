@@ -43,11 +43,11 @@ class Base {
 			$displaying.= '<tr>';
 				// preview button
 				if (!empty($options['preview'])) {
-					$preview_icon = 'list';
+					$preview_icon = 'fas fa-list';
 					$preview_value = 0;
 					$preview_title = i18n(null, 'List');
 				} else {
-					$preview_icon = 'th-list';
+					$preview_icon = 'fas fa-th-list';
 					$preview_value = 1;
 					$preview_title = i18n(null, 'Preview');
 				}

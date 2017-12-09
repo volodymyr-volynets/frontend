@@ -691,7 +691,7 @@ var Numbers_Calendar = function (options) {
 						html += '</tr>';
 					html += '</table>';
 				html += '</td>';
-				html += '<td align="right" width="25"><span onclick="' + this.var_id + '.prevNext(1, 0);" id="' + this.id + '_calendar_header_next" class="numbers_calendar_header_button"><i class="fa fa-chevron-right"></i></a></td>';
+				html += '<td align="right" width="25"><span onclick="' + this.var_id + '.prevNext(1, 0);" id="' + this.id + '_calendar_header_next" class="numbers_calendar_header_button"><i class="fas fa-chevron-right"></i></a></td>';
 			html += '</tr>';
 			// date days
 			html += '<tr>';
@@ -783,12 +783,12 @@ var Numbers_Calendar = function (options) {
 							html += '</td>';
 						html += '</tr>';
 						html += '<tr>';
-							html += '<td align="center"><span onclick="' + this.var_id + '.timeChanged(\'hour\', true);" class="numbers_calendar_header_button"><i class="fa fa-chevron-down"></i></span></td>';
+							html += '<td align="center"><span onclick="' + this.var_id + '.timeChanged(\'hour\', true);" class="numbers_calendar_header_button"><i class="fas fa-chevron-down"></i></span></td>';
 							html += '<td>&nbsp;</td>';
-							html += '<td align="center"><span onclick="' + this.var_id + '.timeChanged(\'minute\', true);" class="numbers_calendar_header_button"><i class="fa fa-chevron-down"></i></a></td>';
+							html += '<td align="center"><span onclick="' + this.var_id + '.timeChanged(\'minute\', true);" class="numbers_calendar_header_button"><i class="fas fa-chevron-down"></i></a></td>';
 							html += '<td' + hide_seconds + '>&nbsp;</td>';
-							html += '<td align="center"' + hide_seconds + '><span onclick="' + this.var_id + '.timeChanged(\'second\', true);" class="numbers_calendar_header_button"><i class="fa fa-chevron-down"></i></span></td>';
-							html += '<td align="center"' + hide_am_pm + '><span onclick="' + this.var_id + '.timeChanged(\'am_pm\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-down"></i></span></td>';
+							html += '<td align="center"' + hide_seconds + '><span onclick="' + this.var_id + '.timeChanged(\'second\', true);" class="numbers_calendar_header_button"><i class="fas fa-chevron-down"></i></span></td>';
+							html += '<td align="center"' + hide_am_pm + '><span onclick="' + this.var_id + '.timeChanged(\'am_pm\');" class="numbers_calendar_header_button"><i class="fas fa-chevron-down"></i></span></td>';
 						html += '</tr>';
 						// names
 						html += '<tr>';

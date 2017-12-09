@@ -36,7 +36,7 @@ class Base implements \Numbers\Frontend\Components\Calendar\Interface2\Base {
 		}
 		if (isset($options['calendar_icon']) && ($options['calendar_icon'] == 'left' || $options['calendar_icon'] == 'right')) {
 			$position = \HTML::align($options['calendar_icon']);
-			$icon_type = $type == 'time' ? 'clock-o' : 'calendar';
+			$icon_type = $type == 'time' ? 'far fa-clock' : 'fas fa-calendar-alt';
 			unset($options['calendar_icon']);
 			if (empty($options['readonly'])) {
 				$icon_onclick = 'numbers_calendar_var_' . $options['id'] . '.show();';

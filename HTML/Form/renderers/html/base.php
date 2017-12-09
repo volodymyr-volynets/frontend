@@ -57,7 +57,7 @@ class Base {
 			if ($this->object->collection_object->primary_model->module ?? false) {
 				$params['__module_id'] = $params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
 			}
-			$this->object->actions['form_new'] = ['value' => 'New', 'sort' => -31000, 'icon' => 'file-o', 'href' => $mvc['controller'] . '/_Edit?' . http_build_query2($params), 'onclick' => $onclick, 'internal_action' => true];
+			$this->object->actions['form_new'] = ['value' => 'New', 'sort' => -31000, 'icon' => 'far fa-file', 'href' => $mvc['controller'] . '/_Edit?' . http_build_query2($params), 'onclick' => $onclick, 'internal_action' => true];
 			// override
 			if (is_array($this->object->options['actions']['new'])) {
 				$this->object->actions['form_new'] = array_merge($this->object->actions['form_new'], $this->object->options['actions']['new']);
@@ -72,7 +72,7 @@ class Base {
 			if ($this->object->collection_object->primary_model->module ?? false) {
 				$params['__module_id'] = $params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
 			}
-			$this->object->actions['form_import'] = ['value' => 'Import', 'sort' => -30900, 'icon' => 'upload', 'href' => $mvc['controller'] . '/_Import?' . http_build_query2($params), 'onclick' => $onclick, 'internal_action' => true];
+			$this->object->actions['form_import'] = ['value' => 'Import', 'sort' => -30900, 'icon' => 'fas fa-upload', 'href' => $mvc['controller'] . '/_Import?' . http_build_query2($params), 'onclick' => $onclick, 'internal_action' => true];
 			// override
 			if (is_array($this->object->options['actions']['import'])) {
 				$this->object->actions['form_import'] = array_merge($this->object->actions['form_import'], $this->object->options['actions']['import']);
@@ -85,7 +85,7 @@ class Base {
 			if ($this->object->collection_object->primary_model->module ?? false) {
 				$params['__module_id'] = $params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
 			}
-			$this->object->actions['form_back'] = ['value' => 'Back', 'sort' => -32000, 'icon' => 'arrow-left', 'href' => $mvc['controller'] . '/_Index?' . http_build_query2($params), 'internal_action' => true];
+			$this->object->actions['form_back'] = ['value' => 'Back', 'sort' => -32000, 'icon' => 'fas fa-arrow-left', 'href' => $mvc['controller'] . '/_Index?' . http_build_query2($params), 'internal_action' => true];
 			// override
 			if (is_array($this->object->options['actions']['back'])) {
 				$this->object->actions['form_back'] = array_merge($this->object->actions['form_back'], $this->object->options['actions']['back']);
@@ -107,7 +107,7 @@ class Base {
 			if ($this->object->collection_object->primary_model->module ?? false) {
 				$params['__module_id'] = $params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
 			}
-			$this->object->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => 32000, 'icon' => 'refresh', 'href' => $mvc['full'] . '?' . http_build_query2($params), 'internal_action' => true];
+			$this->object->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => 32000, 'icon' => 'fas fa-sync', 'href' => $mvc['full'] . '?' . http_build_query2($params), 'internal_action' => true];
 			// override
 			if (is_array($this->object->options['actions']['refresh'])) {
 				$this->object->actions['form_refresh'] = array_merge($this->object->actions['form_refresh'], $this->object->options['actions']['refresh']);
@@ -897,7 +897,7 @@ render_custom_renderer:
 				$temp = str_replace('\\', '_', $options['details_key']);
 				$tab_id = "form_tabs_{$this->object->form_link}_subdetails_{$temp}_{$row_number}";
 				$tab_header = [
-					'tabs_subdetails_none' => \HTML::icon(['type' => 'toggle-on'])
+					'tabs_subdetails_none' => \HTML::icon(['type' => 'fas fa-toggle-on'])
 				];
 				$tab_values = [
 					'tabs_subdetails_none' => ''
@@ -970,7 +970,7 @@ render_custom_renderer:
 			}
 			// delete link
 			if (empty($options['details_cannot_delete']) && empty($this->object->misc_settings['global']['readonly'])) {
-				$link = \HTML::a(['href' => 'javascript:void(0);', 'value' => '<i class="fa fa-trash-o"></i>', 'onclick' => "if (confirm('" . strip_tags(i18n(null, \Object\Content\Messages::CONFIRM_DELETE)) . "')) { Numbers.Form.detailsDeleteRow('form_{$this->object->form_link}_form', '{$row_id}'); } return false;"]);
+				$link = \HTML::a(['href' => 'javascript:void(0);', 'value' => '<i class="far fa-trash-alt"></i>', 'onclick' => "if (confirm('" . strip_tags(i18n(null, \Object\Content\Messages::CONFIRM_DELETE)) . "')) { Numbers.Form.detailsDeleteRow('form_{$this->object->form_link}_form', '{$row_id}'); } return false;"]);
 			} else {
 				$link = '';
 				unset($table['header']['row_delete']);
@@ -1453,17 +1453,17 @@ render_custom_renderer:
 				$name = 'navigation[' . $result_options['name'] . ']';
 				$temp = '<table width="100%" dir="ltr">'; // always left to right
 					$temp.= '<tr>';
-						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[first]', 'value' => \HTML::icon(['type' => 'step-backward']), 'onclick' => 'Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'First')]) . '</td>';
+						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[first]', 'value' => \HTML::icon(['type' => 'fas fa-step-backward']), 'onclick' => 'Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'First')]) . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
-						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[previous]', 'value' => \HTML::icon(['type' => 'caret-left']), 'onclick' => 'Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Previous')]) . '</td>';
+						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[previous]', 'value' => \HTML::icon(['type' => 'fas fa-caret-left']), 'onclick' => 'Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Previous')]) . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
 						$temp.= '<td width="90%">' . $value . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
-						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[refresh]', 'value' => \HTML::icon(['type' => 'refresh']), 'onclick' => 'Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Refresh')]) . '</td>';
+						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[refresh]', 'value' => \HTML::icon(['type' => 'fas fa-sync']), 'onclick' => 'Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Refresh')]) . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
-						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[next]', 'value' => \HTML::icon(['type' => 'caret-right']), 'onclick' => 'Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Next')]) . '</td>';
+						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[next]', 'value' => \HTML::icon(['type' => 'fas fa-caret-right']), 'onclick' => 'Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Next')]) . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
-						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[last]', 'value' => \HTML::icon(['type' => 'step-forward']), 'onclick' => 'Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Last')]) . '</td>';
+						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[last]', 'value' => \HTML::icon(['type' => 'fas fa-step-forward']), 'onclick' => 'Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Last')]) . '</td>';
 					$temp.= '</tr>';
 				$temp.= '</table>';
 				$value = $temp;

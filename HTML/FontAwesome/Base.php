@@ -13,9 +13,9 @@ class Base {
 		} else if (isset($options['type'])) {
 			\Library::add('FontAwesome');
 			// generating class & rendering tag
-			$options['class'] = array_add_token($options['class'] ?? [], 'fa fa-' . $options['type'], ' ');
+			$options['class'] = ($options['class'] ?? '') . ' ' . $options['type'];
 			if (!empty($options['class_only'])) {
-				return implode(' ', $options['class']);
+				return $options['class'];
 			} else {
 				$options['tag'] = $options['tag'] ?? 'i';
 				return \HTML::tag($options);

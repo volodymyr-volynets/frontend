@@ -7,6 +7,6 @@ class FontAwesome implements \Numbers\Frontend\Media\CDN\Interface2 {
 	 * Add media to layout
 	 */
 	public static function add() {
-		\Layout::addCss('https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
+		\Layout::addCss('https://use.fontawesome.com/releases/v5.0.0/css/all.css');
 	}
 }
