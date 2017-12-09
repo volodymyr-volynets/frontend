@@ -731,7 +731,7 @@ var Numbers_Calendar = function (options) {
 							html += '<td' + hide_seconds + '>&nbsp;</td>';
 							html += '<td align="center"' + hide_seconds + '><span onclick="' + this.var_id + '.timeChanged(\'second\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-up"></i></span></td>';
 							html += '<td align="center"' + hide_am_pm + '><span onclick="' + this.var_id + '.timeChanged(\'am_pm\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-up"></i></span></td>';
-							html += '<td align="center" width="33" rowspan="3" valign="middle"><span onclick="' + this.var_id + '.timeChosen();" id="' + this.time_go_id + '" class="numbers_calendar_time_button"><i class="fa fa-arrow-circle-o-right"></span></a></td>';
+							html += '<td align="center" width="33" rowspan="3" valign="middle"><span onclick="' + this.var_id + '.timeChosen();" id="' + this.time_go_id + '" class="numbers_calendar_time_button"><i class="far fa-arrow-alt-circle-right"></span></a></td>';
 						html += '</tr>';
 						html += '<tr>';
 							html += '<td align="center">';
