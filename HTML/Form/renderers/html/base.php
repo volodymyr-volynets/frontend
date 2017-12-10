@@ -380,7 +380,7 @@ class Base {
 				$inner_table = ['options' => [], 'width' => '100%', 'class' => 'numbers_frontend_form_list_header_inner'];
 				foreach ($v['elements'] as $k2 => $v2) {
 					$width = $v2['options']['width'] ?? ($v2['options']['percent'] . '%');
-					$inner_table['options'][1][$k2] = ['value' => i18n(null, $v2['options']['label_name']), 'nowrap' => true, 'width' => $width, 'tag' => 'th'];
+					$inner_table['options'][1][$k2] = ['value' => i18n(null, $v2['options']['label_name']), 'align' => $v2['options']['align'] ?? 'left', 'nowrap' => true, 'width' => $width, 'tag' => 'th'];
 				}
 				$temp_inner.= \HTML::table($inner_table);
 			}

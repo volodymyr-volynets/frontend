@@ -39,7 +39,7 @@ class Base {
 				}
 				foreach ($header_data as $k2 => $v2) {
 					$width = $v2['width'] ?? ($v2['percent'] . '%');
-					$inner_table['options'][1][$k2] = ['value' => $v2['label_name'], 'nowrap' => true, 'width' => $width, 'tag' => 'th'];
+					$inner_table['options'][1][$k2] = ['value' => $v2['label_name'], 'align' => $v2['align'] ?? 'left', 'nowrap' => true, 'width' => $width, 'tag' => 'th'];
 				}
 				$temp_inner.= \HTML::table($inner_table);
 				$counter++;
@@ -65,6 +65,7 @@ class Base {
 						$align = $v2['data_align'] ?? '';
 						$bold = $v2['data_bold'] ?? false;
 						$total = $v2['data_total'] ?? false;
+						$subtotal = $v2['data_subtotal'] ?? false;
 						$underline = $v2['data_underline'] ?? false;
 						$as_header = $v2['data_as_header'] ?? false;
 						if (is_array($value)) {
@@ -73,6 +74,7 @@ class Base {
 							$underline = $value['underline'] ?? $underline;
 							$as_header = $value['as_header'] ?? $as_header;
 							$total = $value['total'] ?? $total;
+							$subtotal = $value['subtotal'] ?? $subtotal;
 							$alarm = $value['alarm'] ?? false;
 							// url
 							if (!empty($value['url'])) {
@@ -85,6 +87,7 @@ class Base {
 							if ($underline) $cell_class.= ' underline';
 							if ($as_header) $cell_class.= ' as_header';
 							if ($total) $cell_class.= ' total';
+							if ($subtotal) $cell_class.= ' subtotal';
 							if ($alarm) $cell_class.= ' alarm';
 						}
 						if (isset($row_data[5]['cell_even']) && $value . '' != '') {
