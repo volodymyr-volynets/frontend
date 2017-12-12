@@ -317,10 +317,11 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 		}
 		// add icon
 		if (!empty($item['icon'])) {
-			$name = \HTML::icon(['type' => $item['icon']]) . ' ' . $name;
+			$name = \HTML::icon(['type' => $item['icon'], 'id' => 'menu_item_id_' . $item['menu_id'] . '_icon']) . ' ' . $name;
 		}
 		//'data-toggle' => 'dropdown'
-		$result = \HTML::a(['href' => $item['url'] ?? 'javascript:void(0);', 'class' => 'dropdown-toggle', 'value' => $name . $caret]);
+		$avatar = '<span id="menu_item_id_' . $item['menu_id'] . '_avatar" style="display: none;"></span>';
+		$result = \HTML::a(['href' => $item['url'] ?? 'javascript:void(0);', 'class' => 'dropdown-toggle', 'value' => $avatar . $name . $caret]);
 		$result.= '<ul class="dropdown-menu">';
 			// sort
 			foreach ($item['options'] as $k2 => $v2) {
@@ -375,7 +376,9 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 	public static function menu(array $options = []) : string {
 		$items = $options['options'] ?? [];
 		$items_right = $options['options_right'] ?? [];
-		$brand = $options['brand'] ?? null;
+		$brand_name = $options['brand_name'] ?? null;
+		$brand_url = $options['brand_url'] ?? '/';
+		$brand_logo = $options['brand_logo'] ?? '';
 		array_key_unset($options, ['options', 'brand']);
 		$result = '<div class="navbar navbar-default" role="navigation">';
 			$result.= '<div class="container">';
@@ -386,8 +389,11 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 						$result.= '<span class="icon-bar"></span>';
 						$result.= '<span class="icon-bar"></span>';
 					$result.= '</button>';
-					$brand_url = $options['brand_url'] ?? '/';
-					$result.= '<a class="navbar-brand" href="' . $brand_url . '">' . $brand . '</a>';
+					if (!empty($brand_logo)) {
+						$result.= '<a href="' . $brand_url . '"><img src="' . $brand_logo . '" /></a>';
+					} else {
+						$result.= '<a class="navbar-brand" href="' . $brand_url . '">' . $brand_name . '</a>';
+					}
 				$result.= '</div>';
 				$result.= '<div class="collapse navbar-collapse navbar-nav-fix">';
 					$result.= '<ul class="nav navbar-nav">';

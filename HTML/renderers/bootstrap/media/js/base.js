@@ -136,6 +136,11 @@ Numbers.Menu = {
 				success: function (data) {
 					if (data.success) {
 						$('#menu_item_id_' + data.item).html(data.data);
+						if (data.avatar) {
+							$('#menu_item_id_' + data.item + '_avatar').html('<img src="' + data.avatar + '" style="position: absolute; margin-top: -15px; margin-left: -55px;" />');
+							$('#menu_item_id_' + data.item + '_avatar').show();
+							$('#menu_item_id_' + data.item + '_icon').hide();
+						}
 					}
 				}
 			});
