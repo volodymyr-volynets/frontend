@@ -320,7 +320,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 			$name = \HTML::icon(['type' => $item['icon'], 'id' => 'menu_item_id_' . $item['menu_id'] . '_icon']) . ' ' . $name;
 		}
 		//'data-toggle' => 'dropdown'
-		$avatar = '<span id="menu_item_id_' . $item['menu_id'] . '_avatar" style="display: none;"></span>';
+		$avatar = '<div id="menu_item_id_' . $item['menu_id'] . '_avatar" class="navbar-menu-item-avatar" style="display: none;"></div>';
 		$result = \HTML::a(['href' => $item['url'] ?? 'javascript:void(0);', 'class' => 'dropdown-toggle', 'value' => $avatar . $name . $caret]);
 		$result.= '<ul class="dropdown-menu">';
 			// sort
