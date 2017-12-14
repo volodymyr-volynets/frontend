@@ -1222,6 +1222,13 @@ render_custom_renderer:
 					$model = $this->object->wrapper_methods['processOptionsModels']['main'][0];
 					$model->{$this->object->wrapper_methods['processOptionsModels']['main'][1]}($this->object, $options['options']['field_name'], $options['options']['details_key'] ?? null, $options['options']['details_parent_key'] ?? null, $result_options['options_params']);
 				}
+				// multiple column
+				if (!empty($options['options']['multiple_column']) && is_array($value)) {
+					$current = current($value);
+					if (is_array($current) && key($current) == $options['options']['multiple_column']) {
+						$value = array_extract_values_by_key($value ?? [], $options['options']['multiple_column']);
+					}
+				}
 				$result_options['options'] = \Object\Data\Common::processOptions($result_options['options_model'], $this->object, $result_options['options_params'], $value, $skip_values, $result_options['options_options']);
 			} else {
 				// we need to inject form id into autocomplete
