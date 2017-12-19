@@ -33,7 +33,7 @@ class Base {
 				$sort.= i18n(null, 'Sort') . ': ';
 				$temp = [];
 				foreach ($options['sort'] as $k => $v) {
-					$temp[] = i18n(null, $k) . ' ' . \HTML::icon(['type' => 'sort-alpha-' . ($v == SORT_ASC ? 'asc' : 'desc')]);
+					$temp[] = i18n(null, $k) . ' ' . \HTML::icon(['type' => 'fas fa-sort-alpha-' . ($v == SORT_ASC ? 'up' : 'down')]);
 				}
 				$sort.= implode(', ', $temp);
 			$sort.= '</td></tr></table>';

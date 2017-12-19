@@ -559,6 +559,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 	 * @see \HTML::tabs();
 	 */
 	public static function tabs(array $options = []) : string {
+		$vertical = $options['vertical'] ?? false;
 		$header = $options['header'] ?? [];
 		$values = $options['options'] ?? [];
 		$id = $options['id'] ?? 'tabs_default';
@@ -598,12 +599,28 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 				$tabs[$k] = '<li id="' . $li_id . '" class="' . $class2 . '"' . $tabindex . ' role="presentation"><a href="#' . $content_id . '" tab-data-id="' . $k . '" aria-controls="' . $content_id .'" role="tab" data-toggle="tab">' . $v . '</a></li>';
 				$panels[$k] = '<div role="tabpanel" class="tab-pane ' . ($k == $active_tab ? 'active' : '') . ' ' . $k . '" id="' . $content_id . '">' . $values[$k] . '</div>';
 			}
-			$result.= '<ul class="nav nav-tabs" role="tablist" id="' . $id . '_links' . '">';
-				$result.= implode('', $tabs);
-			$result.= '</ul>';
-			$result.= '<div class="tab-content">';
-				$result.= implode('', $panels);
-			$result.= '</div>';
+			// regular tab
+			if (!$vertical) {
+				$result.= '<ul class="nav nav-tabs" role="tablist" id="' . $id . '_links' . '">';
+					$result.= implode('', $tabs);
+				$result.= '</ul>';
+				$result.= '<div class="tab-content">';
+					$result.= implode('', $panels);
+				$result.= '</div>';
+			} else { // vertical tab
+				$result.= '<div class="row">';
+					$result.= '<div class="col-md-3">';
+						$result.= '<ul class="nav nav-pills nav-stacked" role="tablist" id="' . $id . '_links' . '">';
+							$result.= implode('', $tabs);
+						$result.= '</ul>';
+					$result.= '</div>';
+					$result.= '<div class="col-md-9">';
+						$result.= '<div class="tab-content tab-vertical-content">';
+							$result.= implode('', $panels);
+						$result.= '</div>';
+					$result.= '</div>';
+				$result.= '</div>';
+			}
 		$result.= '</div>';
 		$js = <<<TTT
 			$('#{$id}_links a').click(function(e) {
