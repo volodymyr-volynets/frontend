@@ -827,13 +827,24 @@ render_custom_renderer:
 									$field_values_key = [$options['details_key'], $i0, $k3];
 								}
 							} else {
-								$name = "{$options['details_parent_key']}[{$options['__parent_row_number']}][{$options['details_key']}][{$k0}][{$k3}]";
-								$id01 = strtolower(str_replace('\\', '_', $options['details_parent_key']));
-								$id02 = strtolower(str_replace('\\', '_', $options['details_key']));
-								$id = "form_{$this->object->form_link}_subdetails_{$id01}_{$options['__parent_row_number']}_{$id02}_{$row_number}_{$k3}";
-								$error_name = "{$options['details_parent_key']}[{$options['__parent_key']}][{$options['details_key']}][{$k0}][{$k3}]";
-								$values_key = [$options['details_parent_key'], $options['__parent_key'], $options['details_key'], $k0, $k3];
-								$field_values_key = [$options['details_parent_key'], $options['__parent_row_number'], $options['details_key'], $k0, $k3];
+								// 1 to 1
+								if (!empty($options['details_11'])) {
+									$name = "{$options['details_parent_key']}[{$options['__parent_row_number']}][{$options['details_key']}][{$k3}]";
+									$id01 = strtolower(str_replace('\\', '_', $options['details_parent_key']));
+									$id02 = strtolower(str_replace('\\', '_', $options['details_key']));
+									$id = "form_{$this->object->form_link}_subdetails_{$id01}_{$options['__parent_row_number']}_{$id02}_{$row_number}_{$k3}";
+									$error_name = "{$options['details_parent_key']}[{$options['__parent_key']}][{$options['details_key']}][{$k3}]";
+									$values_key = [$options['details_parent_key'], $options['__parent_key'], $options['details_key'], $k3];
+									$field_values_key = [$options['details_parent_key'], $options['__parent_row_number'], $options['details_key'], $k3];
+								} else {
+									$name = "{$options['details_parent_key']}[{$options['__parent_row_number']}][{$options['details_key']}][{$k0}][{$k3}]";
+									$id01 = strtolower(str_replace('\\', '_', $options['details_parent_key']));
+									$id02 = strtolower(str_replace('\\', '_', $options['details_key']));
+									$id = "form_{$this->object->form_link}_subdetails_{$id01}_{$options['__parent_row_number']}_{$id02}_{$row_number}_{$k3}";
+									$error_name = "{$options['details_parent_key']}[{$options['__parent_key']}][{$options['details_key']}][{$k0}][{$k3}]";
+									$values_key = [$options['details_parent_key'], $options['__parent_key'], $options['details_key'], $k0, $k3];
+									$field_values_key = [$options['details_parent_key'], $options['__parent_row_number'], $options['details_key'], $k0, $k3];
+								}
 							}
 							// error
 							$error = $this->object->getFieldErrors([
@@ -1229,7 +1240,12 @@ render_custom_renderer:
 						$value = array_extract_values_by_key($value ?? [], $options['options']['multiple_column']);
 					}
 				}
-				$result_options['options'] = \Object\Data\Common::processOptions($result_options['options_model'], $this->object, $result_options['options_params'], $value, $skip_values, $result_options['options_options']);
+				$options_array_processed = \Object\Data\Common::processOptions($result_options['options_model'], $this->object, $result_options['options_params'], $value, $skip_values, $result_options['options_options']);
+				if (strpos($result_options['options_model'], 'optgroups') === false) {
+					$result_options['options'] = $options_array_processed;
+				} else {
+					$result_options['optgroups'] = $options_array_processed;
+				}
 			} else {
 				// we need to inject form id into autocomplete
 				$result_options['form_id'] = "form_{$this->object->form_link}_form";
