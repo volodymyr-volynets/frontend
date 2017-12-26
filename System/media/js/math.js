@@ -155,13 +155,23 @@ Numbers.Math = {
 	 * Floor
 	 *
 	 * @param string arg1
+	 * @param int scale
 	 * @returns string
 	 */
-	floor: function(arg1) {
+	floor: function(arg1, scale) {
+		if (typeof(scale) === 'undefined') {
+			scale = this.scale;
+		} else if (typeof scale !== 'number') {
+			scale = intval(scale.toString());
+		}
 		if (arg1[0] != '-') {
-			return bcadd(arg1, '0', 0);
+			return bcadd(arg1, '0', scale);
 		} else {
-			return bcsub(arg1, '1', 0);
+			var value = '1';
+			if (scale != 0) {
+				value = this.divide('1', Math.pow(10, scale).toString(), 2);
+			}
+			return bcsub(arg1, value, scale);
 		}
 	},
 
@@ -169,13 +179,23 @@ Numbers.Math = {
 	 * Ceil
 	 *
 	 * @param string arg1
+	 * @param int scale
 	 * @returns string
 	 */
-	ceil: function(arg1) {
+	ceil: function(arg1, scale) {
+		if (typeof(scale) === 'undefined') {
+			scale = this.scale;
+		} else if (typeof scale !== 'number') {
+			scale = intval(scale.toString());
+		}
 		if (arg1[0] != '-') {
-			return bcadd(arg1, '1', 0);
+			var value = '1';
+			if (scale != 0) {
+				value = this.divide('1', Math.pow(10, scale).toString(), 2);
+			}
+			return bcadd(arg1, value, scale);
 		} else {
-			return bcsub(arg1, '0', 0);
+			return bcsub(arg1, '0', scale);
 		}
 	},
 
