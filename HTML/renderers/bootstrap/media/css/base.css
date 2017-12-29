@@ -120,6 +120,9 @@ hr.simple {
 	margin-top: 10px !important;
 	margin-bottom: 10px !important;
 }
+hr.no_margin {
+	margin: 0;
+}
 
 /* fieldset */
 fieldset {
