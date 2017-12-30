@@ -545,6 +545,9 @@ render_custom_renderer:
 			return $this->renderContainerTypeDetails($container_link);
 		}
 		// sorting rows
+		if (!isset($this->object->data[$container_link]['rows'])) {
+			$this->object->data[$container_link]['rows'] = [];
+		}
 		array_key_sort($this->object->data[$container_link]['rows'], ['order' => SORT_ASC]);
 		// grouping data by row type
 		// todo: handle separator

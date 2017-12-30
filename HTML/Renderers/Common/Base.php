@@ -622,9 +622,9 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 			if (is_array($v)) {
 				$temp3 = !empty($v['value']) ? $v['value'] : '';
 				unset($v['value']);
-				$temp[]= '<li ' . self::generateAttributes($v, 'li') . '>' . $temp3 . '</li>';
+				$temp[]= '<li ' . self::generateAttributes($v, 'li') . '>' . nl2br($temp3) . '</li>';
 			} else {
-				$temp[]= '<li>' . $v . '</li>';
+				$temp[]= '<li>' . nl2br(str_replace("\t", '&nbsp;&nbsp;&nbsp;', $v)) . '</li>';
 			}
 		}
 		return '<' . $type . ' ' . self::generateAttributes($options, $type) . '>' . implode('', $temp) . '</' . $type . '>';

@@ -137,7 +137,7 @@ Numbers.Menu = {
 					if (data.success) {
 						$('#menu_item_id_' + data.item).html(data.data);
 						if (data.avatar) {
-							$('#menu_item_id_' + data.item + '_avatar').html('<img src="' + data.avatar + '" class="navbar-menu-item-avatar-img" width="50" height="50" />');
+							$('#menu_item_id_' + data.item + '_avatar').html('<img src="' + data.avatar + '" class="navbar-menu-item-avatar-img" width="25" height="25" />');
 							$('#menu_item_id_' + data.item + '_avatar').show();
 							$('#menu_item_id_' + data.item + '_icon').hide();
 						}
