@@ -777,10 +777,16 @@ render_custom_renderer:
 			} else {
 				$fields = $this->object->sortFieldsForProcessing($this->object->detail_fields[$options['details_key']]['elements'], $this->object->detail_fields[$options['details_key']]['options']);
 			}
-			// todo: handle changed field
-			foreach ($fields as $k19 => $v19) {
-				if (array_key_exists('default', $v19['options']) && !isset($v0[$k19])) {
-					$temp = $this->object->processDefaultValue($k19, $v19['options']['default'], $v0[$k19] ?? null, $v0, true);
+			// handle changed field for new rows
+			if (empty($v0)) {
+				foreach ($fields as $k19 => $v19) {
+					if (array_key_exists('default', $v19['options']) && !isset($v0[$k19])) {
+						$v0[$k19] = null;
+						$default = $this->object->processDefaultValue($k19, $v19['options']['default'], null, $v0, true);
+						if ($this->object->canProcessDefaultValue(null, $v19)) {
+							$v0[$k19] = $default;
+						}
+					}
 				}
 			}
 			// looping though rows
