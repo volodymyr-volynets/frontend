@@ -245,7 +245,11 @@ var Numbers_Calendar = function (options) {
 			data.hour += 12;
 		}
 		if (what == 'date_object') {
-			return new Date(data.year, data.month, data.day, data.hour, data.minute, data.second);
+			if (this.type == 'time') {
+				return new Date(2000, 1, 1, data.hour, data.minute, data.second);
+			} else {
+				return new Date(data.year, data.month, data.day, data.hour, data.minute, data.second);
+			}
 		} else {
 			return data;
 		}
