@@ -289,6 +289,12 @@ class Base {
 		if (isset($this->object->options['segment'])) {
 			$temp = is_array($this->object->options['segment']) ? $this->object->options['segment'] : [];
 			$temp['value'] = $result;
+			if (isset($temp['header']['title'])) {
+				$temp['header']['title'] = i18n(null, $temp['header']['title']);
+			}
+			if (isset($temp['footer']['title'])) {
+				$temp['footer']['title'] = i18n(null, $temp['footer']['title']);
+			}
 			$result = \HTML::segment($temp);
 		}
 		return $result;

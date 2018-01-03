@@ -173,4 +173,20 @@ class Colors extends \Object\Data {
 		'708090' => ['name' => 'Slate Gray', 'html_name' => 'slategray', 'optgroup' => 'Grey(s)'],
 		'2F4F4F' => ['name' => 'Dark Slate Gray', 'html_name' => 'darkslategray', 'optgroup' => 'Grey(s)'],
 	];
+
+	/**
+	 * Determine text color
+	 *
+	 * @param string $color
+	 * @return string
+	 */
+	public static function determineTextColor(string $color) : string {
+		$color = hex2rgb($color);
+		$luma = ($color[0] + $color[1] + $color[2]) / 3;
+		if ($luma < 128){
+			return '#FFFFFF';
+		}else{
+			return '#000000';
+		}
+	}
 }

@@ -78,6 +78,9 @@
 	border-radius: 50%;
 	border: 1px solid #ccc;
 }
+.navbar-right .dropdown-menu {
+	right: auto;
+}
 
 /* tabs */
 .tab-content {

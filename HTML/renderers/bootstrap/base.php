@@ -23,18 +23,18 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 			if ($header != null) {
 				if (is_array($header)) {
 					$icon = !empty($header['icon']) ? (\HTML::icon($header['icon']) . ' ') : null;
-					$result.= '<div class="panel-heading">' . $icon . i18n(null, $header['title']) . '</div>';
+					$result.= '<div class="panel-heading">' . $icon . $header['title'] . '</div>';
 				} else {
-					$result.= '<div class="panel-heading">' . i18n(null, $header) . '</div>';
+					$result.= '<div class="panel-heading">' . $header . '</div>';
 				}
 			}
 			$result.= '<div class="panel-body">' . $value . '</div>';
 			if ($footer != null) {
 				if (is_array($footer)) {
 					$icon = !empty($footer['icon']) ? (\HTML::icon($footer['icon']) . ' ') : null;
-					$result.= '<div class="panel-footer">' . $icon . i18n(null, $footer['title']) . '</div>';
+					$result.= '<div class="panel-footer">' . $icon . $footer['title'] . '</div>';
 				} else {
-					$result.= '<div class="panel-footer">' . i18n(null, $footer) . '</div>';
+					$result.= '<div class="panel-footer">' . $footer . '</div>';
 				}
 			}
 		$result.= '</div>';
