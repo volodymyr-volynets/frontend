@@ -657,4 +657,22 @@ TTT;
 	public static function pills(array $options = []) : string {
 		Throw new Exception('Pills?');
 	}
+
+	/**
+	 * @see \HTML::card();
+	 */
+	public static function card(array $options = []) : string {
+		$result = '<div class="card">';
+			$result.= '<div class="card-body">';
+				if (!empty($options['title'])) {
+					$result.= '<h5 class="card-title">' . $options['title'] . '</h5>';
+				}
+				$result.= '<p class="card-text">' . $options['value'] . '</p>';
+				if (!empty($options['bottom'])) {
+					$result.= '<p class="card-text"><small class="text-muted">' . $options['bottom'] . '</small></p>';
+				}
+			$result.= '</div>';
+		$result.= '</div>';
+		return $result;
+	}
 }
