@@ -438,5 +438,15 @@ Numbers.Format = {
 			}
 		}
 		return number;
+	},
+
+	/**
+	 * First name
+	 *
+	 * @param string name
+	 * @returns string
+	 */
+	firstName: function(name) {
+		return name.trim().split(' ')[0];
 	}
 };
