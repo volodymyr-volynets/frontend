@@ -1,11 +1,11 @@
 /* js fixes for bootstrap */
 $(document).ready(function() {
 	if ($('.navbar-header').length) {
-		setTimeout(function(){ bootstrap_fix_navbar(); }, 10);
-		bootstrap_fix_navbar_submenus();
+		setTimeout(function(){ bootstrapFixNavbar(); }, 10);
+		bootstrapFixNavbarSubmenus();
 		// resize handler
 		$(window).resize(function() {
-			bootstrap_fix_navbar();
+			bootstrapFixNavbar();
 		});
 		// fix hover
 		$('.navbar-nav-li-level1').hover(function() {
@@ -20,7 +20,7 @@ $(document).ready(function() {
 /**
  * Fixes for navigation - submenus
  */
-function bootstrap_fix_navbar_submenus() {
+function bootstrapFixNavbarSubmenus() {
 	$('.dropdown-submenu').mouseover(function() {
 		var width = $(this).width();
 		if (width == 0) {
@@ -37,7 +37,7 @@ function bootstrap_fix_navbar_submenus() {
 /**
  * Fixes for navigation - in general
  */
-function bootstrap_fix_navbar() {
+function bootstrapFixNavbar() {
 	// we need to check if navbar-toggle button is visible
 	if ($('.navbar-toggle').is(':visible')) {
 		$('li.navbar-nav-others').css('display', 'none');
@@ -136,11 +136,6 @@ Numbers.Menu = {
 				success: function (data) {
 					if (data.success) {
 						$('#menu_item_id_' + data.item).html(data.data);
-						if (data.avatar) {
-							$('#menu_item_id_' + data.item + '_avatar').html('<img src="' + data.avatar + '" class="navbar-menu-item-avatar-img" width="25" height="25" />');
-							$('#menu_item_id_' + data.item + '_avatar').show();
-							$('#menu_item_id_' + data.item + '_icon').hide();
-						}
 					}
 				}
 			});

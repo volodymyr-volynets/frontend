@@ -309,19 +309,16 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 		} else {
 			$name = $item['name'];
 		}
-		// wrap name into span
-		$name = '<span id="menu_item_id_' . $item['menu_id'] . '">' . $name . '</span>';
 		// name generator
 		if (!empty($item['name_generator'])) {
 			\Layout::onLoad('Numbers.Menu.name_generator[' . $item['menu_id'] . '] = "' . $item['name_generator'] . '";');
 		}
 		// add icon
 		if (!empty($item['icon'])) {
-			$name = \HTML::icon(['type' => $item['icon'], 'id' => 'menu_item_id_' . $item['menu_id'] . '_icon']) . ' ' . $name;
+			$name = \HTML::icon(['type' => $item['icon']]) . ' ' . $name;
 		}
 		//'data-toggle' => 'dropdown'
-		$avatar = '<div id="menu_item_id_' . $item['menu_id'] . '_avatar" class="navbar-menu-item-avatar" style="display: none;"></div>';
-		$result = \HTML::a(['href' => $item['url'] ?? 'javascript:void(0);', 'class' => 'dropdown-toggle', 'value' => $avatar . $name . $caret]);
+		$result = \HTML::a(['href' => $item['url'] ?? 'javascript:void(0);', 'id' => 'menu_item_id_' . $item['menu_id'], 'class' => 'dropdown-toggle', 'value' => $name . $caret]);
 		$result.= '<ul class="dropdown-menu">';
 			// sort
 			foreach ($item['options'] as $k2 => $v2) {
@@ -348,8 +345,6 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 					} else {
 						// create name
 						$name = $v2['name'];
-						// wrap name into span
-						$name = '<span id="menu_item_id_' . $v2['menu_id'] . '">' . $name . '</span>';
 						// name generator
 						if (!empty($v2['name_generator'])) {
 							\Layout::onLoad('Numbers.Menu.name_generator[' . $v2['menu_id'] . '] = "' . $v2['name_generator'] . '";');
@@ -359,7 +354,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 							$name = \HTML::icon(['type' => $v2['icon']]) . ' ' . $name;
 						}
 						if (!empty($v2['url'])) {
-							$result.= \HTML::a(['href' => $v2['url'], 'title' => $v2['title'] ?? null, 'value' => $name]);
+							$result.= \HTML::a(['href' => $v2['url'], 'id' => 'menu_item_id_' . $v2['menu_id'], 'title' => $v2['title'] ?? null, 'value' => $name]);
 						} else {
 							$result.= \HTML::div(['title' => $v2['title'] ?? null, 'value' => $name]);
 						}
@@ -458,7 +453,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 										// create name
 										$name = i18n(null, $v['name']);
 										// wrap name into span
-										$name = '<span id="menu_item_id_' . $v['menu_id'] . '">' . $name . '</span>';
+										//$name = '<span id="menu_item_id_' . $v['menu_id'] . '">' . $name . '</span>';
 										// name generator
 										if (!empty($v['name_generator'])) {
 											\Layout::onLoad('Numbers.Menu.name_generator[' . $v['menu_id'] . '] = "' . $v['name_generator'] . '";');
@@ -467,7 +462,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 											$name = \HTML::icon(['type' => $v['icon']]) . ' ' . $name;
 										}
 										if (!empty($v['url'])) {
-											$result.= \HTML::a(['href' => $v['url'], 'value' => $name]);
+											$result.= \HTML::a(['href' => $v['url'], 'id' => 'menu_item_id_' . $v['menu_id'], 'value' => $name]);
 										} else {
 											$result.= $name;
 										}
