@@ -157,6 +157,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 		$grid_columns = \Application::get('flag.numbers.framework.html.options.grid_columns') ?? 12;
 		$rows = isset($options['options']) ? $options['options'] : [];
 		unset($options['options']);
+		$options['cell_class'] = rtrim($options['cell_class'] ?? 'col-sm-', '-') . '-';
 		$result = '';
 		foreach ($rows as $k => $v) {
 			// we need to determine field sizes
@@ -201,7 +202,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 							break;
 						}
 						$current_grid_columns+= $field_new_sizes['data'][$index];
-						$v[$k2][$k3]['options']['field_size'] = 'col-sm-' . $field_new_sizes['data'][$index]; // a must
+						$v[$k2][$k3]['options']['field_size'] = $options['cell_class'] . $field_new_sizes['data'][$index]; // a must
 						$index++;
 					}
 				}
@@ -209,7 +210,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 					$v['__empty_column_fill__']['__empty_column_fill__'] = [
 						'value' => ' ',
 						'options' => [
-							'field_size' => 'col-sm-' . ($grid_columns - $current_grid_columns) // a must
+							'field_size' => $options['cell_class'] . ($grid_columns - $current_grid_columns) // a must
 						]
 					];
 					$field_new_sizes['data'][$index] = $grid_columns - $current_grid_columns;
@@ -236,7 +237,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 					if (isset($v3['options']['style'])) {
 						$style = ' style="' . $v3['options']['style'] . '"';
 					}
-					$field_size = $v3['options']['field_size'] ?? ('col-sm-' . $field_new_sizes['data'][$index]);
+					$field_size = $v3['options']['field_size'] ?? ($options['cell_class'] . $field_new_sizes['data'][$index]);
 					$class = $v3['class'] ?? '';
 					$result.= '<div class="' . $field_size . ' form-group ' . $error_class . ' ' . $class . '"' . $style . '>';
 						// label

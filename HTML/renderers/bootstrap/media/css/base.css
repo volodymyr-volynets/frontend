@@ -208,8 +208,8 @@ hr.small {
 }
 
 /* font awesome fixes */
-.fa {
-	min-width: 1em;
+.fas, .far {
+	min-width: 14px;
 	text-align:center;
 }
 

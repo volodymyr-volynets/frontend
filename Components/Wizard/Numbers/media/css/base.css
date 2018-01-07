@@ -17,7 +17,7 @@
 	margin-top: -16px;
 	margin-left: -16px;
 	border-radius: 50%;
-	z-index: 32000;
+	z-index: 200;
 }
 .numbers_frontend_components_wizard_numbers_base_start, .numbers_frontend_components_wizard_numbers_base_end {
 	position: absolute;
@@ -25,7 +25,7 @@
 	height: 10px;
 	margin-top: -5px;
 	width: 50%;
-	z-index: 31000;
+	z-index: 100;
 }
 .numbers_frontend_components_wizard_numbers_base_start {
 	left: 0;
@@ -48,7 +48,7 @@
 	margin-top: -8px;
 	margin-left: -8px;
 	border-radius: 50%;
-	z-index: 32001;
+	z-index: 201;
 	background: white !important;
 }
 @media screen and (max-width:768px) {

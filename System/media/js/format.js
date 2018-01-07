@@ -447,6 +447,11 @@ Numbers.Format = {
 	 * @returns string
 	 */
 	firstName: function(name) {
-		return name.trim().split(' ')[0];
+		var result = name.trim().split(' ');
+		if (result.length <= 2) {
+			return result[0];
+		} else {
+			return result[0] + ' ' + result[1];
+		}
 	}
 };

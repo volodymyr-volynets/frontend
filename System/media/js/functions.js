@@ -317,3 +317,26 @@ var i18n_if = function(text, translate) {
 function addslashes(text) {
 	return text.replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0');
 }
+
+/**
+ * Get cookie value
+ *
+ * @param string name
+ * @returns mixed
+ */
+function cookie_get(name) {
+	var value = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+	return value ? value[2] : null;
+}
+
+/**
+ * Set cookie
+ *
+ * @param string name
+ * @param mixed value
+ */
+function cookie_set(name, value) {
+	var expires = new Date();
+	expires.setTime(expires.getTime() + (1 * 24 * 60 * 60 * 1000));
+	document.cookie = name + '=' + value + ';expires=' + expires.toUTCString();
+}
