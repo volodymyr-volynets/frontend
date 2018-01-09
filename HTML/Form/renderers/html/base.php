@@ -192,6 +192,19 @@ class Base {
 							'tab_options' => $tab_options
 						]);
 					}
+				} else if ($v['type'] == 'modal') { // modal windows
+					// reset tabs
+					$this->object->current_tab = [];
+					// render container
+					$temp = $this->renderContainer($k);
+					if ($temp['success']) {
+						$result[$k]['html'] = \HTML::modal([
+							'id' => 'form_modal_' . $k . '_dialog',
+							'class' => '',
+							'title' => isset($v['label_name']) ? i18n(null, $v['label_name']) : '',
+							'body' => $temp['data']['html'],
+						]);
+					}
 				}
 			}
 		}
