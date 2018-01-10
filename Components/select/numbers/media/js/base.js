@@ -220,7 +220,7 @@ var NumbersSelect = function (options) {
 				this.elem.options[this.data[id].id].selected = true;
 				tr.className+= ' numbers_select_row_selected';
 			}
-			this.render_value();
+			this.renderValue();
 		} else {
 			// we need to remove checked from previously selected rows
 			if (this.elem.selectedIndex != -1) {
@@ -235,7 +235,7 @@ var NumbersSelect = function (options) {
 			this.data[id].selected = true;
 			this.elem.selectedIndex = this.data[id].id;
 			tr.className+= ' numbers_select_row_selected';
-			this.render_value();
+			this.renderValue();
 			this.show();
 		}
 		// we need to trigger onchange event
@@ -263,7 +263,7 @@ var NumbersSelect = function (options) {
 				this.data[i].selected = deselect;
 			}
 		}
-		this.render_value();
+		this.renderValue();
 		// checkmarks
 		var trs = document.getElementsByClassName(this.table_tr_class);
 		for (var i = 0; i < trs.length; i++) {
@@ -278,7 +278,7 @@ var NumbersSelect = function (options) {
 	/**
 	 * Render value
 	 */
-	result.render_value = function () {
+	result.renderValue = function () {
 		var html = '';
 		if (this.elem.multiple) {
 			// we need to refresh data
@@ -295,6 +295,9 @@ var NumbersSelect = function (options) {
 					html = '';
 					if (this.data[i].icon_class) {
 						html+= '<i class="numbers_select_option_table_icon ' + this.data[i].icon_class + '"></i> ';
+					}
+					if (this.data[i].photo_id) {
+						html+= '<img class="navbar-menu-item-avatar-img" src="' + this.data[i].photo_id + '" width="24" height="24" /> ';
 					}
 					if (this.color_picker && this.data[i].value != '') {
 						html+= '<span class="numbers_select_option_table_color" style="background-color:#' + this.data[i].value + ';">&nbsp;</span> ';
@@ -316,6 +319,10 @@ var NumbersSelect = function (options) {
 			var icon_class = this.elem.options[this.elem.selectedIndex].getAttribute('icon_class');
 			if (icon_class) {
 				html+= '<i class="' + icon_class + '"></i> ';
+			}
+			var photo_id = this.elem.options[this.elem.selectedIndex].getAttribute('photo_id');
+			if (photo_id) {
+				html+= '<img class="navbar-menu-item-avatar-img" src="' + photo_id + '" width="24" height="24" /> ';
 			}
 			if (this.color_picker && this.elem.options[this.elem.selectedIndex].value != '') {
 				html+= '<span class="numbers_select_option_table_color" style="background-color:#' + this.elem.options[this.elem.selectedIndex].value + ';">&nbsp;</span> ';
@@ -399,7 +406,7 @@ var NumbersSelect = function (options) {
 				this.flag_skeleton_rendered = false;
 			}
 		} else {
-			this.render_value();
+			this.renderValue();
 		}
 		this.div_elem.style.display = 'none';
 		this.replacement_div_elem.blur();
@@ -426,6 +433,7 @@ var NumbersSelect = function (options) {
 				level: 0,
 				title: '',
 				icon_class: '',
+				photo_id: '',
 				text_right: ''
 			};
 		}
@@ -446,6 +454,7 @@ var NumbersSelect = function (options) {
 				level: level,
 				title: this.elem.options[i].getAttribute('title'),
 				icon_class: this.elem.options[i].getAttribute('icon_class'),
+				photo_id: this.elem.options[i].getAttribute('photo_id'),
 				text_right: this.elem.options[i].getAttribute('text_right')
 			};
 			// we need to adjust level for optgroups
@@ -467,6 +476,7 @@ var NumbersSelect = function (options) {
 							level: 0,
 							title: '',
 							icon_class: '',
+							photo_id: '',
 							text_right: ''
 						};
 						hash[optgroup_label] = index;
@@ -641,6 +651,9 @@ var NumbersSelect = function (options) {
 						if (this.data[i].icon_class) {
 							html+= '<i class="numbers_select_option_table_icon ' + this.data[i].icon_class + '"></i> ';
 						}
+						if (this.data[i].photo_id) {
+							html+= '<img class="navbar-menu-item-avatar-img" src="' + this.data[i].photo_id + '" width="24" height="24" /> ';
+						}
 						if (this.color_picker && this.data[i].value != '') {
 							html+= '<span class="numbers_select_option_table_color" style="background-color:#' + this.data[i].value + ';">&nbsp;</span> ';
 						}
@@ -670,7 +683,7 @@ var NumbersSelect = function (options) {
 	};
 
 	// we need to set a variable in global scope
-	result.render_value();
+	result.renderValue();
 	window[result.var_id] = result;
 };
 
