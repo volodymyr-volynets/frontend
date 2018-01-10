@@ -262,12 +262,6 @@ div.placeholder, span.placeholder {
 	color: #a94442;
 	background-color: mistyrose;
 }
-.emoji-icon {
-	font-size: 2em;
-	float: left;
-	cursor: hand;
-	cursor: pointer;
-}
 
 /* rotate */
 .rotate90 {
