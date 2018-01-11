@@ -189,4 +189,14 @@ class Colors extends \Object\Data {
 			return '#000000';
 		}
 	}
+
+	/**
+	 * Color from string
+	 *
+	 * @param string $string
+	 * @return string
+	 */
+	public static function colorFromString(string $string) : string {
+		return '#' . substr(md5($string), 0, 6);
+	}
 }

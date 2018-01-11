@@ -1375,6 +1375,9 @@ render_custom_renderer:
 						$result_options['title'] = ($result_options['title'] ?? '') . ' ' . i18n(null, 'Shortcut Key: ') . $accesskey[2];
 					}
 				} else if (in_array($element_method, ['\HTML::div', '\HTML::span'])) {
+					if (!isset($result_options['value'])) {
+						$result_options['value'] = $value;
+					}
 					if (!empty($result_options['i18n'])) {
 						$result_options['value'] = i18n($result_options['i18n'] ?? null, $result_options['value'] ?? null);
 						$flag_translated = true;
