@@ -12,6 +12,7 @@ var NumbersSelect = function (options) {
 	var result = new Object();
 	result.id = options.id;
 	result.elem = document.getElementById(options.id);
+	if (!result.elem) return;
 	result.searchable = options.searchable ? options.searchable : (result.elem.getAttribute('data-searchable') == 'searchable' ? true : false);
 	result.preset = options.preset ? options.preset : (result.elem.getAttribute('data-preset') == 'preset' ? true : false);
 	if (result.preset) {
