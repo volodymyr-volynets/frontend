@@ -140,58 +140,7 @@ class Base {
 						}
 					}
 				} else if ($v['type'] == 'tabs') { // tabs
-					$tab_id = "form_tabs_{$this->object->form_link}_{$k}";
-					$tab_header = [];
-					$tab_values = [];
-					$tab_options = [];
-					$have_tabs = false;
-					// sort rows
-					array_key_sort($v['rows'], ['order' => SORT_ASC]);
-					foreach ($v['rows'] as $k2 => $v2) {
-						$this->object->current_tab[] = "{$tab_id}_{$k2}";
-						$labels = '';
-						foreach (['records', 'danger', 'warning', 'success', 'info'] as $v78) {
-							$labels.= \HTML::label2(['type' => ($v78 == 'records' ? 'primary' : $v78), 'style' => 'display: none;', 'value' => 0, 'id' => implode('__', $this->object->current_tab) . '__' . $v78]);
-						}
-						$tab_header[$k2] = i18n(null, $v2['options']['label_name']) . $labels;
-						$tab_values[$k2] = '';
-						// handling override_tabs method
-						if (!empty($this->object->wrapper_methods['overrideTabs']['main'])) {
-							$tab_options[$k2] = call_user_func_array($this->object->wrapper_methods['overrideTabs']['main'], [& $this->object, & $v2, & $k2, & $this->object->values]);
-							if (empty($tab_options[$k2]['hidden'])) {
-								$have_tabs = true;
-							}
-						} else {
-							$have_tabs = true;
-						}
-						// tab index for not hidden tabs
-						if (empty($tab_options[$k2]['hidden'])) {
-							$tab_options[$k2]['tabindex'] = $this->object->tabindex;
-							$this->object->tabindex++;
-						}
-						// render containers
-						array_key_sort($v2['elements'], ['order' => SORT_ASC]);
-						foreach ($v2['elements'] as $k3 => $v3) {
-							$temp = $this->renderContainer($v3['options']['container']);
-							if ($temp['success']) {
-								$tab_values[$k2].= $temp['data']['html'];
-							}
-						}
-						// remove last element from an array
-						array_pop($this->object->current_tab);
-					}
-					// if we do not have tabs
-					if ($have_tabs) {
-						$class = ['form-tabs'];
-						if (!empty($v['options']['class'])) $class[] = $v['options']['class'];
-						$result[$k]['html'] = \HTML::tabs([
-							'id' => $tab_id,
-							'class' => implode(' ', $class),
-							'header' => $tab_header,
-							'options' => $tab_values,
-							'tab_options' => $tab_options
-						]);
-					}
+					$this->renderTabs($k, $v, $result);
 				} else if ($v['type'] == 'modal') { // modal windows
 					// reset tabs
 					$this->object->current_tab = [];
@@ -311,6 +260,68 @@ class Base {
 			$result = \HTML::segment($temp);
 		}
 		return $result;
+	}
+
+	/**
+	 * Render tabs
+	 *
+	 * @param string $k
+	 * @param array $v
+	 * @param array $result
+	 */
+	private function renderTabs($k, $v, & $result) {
+		$tab_id = "form_tabs_{$this->object->form_link}_{$k}";
+		$tab_header = [];
+		$tab_values = [];
+		$tab_options = [];
+		$have_tabs = false;
+		// sort rows
+		array_key_sort($v['rows'], ['order' => SORT_ASC]);
+		foreach ($v['rows'] as $k2 => $v2) {
+			$this->object->current_tab[] = "{$tab_id}_{$k2}";
+			$labels = '';
+			foreach (['records', 'danger', 'warning', 'success', 'info'] as $v78) {
+				$labels.= \HTML::label2(['type' => ($v78 == 'records' ? 'primary' : $v78), 'style' => 'display: none;', 'value' => 0, 'id' => implode('__', $this->object->current_tab) . '__' . $v78]);
+			}
+			$tab_header[$k2] = i18n(null, $v2['options']['label_name']) . $labels;
+			$tab_values[$k2] = '';
+			// handling override_tabs method
+			if (!empty($this->object->wrapper_methods['overrideTabs']['main'])) {
+				$tab_options[$k2] = call_user_func_array($this->object->wrapper_methods['overrideTabs']['main'], [& $this->object, & $v2, & $k2, & $this->object->values]);
+				if (empty($tab_options[$k2]['hidden'])) {
+					$have_tabs = true;
+				}
+			} else {
+				$have_tabs = true;
+			}
+			// tab index for not hidden tabs
+			if (empty($tab_options[$k2]['hidden'])) {
+				$tab_options[$k2]['tabindex'] = $this->object->tabindex;
+				$this->object->tabindex++;
+			}
+			// render containers
+			array_key_sort($v2['elements'], ['order' => SORT_ASC]);
+			foreach ($v2['elements'] as $k3 => $v3) {
+				$temp = $this->renderContainer($v3['options']['container']);
+				if ($temp['success']) {
+					$tab_values[$k2].= $temp['data']['html'];
+				}
+			}
+			// remove last element from an array
+			array_pop($this->object->current_tab);
+		}
+		// if we do not have tabs
+		if ($have_tabs) {
+			$class = ['form-tabs'];
+			if (!empty($v['options']['class'])) $class[] = $v['options']['class'];
+			$result[$k]['html'] = \HTML::tabs([
+				'id' => $tab_id,
+				'class' => implode(' ', $class),
+				'header' => $tab_header,
+				'options' => $tab_values,
+				'tab_options' => $tab_options
+			]);
+		}
 	}
 
 	/**
@@ -562,6 +573,14 @@ render_custom_renderer:
 		// if its details we need to render it differently
 		if (($this->object->data[$container_link]['type'] ?? '') == 'details') {
 			return $this->renderContainerTypeDetails($container_link);
+		}
+		// render tabs
+		if (($this->object->data[$container_link]['type'] ?? '') == 'tabs') { // tabs
+			$temp_result = [];
+			$this->renderTabs($container_link, $this->object->data[$container_link], $temp_result);
+			$result['data']['html'].= $temp_result[$container_link]['html'];
+			$result['success'] = true;
+			return $result;
 		}
 		// sorting rows
 		if (!isset($this->object->data[$container_link]['rows'])) {
@@ -1258,8 +1277,9 @@ render_custom_renderer:
 				}
 				// call override method
 				if (!empty($this->object->wrapper_methods['processOptionsModels']['main'])) {
+					//print_r2($options['options']['__detail_values']);
 					$model = $this->object->wrapper_methods['processOptionsModels']['main'][0];
-					$model->{$this->object->wrapper_methods['processOptionsModels']['main'][1]}($this->object, $options['options']['field_name'], $options['options']['details_key'] ?? null, $options['options']['details_parent_key'] ?? null, $result_options['options_params']);
+					$model->{$this->object->wrapper_methods['processOptionsModels']['main'][1]}($this->object, $options['options']['field_name'], $options['options']['details_key'] ?? null, $options['options']['details_parent_key'] ?? null, $result_options['options_params'], $neighbouring_values, $options['options']['__detail_values'] ?? []);
 				}
 				// multiple column
 				if (!empty($options['options']['multiple_column']) && is_array($value)) {
