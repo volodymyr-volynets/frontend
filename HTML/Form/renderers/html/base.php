@@ -1366,7 +1366,7 @@ render_custom_renderer:
 				$flag_translated = false;
 				if (in_array($element_method, ['\HTML::a', '\HTML::submit', '\HTML::button', '\HTML::button2', '\HTML::separator'])) {
 					// translate value
-					$result_options['value'] = i18n($result_options['i18n'] ?? null, $result_options['value'] ?? null);
+					$result_options['value'] = i18n($result_options['i18n'] ?? null, $result_options['value'] ?? null, ['skip_i_symbol' => true]);
 					// process confirm_message
 					$result_options['onclick'] = $result_options['onclick'] ?? '';
 					if (!empty($result_options['confirm_message'])) {
