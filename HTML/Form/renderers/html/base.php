@@ -1277,7 +1277,6 @@ render_custom_renderer:
 				}
 				// call override method
 				if (!empty($this->object->wrapper_methods['processOptionsModels']['main'])) {
-					//print_r2($options['options']['__detail_values']);
 					$model = $this->object->wrapper_methods['processOptionsModels']['main'][0];
 					$model->{$this->object->wrapper_methods['processOptionsModels']['main'][1]}($this->object, $options['options']['field_name'], $options['options']['details_key'] ?? null, $options['options']['details_parent_key'] ?? null, $result_options['options_params'], $neighbouring_values, $options['options']['__detail_values'] ?? []);
 				}
