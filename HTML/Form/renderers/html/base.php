@@ -107,6 +107,12 @@ class Base {
 			if ($this->object->collection_object->primary_model->module ?? false) {
 				$params['__module_id'] = $params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
 			}
+			// bypass variables
+			if (!empty($this->object->options['bypass_hidden_from_input'])) {
+				foreach ($this->object->options['bypass_hidden_from_input'] as $v) {
+					$params[$v] = $this->object->options['input'][$v] ?? '';
+				}
+			}
 			$this->object->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => 32000, 'icon' => 'fas fa-sync', 'href' => $mvc['full'] . '?' . http_build_query2($params), 'internal_action' => true];
 			// override
 			if (is_array($this->object->options['actions']['refresh'])) {
@@ -186,9 +192,9 @@ class Base {
 			$result = '<div class="form_message_container">' . $messages . '</div>' . $result;
 		}
 		// couple hidden fields
-		$result.= \HTML::HIDDEN(['name' => '__form_link', 'value' => $this->object->form_link]);
-		$result.= \HTML::HIDDEN(['name' => '__form_values_loaded', 'value' => $this->object->values_loaded]);
-		$result.= \HTML::HIDDEN(['name' => '__form_onchange_field_values_key', 'value' => '']);
+		$result.= \HTML::hidden(['name' => '__form_link', 'value' => $this->object->form_link]);
+		$result.= \HTML::hidden(['name' => '__form_values_loaded', 'value' => $this->object->values_loaded]);
+		$result.= \HTML::hidden(['name' => '__form_onchange_field_values_key', 'value' => '']);
 		// form data in onload
 		$js_data = [
 			'submitted' => $this->object->submitted,
@@ -211,12 +217,12 @@ class Base {
 		// bypass values
 		if (!empty($this->object->options['bypass_hidden_values'])) {
 			foreach ($this->object->options['bypass_hidden_values'] as $k => $v) {
-				$result.= \HTML::HIDDEN(['name' => $k, 'value' => $v]);
+				$result.= \HTML::hidden(['name' => $k, 'value' => $v]);
 			}
 		}
 		if (!empty($this->object->options['bypass_hidden_from_input'])) {
 			foreach ($this->object->options['bypass_hidden_from_input'] as $v) {
-				$result.= \HTML::HIDDEN(['name' => $v, 'value' => $this->object->options['input'][$v] ?? '']);
+				$result.= \HTML::hidden(['name' => $v, 'value' => $this->object->options['input'][$v] ?? '']);
 			}
 		}
 		// js to update counters in tabs
@@ -228,8 +234,8 @@ class Base {
 		// if we have form
 		if (empty($this->object->options['skip_form'])) {
 			$mvc = \Application::get('mvc');
-			$result = \HTML::form([
-				'action' => $mvc['full'],
+			$result = \HTML::a(['id' => "form_{$this->object->form_link}_form_anchor", 'value' => null]) . \HTML::form([
+				'action' => $mvc['full'] . "#form_{$this->object->form_link}_form_anchor",
 				'name' => "form_{$this->object->form_link}_form",
 				'id' => "form_{$this->object->form_link}_form",
 				'value' => $result,

@@ -861,4 +861,18 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 		unset($options['value']);
 		return '<b ' . self::generateAttributes($options, 'b') . '>' . $value . '</b>';
 	}
+
+	/**
+	 * Audio
+	 *
+	 * @param array $options
+	 * @return string
+	 */
+	public static function audio(array $options = []) : string {
+		$result = '<audio controls>';
+			$result.= '<source src="' . $options['src'] . '" type="' . $options['mime'] . '">';
+			$result.= 'Your browser does not support the audio element.';
+		$result.= '</audio>';
+		return $result;
+	}
 }

@@ -22,6 +22,7 @@
 .numbers_frontend_form_list_header_inner td {
 	padding-left: 2px;
 	padding-right: 2px;
+	vertical-align: top;
 }
 .control-label {
 	display: block;
