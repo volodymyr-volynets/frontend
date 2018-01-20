@@ -113,7 +113,7 @@ class Base {
 					$params[$v] = $this->object->options['input'][$v] ?? '';
 				}
 			}
-			$this->object->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => 32000, 'icon' => 'fas fa-sync', 'href' => $mvc['full'] . '?' . http_build_query2($params), 'internal_action' => true];
+			$this->object->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => 32000, 'icon' => 'fas fa-sync', 'href' => $mvc['full'] . '?' . http_build_query2($params) . "#form_{$this->object->form_link}_form", 'internal_action' => true];
 			// override
 			if (is_array($this->object->options['actions']['refresh'])) {
 				$this->object->actions['form_refresh'] = array_merge($this->object->actions['form_refresh'], $this->object->options['actions']['refresh']);
@@ -480,7 +480,7 @@ class Base {
 						}
 						// custom renderer
 						if (!empty($v2['options']['custom_renderer'])) {
-							$method = \Factory::method($v2['options']['custom_renderer'], null, true);
+							$method = \Factory::method($v2['options']['custom_renderer'], null, true, [['skip_processing' => true]]);
 							$value = call_user_func_array($method, [& $this->object, & $v2, & $value, & $v0]);
 						} else {
 							// process options
