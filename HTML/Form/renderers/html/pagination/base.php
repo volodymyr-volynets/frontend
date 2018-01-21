@@ -53,7 +53,7 @@ class Base {
 				}
 				$displaying.= '<td>' . \HTML::button2(['type' => 'default', 'title' => $preview_title, 'value' => \HTML::icon(['type' => $preview_icon]), 'onclick' => "Numbers.Form.setValue(this.form, '__preview', {$preview_value}); Numbers.Form.triggerSubmit(this.form, '__submit_button');"]) . '</td>';
 				$displaying.= '<td>&nbsp;</td>';
-				$displaying.= '<td><div style="width: 80px;">' . \HTML::select(['id' => 'page_sizes_' . $type, 'title' => i18n(null, 'Displaying rows'), 'options' => \Factory::model('\Numbers\Framework\Object\Form\Model\PageSizes', true)->options(['i18n' => 'skip_sorting']), 'value' => $options['limit'], 'no_choose' => true, 'onchange' => "Numbers.Form.setValue(this.form, '__offset', 0); Numbers.Form.setValue(this.form, '__limit', this.value); Numbers.Form.triggerSubmit(this.form, '__submit_button');"]) . '</div></td>';
+				$displaying.= '<td><div style="width: 80px;">' . \HTML::select(['id' => $options['form_link'] . '_page_sizes_' . $type, 'title' => i18n(null, 'Displaying rows'), 'options' => \Factory::model('\Numbers\Framework\Object\Form\Model\PageSizes', true)->options(['i18n' => 'skip_sorting']), 'value' => $options['limit'], 'no_choose' => true, 'onchange' => "Numbers.Form.setValue(this.form, '__offset', 0); Numbers.Form.setValue(this.form, '__limit', this.value); Numbers.Form.triggerSubmit(this.form, '__submit_button');"]) . '</div></td>';
 			$displaying.= '</tr>';
 		$displaying.= '</table>';
 		// navigation
@@ -77,7 +77,7 @@ class Base {
 			}
 			$navigation2 = i18n(null, 'Page') . ': ';
 			$previous = (($current_page - 1) * $options['limit']);
-			$navigation2.= '<div style="width: 100px; display: inline-block;">' . \HTML::select(['id' => 'pages_' . $type, 'options' => $temp, 'value' => $options['offset'], 'no_choose' => true, 'onchange' => "Numbers.Form.setValue(this.form, '__offset', this.value); Numbers.Form.triggerSubmit(this.form, '__submit_button');"]) . '</div>';
+			$navigation2.= '<div style="width: 100px; display: inline-block;">' . \HTML::select(['id' => $options['form_link'] . '_pages_' . $type, 'options' => $temp, 'value' => $options['offset'], 'no_choose' => true, 'onchange' => "Numbers.Form.setValue(this.form, '__offset', this.value); Numbers.Form.triggerSubmit(this.form, '__submit_button');"]) . '</div>';
 			$navigation[] = $navigation2;
 			// checking for next and last pages
 			$flag_next_row_exists = ($pages - $current_page - 2 > 0) ? true : false;

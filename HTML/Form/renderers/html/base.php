@@ -376,6 +376,7 @@ class Base {
 		// render pagination
 		if (!empty($options['pagination_top'])) {
 			$data['pagination_type'] = 'top';
+			$data['form_link'] = $this->object->form_link;
 			$result['data']['html'].= \Factory::model($options['pagination_top'])->render($data);
 		}
 		// render body
@@ -383,6 +384,7 @@ class Base {
 		// render pagination
 		if (!empty($options['pagination_bottom'])) {
 			$data['pagination_type'] = 'bottom';
+			$data['form_link'] = $this->object->form_link;
 			$result['data']['html'].= \Factory::model($options['pagination_bottom'])->render($data);
 		}
 		$result['success'] = true;
