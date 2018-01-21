@@ -192,6 +192,8 @@ class Base {
 			$result = '<div class="form_message_container">' . $messages . '</div>' . $result;
 		}
 		// couple hidden fields
+		$result.= \HTML::hidden(['name' => '__collection_link', 'value' => $this->object->options['collection_link'] ?? '']);
+		$result.= \HTML::hidden(['name' => '__collection_screen_link', 'value' => $this->object->options['collection_screen_link'] ?? '']);
 		$result.= \HTML::hidden(['name' => '__form_link', 'value' => $this->object->form_link]);
 		$result.= \HTML::hidden(['name' => '__form_values_loaded', 'value' => $this->object->values_loaded]);
 		$result.= \HTML::hidden(['name' => '__form_onchange_field_values_key', 'value' => '']);

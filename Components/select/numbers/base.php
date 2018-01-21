@@ -10,8 +10,8 @@ class Base implements \Numbers\Frontend\Components\Select\Interface2\Base {
 		// we do not process readonly selects
 		if (empty($options['readonly'])) {
 			// include js & css files
-			\Layout::addJs('/numbers/media_submodules/Numbers_Frontend_Components_Select_Numbers_Media_JS_Base.js', 10000);
-			\Layout::addCss('/numbers/media_submodules/Numbers_Frontend_Components_Select_Numbers_Media_CSS_Base.css', 10000);
+			\Layout::addJs('/numbers/media_submodules/Numbers_Frontend_Components_Select_Numbers_Media_JS_Base.js', -10000);
+			\Layout::addCss('/numbers/media_submodules/Numbers_Frontend_Components_Select_Numbers_Media_CSS_Base.css', -10000);
 			// font awesome icons
 			\Library::add('FontAwesome');
 			// id with name
