@@ -43,6 +43,13 @@ class Base {
 		}
 		// load mask
 		\Numbers\Frontend\Media\Libraries\LoadMask\Base::add();
+		// acl on actions
+		foreach ($this->object->options['actions'] as $k => $v) {
+			if (!is_array($v)) continue;
+			if (isset($v['action_code']) && !\Application::$controller->can($v['action_code'], 'Edit')) {
+				$this->object->options['actions'][$k] = false;
+			}
+		}
 		// new record action
 		$mvc = \Application::get('mvc');
 		if (!empty($this->object->options['actions']['new']) && \Application::$controller->can('Record_New', 'Edit')) {
@@ -154,7 +161,7 @@ class Base {
 					$temp = $this->renderContainer($k);
 					if ($temp['success']) {
 						$result[$k]['html'] = \HTML::modal([
-							'id' => 'form_modal_' . $k . '_dialog',
+							'id' => "form_{$this->object->form_link}_modal_{$k}_dialog",
 							'class' => '',
 							'title' => isset($v['label_name']) ? i18n(null, $v['label_name']) : '',
 							'body' => $temp['data']['html'],
@@ -215,7 +222,7 @@ class Base {
 		if (!$this->object->hasErrors()) {
 			$js.= "Numbers.Form.listFilterSortToggle('#form_{$this->object->form_link}_form', true);\n";
 		}
-		\Layout::onload($js);
+		\Layout::onLoad($js);
 		// bypass values
 		if (!empty($this->object->options['bypass_hidden_values'])) {
 			foreach ($this->object->options['bypass_hidden_values'] as $k => $v) {
