@@ -120,7 +120,7 @@ class Base {
 					$params[$v] = $this->object->options['input'][$v] ?? '';
 				}
 			}
-			$this->object->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => 32000, 'icon' => 'fas fa-sync', 'href' => $mvc['full'] . '?' . http_build_query2($params) . "#form_{$this->object->form_link}_form", 'internal_action' => true];
+			$this->object->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => 32000, 'icon' => 'fas fa-sync', 'href' => $mvc['full'] . '?' . http_build_query2($params) . "#form_{$this->object->form_link}_form_anchor", 'internal_action' => true];
 			// override
 			if (is_array($this->object->options['actions']['refresh'])) {
 				$this->object->actions['form_refresh'] = array_merge($this->object->actions['form_refresh'], $this->object->options['actions']['refresh']);
@@ -243,7 +243,7 @@ class Base {
 		// if we have form
 		if (empty($this->object->options['skip_form'])) {
 			$mvc = \Application::get('mvc');
-			$result = \HTML::a(['id' => "form_{$this->object->form_link}_form_anchor", 'value' => null]) . \HTML::form([
+			$result = \HTML::form([
 				'action' => $mvc['full'] . "#form_{$this->object->form_link}_form_anchor",
 				'name' => "form_{$this->object->form_link}_form",
 				'id' => "form_{$this->object->form_link}_form",
@@ -274,6 +274,8 @@ class Base {
 			}
 			$result = \HTML::segment($temp);
 		}
+		// anchor
+		$result = \HTML::a(['id' => "form_{$this->object->form_link}_form_anchor", 'value' => null]) . $result;
 		return $result;
 	}
 
@@ -1078,7 +1080,7 @@ render_custom_renderer:
 	}
 
 	/**
-	 * Render table rows
+	 * Render grid rows
 	 *
 	 * @param array $rows
 	 * @param array $options
