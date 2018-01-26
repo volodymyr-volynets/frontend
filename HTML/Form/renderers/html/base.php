@@ -44,6 +44,7 @@ class Base {
 		// load mask
 		\Numbers\Frontend\Media\Libraries\LoadMask\Base::add();
 		// acl on actions
+		$this->object->options['actions'] = $this->object->options['actions'] ?? [];
 		foreach ($this->object->options['actions'] as $k => $v) {
 			if (!is_array($v)) continue;
 			if (isset($v['action_code']) && !\Application::$controller->can($v['action_code'], 'Edit')) {

@@ -15,6 +15,7 @@ class Icons extends \Object\Data {
 	public $orderby = [
 		'name' => SORT_ASC
 	];
+	public $options_skip_i18n = true;
 	public $data = [
 		'fab fa-500px' => ['name' => 'fab fa-500px'],
 		'fab fa-accessible-icon' => ['name' => 'fab fa-accessible-icon'],
