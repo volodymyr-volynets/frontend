@@ -303,6 +303,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 	private static function menuSubmenu($item, $level) {
 		$level++;
 		$caret = $level == 1 ? ' <b class="caret"></b>' : '';
+		$caret = '';
 		// create name
 		if (empty($item['i18n_done'])) {
 			$name = i18n(null, $item['name']);
@@ -318,8 +319,8 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 			$name = \HTML::icon(['type' => $item['icon']]) . ' ' . $name;
 		}
 		//'data-toggle' => 'dropdown'
-		$result = \HTML::a(['href' => $item['url'] ?? 'javascript:void(0);', 'id' => 'menu_item_id_' . $item['menu_id'], 'class' => 'dropdown-toggle', 'value' => $name . $caret]);
-		$result.= '<ul class="dropdown-menu">';
+		$result = \HTML::a(['href' => $item['url'] ?? 'javascript:void(0);', 'class' => 'nav-link dropdown-toggle', 'id' => 'menu_item_id_' . $item['menu_id'], 'value' => $name, 'role' => 'button', 'data-toggle' => 'dropdown', 'aria-haspopup' => 'true', 'aria-expanded' => 'false']);
+		$result.= '<ul class="dropdown-menu" aria-labelledby="menu_item_id_' . $item['menu_id'] . '">';
 			// sort
 			foreach ($item['options'] as $k2 => $v2) {
 				$item['options'][$k2]['name'] = i18n(null, $v2['name']);
@@ -333,8 +334,8 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 			}
 			// go though all options
 			foreach ($item['options'] as $k2 => $v2) {
-				$class = !empty($v2['options']) ? ' class="dropdown-submenu"' : '';
-				$result.= '<li' . $class . '>';
+				$result.= '<li>';
+					$class = !empty($v2['options']) ? 'nav-link dropdown-item' : 'nav-link';
 					// separator
 					if (!empty($v2['separator'])) {
 						$result.= '<hr class="navbar-nav-hr-separator"/>';
@@ -354,7 +355,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 							$name = \HTML::icon(['type' => $v2['icon']]) . ' ' . $name;
 						}
 						if (!empty($v2['url'])) {
-							$result.= \HTML::a(['href' => $v2['url'], 'id' => 'menu_item_id_' . $v2['menu_id'], 'title' => $v2['title'] ?? null, 'value' => $name]);
+							$result.= \HTML::a(['href' => $v2['url'], 'class' => $class, 'id' => 'menu_item_id_' . $v2['menu_id'], 'title' => $v2['title'] ?? null, 'value' => $name]);
 						} else {
 							$result.= \HTML::div(['title' => $v2['title'] ?? null, 'value' => $name]);
 						}
@@ -375,14 +376,11 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 		$brand_url = $options['brand_url'] ?? '/';
 		$brand_logo = $options['brand_logo'] ?? '';
 		array_key_unset($options, ['options', 'brand']);
-		$result = '<div class="navbar navbar-default" role="navigation">';
+		$result = '<div class="navbar navbar-expand-lg navbar-light bg-light" role="navigation">';
 			$result.= '<div class="container">';
 				$result.= '<div class="navbar-header">';
-					$result.= '<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">';
-						$result.= '<span class="sr-only">Toggle navigation</span>';
-						$result.= '<span class="icon-bar"></span>';
-						$result.= '<span class="icon-bar"></span>';
-						$result.= '<span class="icon-bar"></span>';
+					$result.= '<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">';
+						$result.= '<span class="navbar-toggler-icon"></span>';
 					$result.= '</button>';
 					if (!empty($brand_logo)) {
 						$result.= '<a href="' . $brand_url . '"><img src="' . $brand_logo . '" /></a>';
@@ -390,11 +388,12 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 						$result.= '<a class="navbar-brand" href="' . $brand_url . '">' . $brand_name . '</a>';
 					}
 				$result.= '</div>';
-				$result.= '<div class="collapse navbar-collapse navbar-nav-fix">';
-					$result.= '<ul class="nav navbar-nav">';
+				$result.= '<div class="collapse navbar-collapse" id="navbarSupportedContent">';
+					$result.= '<ul class="navbar-nav mr-auto">';
 						$index = 1;
 						foreach ($items as $k => $v) {
-							$result.= '<li class="navbar-nav-li-level1" search-id="' . $index . '">';
+							$class = !empty($v['options']) ? 'nav-item dropdown' : 'nav-item';
+							$result.= '<li class="navbar-nav-li-level1 ' . $class . '" search-id="' . $index . '">';
 								// if we have options
 								if (!empty($v['options'])) {
 									$result.= self::menuSubmenu($v, 0);
@@ -405,7 +404,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 										$name = \HTML::icon(['type' => $v['icon']]) . ' ' . $name;
 									}
 									if (!empty($v['url'])) {
-										$result.= \HTML::a(['href' => $v['url'], 'value' => $name]);
+										$result.= \HTML::a(['href' => $v['url'], 'class' => 'nav-link', 'value' => $name]);
 									} else {
 										$result.= $name;
 									}
@@ -415,6 +414,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 							$index++;
 						}
 						// and we need to add all tabs again into others tab
+						/*
 						$result.= '<li search-id="0" class="navbar-nav-others">';
 							$result.= '<a href="#" class="dropdown-toggle" data-toggle="dropdown">More <b class="caret"></b></a>';
 							$result.= '<ul class="dropdown-menu navbar-nav-others-ul">'; //multi-level
@@ -440,20 +440,20 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 								}
 							$result.= '</ul>';
 						$result.= '</li>';
+						*/
 					$result.= '</ul>';
 					// right menu
 					if (!empty($items_right)) {
-						$result.= '<ul class="nav navbar-nav navbar-right">';
+						$result.= '<ul class="navbar-nav ml-auto">';
 							foreach ($items_right as $k => $v) {
-								$result.= '<li class="navbar-nav-li-level1">';
+								$class = !empty($v['options']) ? 'nav-item dropdown' : 'nav-item';
+								$result.= '<li class="' . $class . '">';
 									// if we have options
 									if (!empty($v['options'])) {
 										$result.= self::menuSubmenu($v, 0);
 									} else {
 										// create name
 										$name = i18n(null, $v['name']);
-										// wrap name into span
-										//$name = '<span id="menu_item_id_' . $v['menu_id'] . '">' . $name . '</span>';
 										// name generator
 										if (!empty($v['name_generator'])) {
 											\Layout::onLoad('Numbers.Menu.name_generator[' . $v['menu_id'] . '] = "' . $v['name_generator'] . '";');
@@ -462,7 +462,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 											$name = \HTML::icon(['type' => $v['icon']]) . ' ' . $name;
 										}
 										if (!empty($v['url'])) {
-											$result.= \HTML::a(['href' => $v['url'], 'id' => 'menu_item_id_' . $v['menu_id'], 'value' => $name]);
+											$result.= \HTML::a(['href' => $v['url'], 'class' => 'nav-link', 'id' => 'menu_item_id_' . $v['menu_id'], 'value' => $name]);
 										} else {
 											$result.= $name;
 										}
@@ -476,6 +476,34 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 		$result.= '</div>';
 		// we must update menu items
 		\Layout::onload('Numbers.Menu.updateItems();');
+		$js = <<<TTT
+			$('.dropdown-menu a.dropdown-toggle').on('click', function (event) {
+				var elem = $(this);
+				// if we are in desktop mode
+				if ($(window).width() > 991) {
+					var href = elem.attr('href');
+					if (href != 'javascript:void(0);') {
+						window.location.href = href;
+						return true;
+					}
+				}
+				var parent = $(this).offsetParent('.dropdown-menu');
+				if (!$(this).next().hasClass('show')) {
+					$(this).parents('.dropdown-menu').first().find('.show').removeClass('show');
+				}
+				var submenu = $(this).next('.dropdown-menu');
+				submenu.toggleClass('show');
+				$(this).parent('li').toggleClass('show');
+				$(this).parents('li.nav-item.dropdown.show').on('hidden.bs.dropdown', function (e) {
+					$('.dropdown-menu .show').removeClass('show');
+				});
+				if (!parent.parent().hasClass('navbar-nav')) {
+					elem.next().css({"top": elem[0].offsetTop, "left": parent.outerWidth()});
+				}
+				return false;
+			});
+TTT;
+		\Layout::onload($js);
 		return $result;
 	}
 

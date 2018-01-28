@@ -1,8 +1,7 @@
-/* js fixes for bootstrap */
+/*
 $(document).ready(function() {
 	if ($('.navbar-header').length) {
 		setTimeout(function(){ bootstrapFixNavbar(); }, 10);
-		bootstrapFixNavbarSubmenus();
 		// resize handler
 		$(window).resize(function() {
 			bootstrapFixNavbar();
@@ -16,23 +15,7 @@ $(document).ready(function() {
 		});
 	}
 });
-
-/**
- * Fixes for navigation - submenus
- */
-function bootstrapFixNavbarSubmenus() {
-	$('.dropdown-submenu').mouseover(function() {
-		var width = $(this).width();
-		if (width == 0) {
-			width = 200;
-		}
-		if ($(window).width() - $(this).offset().left - width < 201) {
-			if(!$(this).hasClass("dropdown-submenu-pull-left")) {
-				$(this).addClass('dropdown-submenu-pull-left');
-			}
-		}
-	});
-}
+*/
 
 /**
  * Fixes for navigation - in general
