@@ -95,12 +95,12 @@ var Numbers = {
 					line: line,
 					col: col
 				};
-				Numbers.Error.send_data(data);
+				Numbers.Error.sendData(data);
 			};
 		},
-		send_data: function(data) {
+		sendData: function(data) {
 			var img = document.createElement('img');
-			var src = '/numbers/frontend/system/controller/error.png?token=' + encodeURIComponent(Numbers.token) + '&data=' + encodeURIComponent(JSON.stringify(data));
+			var src = '/Numbers/Frontend/System/Controller/Error?token=' + encodeURIComponent(Numbers.token) + '&data=' + encodeURIComponent(JSON.stringify(data));
 			img.crossOrigin = 'anonymous';
 			img.onload = function success() {
 				//console.log('success', data);

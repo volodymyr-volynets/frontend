@@ -9,32 +9,30 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 	public static function segment(array $options = []) : string {
 		$value = $options['value'] ?? '';
 		$type = $options['type'] ?? '';
-		if (!empty($type)) {
-			$type = 'panel-' . $type;
-		} else {
-			$type = 'panel-default';
-		}
 		$header = $options['header'] ?? null;
 		$footer = $options['footer'] ?? null;
-		// todo: process type here
-		unset($options['value'], $options['type'], $options['header'], $options['footer']);
-		$options['class'] = array_add_token($options['class'] ?? [], ['panel', $type], ' ');
-		$result = '<div ' . self::generateAttributes($options) . '>';
+		$result = '<div class="card">';
 			if ($header != null) {
+				$bg_class = $type ? ('bg-' . $type . ' text-white') : '';
 				if (is_array($header)) {
 					$icon = !empty($header['icon']) ? (\HTML::icon($header['icon']) . ' ') : null;
-					$result.= '<div class="panel-heading">' . $icon . $header['title'] . '</div>';
+					$result.= '<div class="card-header ' . $bg_class . '">' . $icon . $header['title'] . '</div>';
 				} else {
-					$result.= '<div class="panel-heading">' . $header . '</div>';
+					$result.= '<div class="card-header ' . $bg_class . '">' . $header . '</div>';
 				}
 			}
-			$result.= '<div class="panel-body">' . $value . '</div>';
+			$result.= '<div class="card-body">';
+				$result.= '<p class="card-text">' . $value . '</p>';
+				if (!empty($options['bottom'])) {
+					$result.= '<p class="card-text"><small class="text-muted">' . $options['bottom'] . '</small></p>';
+				}
+			$result.= '</div>';
 			if ($footer != null) {
 				if (is_array($footer)) {
 					$icon = !empty($footer['icon']) ? (\HTML::icon($footer['icon']) . ' ') : null;
-					$result.= '<div class="panel-footer">' . $icon . $footer['title'] . '</div>';
+					$result.= '<div class="card-footer">' . $icon . $footer['title'] . '</div>';
 				} else {
-					$result.= '<div class="panel-footer">' . $footer . '</div>';
+					$result.= '<div class="card-footer">' . $footer . '</div>';
 				}
 			}
 		$result.= '</div>';
@@ -104,7 +102,8 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 	 * @see \HTML::button()
 	 */
 	public static function button(array $options = []) : string {
-		$type = $options['type'] ?? 'default';
+		$type = $options['type'] ?? 'secondary';
+		if ($type == 'default') $type = 'secondary';
 		$options['class'] = array_add_token($options['class'] ?? [], 'btn btn-' . $type, ' ');
 		return parent::button($options);
 	}
@@ -546,7 +545,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 	 */
 	public static function label2(array $options = []) : string {
 		$options['tag'] = $options['tag'] ?? 'span';
-		$options['type'] = 'label-' . ($options['type'] ?? 'primary');
+		$options['type'] = 'badge badge-' . ($options['type'] ?? 'primary');
 		$options['class'] = array_add_token($options['class'] ?? [], [$options['type'], 'label'], ' ');
 		return \HTML::tag($options);
 	}
@@ -581,7 +580,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 			foreach ($header as $k => $v) {
 				$li_id = $id . '_tab_li_' . $k;
 				$content_id = $id . '_tab_content_' . $k;
-				$class2 = $class;
+				$class2 = $class . ' nav-link numbers_prevent_selection';
 				if ($k == $active_tab) {
 					$class2.= ' active';
 				}
@@ -592,7 +591,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 				if (!empty($options['tab_options'][$k]['tabindex'])) {
 					$tabindex = ' tabindex="' . $options['tab_options'][$k]['tabindex'] . '" ';
 				}
-				$tabs[$k] = '<li id="' . $li_id . '" class="' . $class2 . '"' . $tabindex . ' role="presentation"><a href="#' . $content_id . '" tab-data-id="' . $k . '" aria-controls="' . $content_id .'" role="tab" data-toggle="tab">' . $v . '</a></li>';
+				$tabs[$k] = '<li id="' . $li_id . '" class="nav-item numbers_prevent_selection"' . $tabindex . ' role="presentation"><a href="#' . $content_id . '" class="' . $class2 . '" tab-data-id="' . $k . '" aria-controls="' . $content_id .'" role="tab" data-toggle="tab">' . $v . '</a></li>';
 				$panels[$k] = '<div role="tabpanel" class="tab-pane ' . ($k == $active_tab ? 'active' : '') . ' ' . $k . '" id="' . $content_id . '">' . $values[$k] . '</div>';
 			}
 			// regular tab
@@ -652,24 +651,6 @@ TTT;
 	 */
 	public static function pills(array $options = []) : string {
 		Throw new Exception('Pills?');
-	}
-
-	/**
-	 * @see \HTML::card();
-	 */
-	public static function card(array $options = []) : string {
-		$result = '<div class="card">';
-			$result.= '<div class="card-body">';
-				if (!empty($options['title'])) {
-					$result.= '<h5 class="card-title">' . $options['title'] . '</h5>';
-				}
-				$result.= '<p class="card-text">' . $options['value'] . '</p>';
-				if (!empty($options['bottom'])) {
-					$result.= '<p class="card-text"><small class="text-muted">' . $options['bottom'] . '</small></p>';
-				}
-			$result.= '</div>';
-		$result.= '</div>';
-		return $result;
 	}
 
 	/**

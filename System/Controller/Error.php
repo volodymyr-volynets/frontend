@@ -1,6 +1,7 @@
 <?php
 
-class numbers_frontend_system_controller_error extends \Object\Controller {
+namespace Numbers\Frontend\System\Controller;
+class Error extends \Object\Controller {
 
 	public $title = 'Js Error Handler';
 
@@ -11,20 +12,20 @@ class numbers_frontend_system_controller_error extends \Object\Controller {
 		$input = \Request::input();
 		if (!empty($input['token'])) {
 			$crypt = new \Crypt();
-			$token_data = $crypt->token_validate($input['token'], ['skip_time_validation' => true]);
+			$token_data = $crypt->tokenValidate($input['token'], ['skip_time_validation' => true]);
 			if (!($token_data === false || $token_data['id'] !== 'general')) {
 				$input['data'] = json_decode($input['data'], true);
-				\Object\Error\Base::error_handler('javascript', $input['data']['message'], $input['data']['file'], $input['data']['line']);
+				\Object\Error\Base::errorHandler('javascript', $input['data']['message'], $input['data']['file'], $input['data']['line']);
 			}
 		}
 		// rendering
-		Layout::render_as(file_get_contents(__DIR__ . '/error.png'), 'image/png');
+		\Layout::renderAs(file_get_contents(__DIR__ . '/error.png'), 'image/png');
 	}
 
 	/**
 	 * Error action
 	 */
-	public function action_error() {
+	public function actionError() {
 		$result = '';
 		// show human readable messages first
 		if (count(\Object\Error\Base::$errors) > 0) {
@@ -42,7 +43,7 @@ class numbers_frontend_system_controller_error extends \Object\Controller {
 			$result.= \HTML::message(['type' => 'danger', 'options' => $messages]);
 		}
 		// show full description second
-		if (Application::get('flag.error.show_full') && count(\Object\Error\Base::$errors) > 0) {
+		if (\Application::get('flag.error.show_full') && count(\Object\Error\Base::$errors) > 0) {
 			foreach (\Object\Error\Base::$errors as $k => $v) {
 				$result.= '<h3>' . \Object\Error\Base::$error_codes[$v['errno']] . ' (' . $v['errno'] . ') - ' . implode('<br/>', $v['error']) . '</h3>';
 				$result.= '<br />';

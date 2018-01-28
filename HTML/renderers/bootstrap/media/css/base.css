@@ -1,4 +1,5 @@
 /* submenus */
+/*
 .dropdown-submenu {
     position: relative;
 }
@@ -76,6 +77,7 @@
 .navbar-right .dropdown-menu {
 	right: auto;
 }
+*/
 
 /* tabs */
 .tab-content {
@@ -261,6 +263,11 @@ div.placeholder, span.placeholder {
 .numbers_inactive {
 	color: #a94442;
 	background-color: mistyrose;
+}
+
+/* debug */
+.numbers_debug_links {
+	font-size: 0.75em;
 }
 
 /* rotate */

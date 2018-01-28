@@ -435,7 +435,7 @@ class Base {
 				$temp_inner.= \HTML::table($inner_table);
 			}
 			$table['options']['header'][1] = ['value' => '&nbsp;', 'nowrap' => true, 'width' => '1%'];
-			$table['options']['header'][2] = ['value' => $temp_inner, 'nowrap' => true, 'width' => '99%'];
+			$table['options']['header'][2] = ['value' => $temp_inner, 'class' => 'numbers_frontend_form_list_header_inner_td', 'nowrap' => true, 'width' => '99%'];
 			// generate rows
 			$row_number_final = $data['offset'] + 1;
 			$cached_options = [];
@@ -472,7 +472,7 @@ class Base {
 					$temp_inner.= \HTML::table($inner_table);
 				}
 				$table['options'][$row_number_final][1] = ['value' => \Format::id($row_number_final) . '.', 'nowrap' => true, 'width' => '1%'];
-				$table['options'][$row_number_final][2] = ['value' => $temp_inner, 'nowrap' => true, 'width' => '99%'];
+				$table['options'][$row_number_final][2] = ['value' => $temp_inner, 'nowrap' => true, 'class' => 'numbers_frontend_form_list_header_inner_td', 'width' => '99%'];
 				$row_number_final++;
 			}
 		} else { // preview
