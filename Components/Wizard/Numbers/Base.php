@@ -34,7 +34,7 @@ class Base implements \Numbers\Frontend\Components\Wizard\Interface2\Base {
 					$row2.= '<td>';
 						$row2.= '<div class="numbers_frontend_components_wizard_numbers_base_holder">';
 							if (!$flag_step_found) {
-								$class = 'numbers_frontend_components_wizard_numbers_base_active label-' . $type;
+								$class = 'numbers_frontend_components_wizard_numbers_base_active badge badge-' . $type;
 							} else {
 								$class = 'numbers_frontend_components_wizard_numbers_base_inactive';
 							}

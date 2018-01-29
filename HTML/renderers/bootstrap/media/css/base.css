@@ -106,6 +106,9 @@
 .tab-vertical-content {
 	border-top: 1px solid #ddd;
 }
+.nav-tabs .hidden {
+	display: none;
+}
 
 /* actions */
 .actions {
