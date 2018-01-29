@@ -1,69 +1,37 @@
-/*
-$(document).ready(function() {
-	if ($('.navbar-header').length) {
-		setTimeout(function(){ bootstrapFixNavbar(); }, 10);
-		// resize handler
-		$(window).resize(function() {
-			bootstrapFixNavbar();
-		});
-		// fix hover
-		$('.navbar-nav-li-level1').hover(function() {
-			$(this).addClass('open');
-		},
-		function() {
-			$(this).removeClass('open');
-		});
-	}
-});
-*/
 
-/**
- * Fixes for navigation - in general
- */
-function bootstrapFixNavbar() {
-	// we need to check if navbar-toggle button is visible
-	if ($('.navbar-toggle').is(':visible')) {
-		$('li.navbar-nav-others').css('display', 'none');
-		$('li.navbar-nav-li-level1').each(function(index, obj) {
-			$(obj).css('display', 'inline');
-		});
-		return;
-	}
-	var first_y = $('.navbar-header').offset().top, last = null, hash = {}, hidden = 0;
-	var data = [];
-	$('li.navbar-nav-others').css('display', 'none');
-	$('li.navbar-nav-li-level1').each(function(index, obj) {
-		$(obj).css('display', 'inline');
-		data.push(obj);
-	});
-	for (var i = data.length - 1; i >= 0; i--) {
-		var top = $(data[i]).offset().top;
-		if (top - first_y >= 10) {
-			$(data[i]).css('display', 'none');
-			hash[$(data[i]).attr('search-id')] = 1;
-			hidden++;
-		} else {
-			last = data[i];
-			break;
-		}
-	}
-	// if we have hidden menu items
-	if (hidden > 0) {
-		$('.navbar-nav').css('display', 'table');
-		// hide last element
-		$(last).css('display', 'none');
-		hash[$(last).attr('search-id')] = 1;
-		$('li.navbar-nav-others').css('display', 'inline');
-		$('li.navbar-nav-li-level1-others').each(function(index, obj) {
-			if (hash[$(obj).attr('search-id')]) {
-				// must be block, inline causes with absolute left positioning
-				$(obj).css('display', 'block');
-			} else {
-				$(obj).css('display', 'none');
+$(document).ready(function() {
+	$('.dropdown-menu a.dropdown-toggle').on('click', function (event) {
+		var elem = $(this);
+		// if we are in desktop mode
+		if ($(window).width() > 991) {
+			var href = elem.attr('href');
+			if (href != 'javascript:void(0);') {
+				window.location.href = href;
+				return true;
 			}
+		}
+		var parent = $(this).offsetParent('.dropdown-menu');
+		if (!$(this).next().hasClass('show')) {
+			$(this).parents('.dropdown-menu').first().find('.show').removeClass('show');
+		} else {
+			var href = elem.attr('href');
+			if (href != 'javascript:void(0);') {
+				window.location.href = href;
+				return true;
+			}
+		}
+		var submenu = $(this).next('.dropdown-menu');
+		submenu.toggleClass('show');
+		$(this).parent('li').toggleClass('show');
+		$(this).parents('li.nav-item.dropdown.show').on('hidden.bs.dropdown', function (e) {
+			$('.dropdown-menu .show').removeClass('show');
 		});
-	}
-}
+		if (!parent.parent().hasClass('navbar-nav')) {
+			elem.next().css({"top": elem[0].offsetTop, "left": parent.outerWidth()});
+		}
+		return false;
+	});
+});
 
 /**
  * Modal interfaces

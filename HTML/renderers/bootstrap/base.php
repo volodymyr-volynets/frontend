@@ -476,34 +476,6 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 		$result.= '</div>';
 		// we must update menu items
 		\Layout::onload('Numbers.Menu.updateItems();');
-		$js = <<<TTT
-			$('.dropdown-menu a.dropdown-toggle').on('click', function (event) {
-				var elem = $(this);
-				// if we are in desktop mode
-				if ($(window).width() > 991) {
-					var href = elem.attr('href');
-					if (href != 'javascript:void(0);') {
-						window.location.href = href;
-						return true;
-					}
-				}
-				var parent = $(this).offsetParent('.dropdown-menu');
-				if (!$(this).next().hasClass('show')) {
-					$(this).parents('.dropdown-menu').first().find('.show').removeClass('show');
-				}
-				var submenu = $(this).next('.dropdown-menu');
-				submenu.toggleClass('show');
-				$(this).parent('li').toggleClass('show');
-				$(this).parents('li.nav-item.dropdown.show').on('hidden.bs.dropdown', function (e) {
-					$('.dropdown-menu .show').removeClass('show');
-				});
-				if (!parent.parent().hasClass('navbar-nav')) {
-					elem.next().css({"top": elem[0].offsetTop, "left": parent.outerWidth()});
-				}
-				return false;
-			});
-TTT;
-		\Layout::onload($js);
 		return $result;
 	}
 
