@@ -10,7 +10,7 @@ class Error extends \Object\Controller {
 	 */
 	public function actionIndex() {
 		$input = \Request::input();
-		if (!empty($input['token'])) {
+		if (!empty($input['token']) && ($input['token'] != 'null')) {
 			$crypt = new \Crypt();
 			$token_data = $crypt->tokenValidate($input['token'], ['skip_time_validation' => true]);
 			if (!($token_data === false || $token_data['id'] !== 'general')) {
