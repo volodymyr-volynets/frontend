@@ -70,15 +70,17 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 					if (!is_array($options[$k0])) {
 						$options[$k0] = [$options[$k0]];
 					}
+					$temp2 = [];
 					foreach ($options[$k0] as $k => $v) {
-						$temp[] = \HTML::span(['value' => $v, 'class' => 'input-group-addon']);
+						$temp2[] = \HTML::span(['value' => $v, 'class' => 'input-group-text']);
 					}
+					$temp[] = \HTML::div(['value' => implode('', $temp2), 'class' => 'input-group-' . str_replace(['left', 'right'], ['prepend', 'append'], $k0)]);
 				}
 			}
 		}
 		unset($options['left'], $options['right']);
 		$options['value'] = implode('', $temp);
-		$options['class'] = 'input-group';
+		$options['class'] = 'input-group mb-3';
 		return \HTML::div($options);
 	}
 
