@@ -1,0 +1,327 @@
+/* navbar */
+.navbar-menu-item-avatar-img {
+	border-radius: 50%;
+	border: 1px solid #ccc;
+}
+.navbar > .show > a:focus {
+    background: transparent;
+    outline: 0;
+}
+.dropdown-menu .show > .dropdown-toggle::after {
+    transform: rotate(-90deg);
+}
+.dropdown-menu {
+    padding: 0px 0;
+    margin: 0 0 0;
+    border: 0px solid transition !important;
+    border: 0px solid rgba(0,0,0,.15);
+    border-radius: 0px;
+    -webkit-box-shadow: none !important;
+    box-shadow: none !important;
+}
+.navbar .collapse ul > li:hover > a {
+	background: #f5f5f5;
+}
+.navbar .collapse ul ul > li:hover > a, .navbar .show .dropdown-menu > li > a:focus, .navbar .show .dropdown-menu > li > a:hover{
+	background: #fff;
+}
+.navbar .collapse ul ul ul > li:hover > a {
+	background: #fff;
+}
+.navbar .collapse ul ul, .navbar .collapse ul ul.dropdown-menu{
+	background: #f5f5f5;
+}
+.navbar .collapse ul ul ul, .navbar .collapse ul ul ul.dropdown-menu{
+	background: #f5f5f5;
+}
+.navbar .collapse ul ul ul ul, .navbar .collapse ul ul ul ul.dropdown-menu{
+	background: #f5f5f5;
+}
+.navbar {
+	background: none;
+	margin: 0;
+	padding: 0;
+	min-height:20px
+}
+@media only screen and (max-width: 991px) {
+    .navbar .show > .dropdown-toggle::after{
+        transform: rotate(-90deg);
+    }
+}
+@media only screen and (min-width: 991px) {
+    .navbar .collapse ul li {
+		position: relative;
+	}
+    .navbar .collapse ul li:hover > ul {
+		display: block;
+	}
+    .navbar .collapse ul ul {
+		position: absolute;
+		top: 100%;
+		left: 0;
+		min-width: 250px;
+		display: none;
+	}
+    .navbar .collapse ul ul li {
+		position: relative;
+	}
+    .navbar .collapse ul ul li:hover > ul {
+		display: block;
+	}
+    .navbar .collapse ul ul ul {
+		position: absolute;
+		top: 0;
+		left: 100%;
+		min-width: 250px;
+		display: none;
+	}
+	.navbar .collapse ul.ml-auto ul ul {
+		left: -100% !important;
+	}
+    .navbar .collapse ul ul ul li {
+		position:relative
+	}
+    .navbar .collapse ul ul ul li:hover > ul {
+		display:block;
+	}
+    .navbar .collapse ul ul ul ul {
+		position: absolute;
+		top: 0;
+		left: 100%;
+		min-width: 250px;
+		display: none;
+		z-index: 1;
+	}
+}
+
+/* tabs */
+.tab-content {
+	border-bottom: 1px solid #ddd;
+	border-left: 1px solid #ddd;
+	border-right: 1px solid #ddd;
+	padding-top: 10px;
+	padding-right: 10px;
+	padding-left: 10px;
+}
+.tab-vertical-content {
+	border-top: 1px solid #ddd;
+}
+.nav-tabs .hidden {
+	display: none;
+}
+
+/* actions */
+.actions {
+	text-align: right;
+	font-size: 0.75rem;
+}
+/* breadcrumbs */
+.breadcrumbs {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	color: #777;
+	font-size: 0.75rem;
+}
+.breadcrumbs li {
+	display: inline;
+}
+/* page title */
+.page_title {
+	margin-top: 5px;
+	margin-bottom: 10px;
+}
+/* modal */
+.modal-footer {
+	text-align: left;
+}
+/* hr tag */
+hr.simple {
+	margin-top: 10px !important;
+	margin-bottom: 10px !important;
+}
+hr.no_margin {
+	margin: 0;
+}
+
+/* fieldset */
+fieldset {
+	border: 1px solid #ddd;
+	padding: 10px;
+}
+
+legend {
+	margin-left: 20px;
+	border: none;
+	width: auto !important;
+	font-size: inherit !important;
+	margin-bottom: 5px;
+}
+
+/* tabs */
+.tab-pane>.row {
+	margin-right: -10px;
+	margin-left: -10px;
+}
+.tab-pane {
+	padding-bottom: 10px;
+}
+.tabs_subdetails .nav>li>a {
+	padding: 0 15px;
+}
+.tabs_subdetails .tabs_subdetails_none, .tabs_subdetails .tab-content {
+	padding: 0;
+}
+.tabs_subdetails .tab-content {
+	border: none;
+}
+
+/* form group */
+.form-group {
+	margin-bottom: 5px;
+}
+.form-control-button {
+	display: block;
+}
+.form-control-no-border {
+	border: none !important;
+	background-color: inherit !important;
+	background-image: none;
+	box-shadow: none;
+	transition: none;
+	padding: 7px 0;
+}
+.form-tabs {
+	padding-bottom: 10px;
+}
+.label {
+	margin-left: 3px;
+}
+hr.small {
+	margin-top: 3px;
+	margin-bottom: 3px;
+}
+
+/* grid */
+.container-fluid {
+	padding: 0;
+}
+.grid_vertical_separator {
+	border: 0;
+	border-left: 1px solid #eee;
+}
+.grid_align_right {
+	text-align: right;
+}
+.grid_row_hidden {
+	display: none;
+}
+.grid_row_hidden_testing {
+	background-color: lightcoral;
+}
+.grid_table_details_11 td, .grid_table_details_11 th {
+	border: none !important;
+}
+.grid_button_right {
+	text-align: right;
+}
+.grid_button_center {
+	text-align: center;
+}
+
+/* font awesome fixes */
+.fas, .far {
+	min-width: 14px;
+	text-align:center;
+}
+
+/* placeholders */
+*::-webkit-input-placeholder {
+	font-style: italic !important;
+	color: #999 !important;
+}
+*:-moz-placeholder {
+	font-style: italic !important;
+	color: #999 !important;
+}
+*::-moz-placeholder {
+	font-style: italic !important;
+	color: #999 !important;
+}
+*:-ms-input-placeholder {
+	font-style: italic !important;
+	color: #999 !important;
+}
+[data-placeholder]:not([data-placeholder=""]):empty:not(:focus):before {
+	content: attr(data-placeholder);
+	font-style: italic !important;
+	color: #999 !important;
+}
+div.placeholder, span.placeholder {
+	font-style: italic !important;
+	color: #999 !important;
+}
+
+/* elements select/calendar/autocomplete */
+.numbers_prevent_selection {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+.numbers_disabled {
+	cursor: not-allowed !important;
+	font-style: italic;
+	color: #999;
+}
+.numbers_selected {
+	color: seagreen;
+	background-color: palegreen;
+}
+.numbers_inactive {
+	color: #a94442;
+	background-color: mistyrose;
+}
+
+/* debug */
+.numbers_debug_links {
+	font-size: 0.75em;
+}
+
+/* rotate */
+.rotate90 {
+	/* Safari */
+	-webkit-transform: rotate(-90deg);
+	/* Firefox */
+	-moz-transform: rotate(-90deg);
+	/* Opera */
+	-o-transform: rotate(-90deg);
+	/* Internet Explorer */
+	-ms-transform: rotate(-90deg);
+	filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+}
+
+/* rtl fixes */
+html[dir="rtl"] a {
+	unicode-bidi: embed;
+}
+html[dir="rtl"] input, html[dir="rtl"] textarea, html[dir="rtl"] select {
+	text-align: right;
+}
+html[dir="rtl"] .nav-tabs>li {
+	float: right;
+}
+html[dir="rtl"] .close {
+    float: left;
+}
+html[dir="rtl"] .grid_button_right {
+	text-align: left;
+}
+html[dir="rtl"] .grid_button_left {
+	text-align: right;
+}
+html[dir="rtl"] .list_pagination_navigation {
+	text-align: left;
+}

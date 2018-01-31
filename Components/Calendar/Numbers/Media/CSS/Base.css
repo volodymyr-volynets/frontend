@@ -1,0 +1,85 @@
+/**
+ * Default calendar styles
+ */
+.numbers_calendar_icon, .numbers_calendar_header_button, .numbers_calendar_date_day_cell, .numbers_calendar_time_button {
+	color: inherit;
+	cursor: pointer;
+	cursor: hand;
+}
+.numbers_calendar_div {
+	position: absolute;
+	z-index: 1000;
+	padding: 6px;
+	background: #fff;
+	font-size: 1em;
+	vertical-align: top;
+	border: 1px solid #d3d3d3;
+	/*border-radius: 4px;*/
+	box-shadow: 0 2px 5px rgba(0, 0, 0, .1);
+	width: auto;
+	outline: none !important;
+}
+.numbers_calendar_div_holder {
+	display: block;
+	position: relative;
+	height: 0;
+}
+.numbers_calendar_header_button i, .numbers_calendar_time_button i {
+	display: inline-block;
+	width: 2em;
+	height: 1em;
+	text-align: center;
+}
+.numbers_calendar_time_button {
+	font-size: 2em !important;
+}
+.numbers_calendar_div select {
+	color: inherit;
+	font-size: 1em;
+}
+.numbers_calendar_header_date_select {
+	background: transparent;
+	outline: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	border: none;
+	font-size: 1em;
+}
+.numbers_calendar_date_day_cell {
+	font-size: 1em;
+	display: block;
+	width: 2em;
+	line-height: 2em;
+	text-align: center;
+	text-decoration: none;
+	border: 1px solid transparent;
+	border-radius: 4px;
+	background-origin: border-box;
+}
+.numbers_calendar_date_day_prev {
+	color: #aaa;
+}
+.numbers_calendar_date_day_current {
+	font-weight: bold;
+	border-color: rgba(0, 0, 0, .2);
+	background-color: #fafafa;
+}
+.numbers_calendar_date_day_hover:focus, .numbers_calendar_date_day_hover:hover {
+	background-color: #fafafa;
+	color: black;
+	outline: 0;
+	border-color: rgba(0, 0, 0, .2);
+	text-shadow: 0 1px 0 #fff;
+}
+.numbers_calendar_date_day_clicked, .numbers_calendar_date_day_clicked:focus, .numbers_calendar_date_day_clicked:hover {
+	color: black;
+	font-weight: bold;
+	border-color: rgba(0, 0, 0, .2);
+	background-color: #aaa;
+	text-shadow: none;
+}
+.numbers_calendar_date_disabled {
+	text-decoration: line-through !important;
+	cursor: not-allowed;
+}
