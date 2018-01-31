@@ -24,9 +24,13 @@
 	padding-left: 2px !important;
 	padding-right: 2px !important;
 	vertical-align: top;
+	border-top: none !important;
 }
 .numbers_frontend_form_list_header_inner tr {
 	background: transparent !important;
+}
+.numbers_frontend_form_list_header_inner:not(:last-child) {
+	border-bottom: 1px solid #dee2e6;
 }
 .numbers_frontend_form_list_header_inner_td {
 	border-top: none;
@@ -34,4 +38,8 @@
 }
 .control-label {
 	display: block;
+}
+.alert ul {
+	padding-bottom: 0;
+	margin-bottom: 0;
 }

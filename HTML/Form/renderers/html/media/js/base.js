@@ -48,11 +48,28 @@ Numbers.Form = {
 		var wrapper_id = form_id + '_wrapper';
 		var mask_id = form_id + '_mask';
 		$('#' + mask_id).mask({overlayOpacity: 0.25, delay: 0});
+		// form data
+		var form_data = new FormData(document.getElementById(form_id));
+		form_data.append('__ajax', 1);
+		form_data.append(numbers_frontend_form_submit_hidden_initiator, 1);
+		form_data.append('__ajax_form_id', form_id);
+		$('input[type=file]').each(function() {
+			if ($(this)[0].files[0]) {
+				var file = $(this)[0].files[0];
+				var filename = $(this).attr("data-filename");
+				var	name = $(this).attr("name");
+				form_data.append(name, file, filename);
+			}
+		});
+		// send data to the server
 		$.ajax({
 			url: Numbers.controller_full,
 			method: 'post',
-			data: $('#' + form_id).serialize() + '&__ajax=1&' + numbers_frontend_form_submit_hidden_initiator + '=1&__ajax_form_id=' + form_id,
+			data: form_data,
 			dataType: 'json',
+			cache: false,
+			contentType: false,
+			processData: false,
 			success: function (data) {
 				if (data.success) {
 					$('#' + wrapper_id).html(data.html);
