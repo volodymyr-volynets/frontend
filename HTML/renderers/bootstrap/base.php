@@ -659,17 +659,20 @@ TTT;
 	 * @see \HTML::popover
 	 */
 	public static function popover(array $options = []) : string {
+		$options['title'] = $options['title'] ?? '';
 		// if we do not have tags we wrap it
 		if (strpos($options['value'], '<a') === false) {
-			$options['value'] = '<a href="javascript:void(0);" id="' . $options['id'] . '" title="' . ($options['title'] ?? '') . '">' . $options['value'] . '</a>';
+			$options['value'] = '<a href="javascript:void(0);" id="' . $options['id'] . '" title="' . $options['title'] . '">' . $options['value'] . '</a>';
 		}
 		$js = <<<TTT
-			$("[id={$options['id']}]").popover({
+			$('#{$options['id']}').popover({
 				trigger : 'click',
 				placement : 'top',
-				html: 'true',
-				content : '{$options['content']}',
-				template: '<div class="popover"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div><div class="popover-footer"></div></div>' 
+				html: true,
+				content: function () {
+					return '{$options['content']}';
+				},
+				template: '<div class="popover" role="tooltip"><div class="arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
 			});
 TTT;
 		\Layout::onLoad($js);

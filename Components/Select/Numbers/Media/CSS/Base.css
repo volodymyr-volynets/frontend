@@ -130,6 +130,10 @@ html[dir="rtl"] .numbers_select_option_table_level_last_left {
 	display: inline-block;
 	vertical-align: middle !important;
 }
+.numbers_select_option_table_data td, .numbers_select_option_table_data th {
+	padding: 0;
+	border-top: none;
+}
 .numbers_select_option_table tbody tr:nth-of-type(odd) {
 	background: transparent !important;
 }
