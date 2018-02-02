@@ -254,13 +254,21 @@ class Base {
 		}
 		// if we came from ajax we return as json object
 		if (!empty($this->object->options['input']['__ajax'])) {
+			$onload = '';
+			if (!empty($this->object->misc_settings['redirect'])) {
+				$onload = " window.location.href = '{$this->object->misc_settings['redirect']}';";
+			}
 			$result = [
 				'success' => true,
 				'error' => [],
 				'html' => $result,
-				'js' => \Layout::$onload
+				'js' => \Layout::$onload . $onload
 			];
 			\Layout::renderAs($result, 'application/json');
+		} else {
+			if (!empty($this->object->misc_settings['redirect'])) {
+				\Request::redirect($this->object->misc_settings['redirect']);
+			}
 		}
 		$result = "<div id=\"form_{$this->object->form_link}_form_mask\"><div id=\"form_{$this->object->form_link}_form_wrapper\">" . $result . '</div></div>';
 		// if we have segment
