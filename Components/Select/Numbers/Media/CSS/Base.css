@@ -141,5 +141,5 @@ html[dir="rtl"] .numbers_select_option_table_level_last_left {
 	border-top: none;
 }
 .numbers_select_option_table tbody tr:nth-of-type(odd) {
-	background: transparent !important;
+	background: transparent;
 }

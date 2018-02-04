@@ -961,15 +961,20 @@ render_custom_renderer:
 							if ($options['details_rendering_type'] == 'grid_with_label') {
 								$label = $this->renderElementName($first);
 							}
+							// we need to pass proper options
+							$rendered_value = $this->renderElementValue($value_options, $v0[$k3] ?? null, $v0);
 							// add element to grid
-							$data['options'][$row_number . '_' . $k][$k2][$k3] = [
-								'error' => $error,
-								'label' => $label,
-								'value' => $this->renderElementValue($value_options, $v0[$k3] ?? null, $v0),
-								'description' => $v3['options']['description'] ?? null,
-								'options' => $v3['options'],
-								'row_class' => ($value_options['options']['row_class'] ?? '') . (!($row_number % 2) ? ' grid_row_even' : ' grid_row_odd')
-							];
+							if (($value_options['options']['percent'] ?? 0) !== -1) {
+								$value_options['options']['style'] = $v3['style'] ?? null;
+								$data['options'][$row_number . '_' . $k][$k2][$k3] = [
+									'error' => $error,
+									'label' => $label,
+									'value' => $rendered_value,
+									'description' => $value_options['options']['description'] ?? null,
+									'options' => $value_options['options'],
+									'row_class' => ($value_options['options']['row_class'] ?? '') . (!($row_number % 2) ? ' grid_row_even' : ' grid_row_odd')
+								];
+							}
 						}
 					}
 				}

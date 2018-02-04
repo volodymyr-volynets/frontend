@@ -277,8 +277,8 @@ div.placeholder, span.placeholder {
 	color: #999;
 }
 .numbers_selected {
-	color: seagreen;
-	background-color: palegreen;
+	color: seagreen !important;
+	background-color: palegreen !important;
 }
 .numbers_inactive {
 	color: #a94442;
