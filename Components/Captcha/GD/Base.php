@@ -106,7 +106,7 @@ class Base implements \Numbers\Frontend\Components\Captcha\Interface2\Base {
 			'error' => [],
 			'placeholder' => ''
 		];
-		$password = \Session::get("Numbers.Frontend.Components.Captcha.GD.Base.{$options['options']['id']}.password");
+		$password = \Session::get("Numbers.Frontend.Components.Captcha.GD.Base.{$options['options']['id']}.password") . '';
 		$result['placeholder'] = 'Enter text here';
 		if (empty($value) || $value !== $password) {
 			$result['error'][] = 'Invalid captcha!';
