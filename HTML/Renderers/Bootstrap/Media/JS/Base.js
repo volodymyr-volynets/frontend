@@ -27,7 +27,12 @@ $(document).ready(function() {
 			$('.dropdown-menu .show').removeClass('show');
 		});
 		if (!parent.parent().hasClass('navbar-nav')) {
-			elem.next().css({"top": elem[0].offsetTop, "left": parent.outerWidth()});
+			var position = $(elem.next()).position();
+			if (position.left < 0) {
+				elem.next().css({"top": elem[0].offsetTop, "left": -parent.outerWidth()});
+			} else {
+				elem.next().css({"top": elem[0].offsetTop, "left": parent.outerWidth()});
+			}
 		}
 		return false;
 	});

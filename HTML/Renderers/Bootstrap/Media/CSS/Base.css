@@ -90,7 +90,10 @@
 		left: 100%;
 		min-width: 250px;
 		display: none;
-		z-index: 1;
+		z-index: 32000;
+	}
+	.navbar .collapse ul ul ul ul ul ul {
+		left: -100%;
 	}
 }
 
