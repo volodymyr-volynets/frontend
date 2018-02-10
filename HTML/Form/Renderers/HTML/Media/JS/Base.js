@@ -48,49 +48,56 @@ Numbers.Form = {
 		var wrapper_id = form_id + '_wrapper';
 		var mask_id = form_id + '_mask';
 		$('#' + mask_id).mask({overlayOpacity: 0.25, delay: 0});
-		// form data
-		var form_data = new FormData(document.getElementById(form_id));
-		form_data.append('__ajax', 1);
-		form_data.append(numbers_frontend_form_submit_hidden_initiator, 1);
-		form_data.append('__ajax_form_id', form_id);
-		$('input[type=file]').each(function() {
-			if ($(this)[0].files[0]) {
-				var file = $(this)[0].files[0];
-				var filename = $(this).attr("data-filename");
-				var	name = $(this).attr("name");
-				form_data.append(name, file, filename);
+		// wrap everything into timer function to get focused id
+		setTimeout(function () {
+			var form_data = new FormData(document.getElementById(form_id));
+			form_data.append('__ajax', 1);
+			form_data.append(numbers_frontend_form_submit_hidden_initiator, 1);
+			var active_element = $(document.activeElement).attr('id');
+			if (typeof active_element == 'undefined') {
+				active_element = '';
 			}
-		});
-		// send data to the server
-		$.ajax({
-			url: Numbers.controller_full,
-			method: 'post',
-			data: form_data,
-			dataType: 'json',
-			cache: false,
-			contentType: false,
-			processData: false,
-			success: function (data) {
-				if (data.success) {
-					$('#' + wrapper_id).html(data.html);
-					eval(data.js);
-					// remove mask after 100 miliseconds to let js to take affect
-					setTimeout(function() {
-						$('#' + mask_id).unmask();
-						// we need to trigger resize to redraw a screen
-						$(window).trigger('resize');
-					}, 100);
-				} else {
-					// todo: open error dialog in popup window
-					print_r2(data.error);
+			form_data.append('__ajax_form_active_element_id', active_element);
+			form_data.append('__ajax_form_id', form_id);
+			$('input[type=file]').each(function() {
+				if ($(this)[0].files[0]) {
+					var file = $(this)[0].files[0];
+					var filename = $(this).attr("data-filename");
+					var	name = $(this).attr("name");
+					form_data.append(name, file, filename);
 				}
-			},
-			error: function (jqXHR, textStatus, errorThrown) {
-				print_r2(jqXHR.responseText);
-			}
-		});
-		// reset initiator variable
-		numbers_frontend_form_submit_hidden_initiator = null;
+			});
+			// send data to the server
+			$.ajax({
+				url: Numbers.controller_full,
+				method: 'post',
+				data: form_data,
+				dataType: 'json',
+				cache: false,
+				contentType: false,
+				processData: false,
+				success: function (data) {
+					if (data.success) {
+						$('#' + wrapper_id).html(data.html);
+						eval(data.js);
+						// remove mask after 100 miliseconds to let js to take affect
+						setTimeout(function() {
+							$('#' + mask_id).unmask();
+							// we need to trigger resize to redraw a screen
+							$(window).trigger('resize');
+						}, 100);
+					} else {
+						// todo: open error dialog in popup window
+						print_r2(data.error);
+					}
+				},
+				error: function (jqXHR, textStatus, errorThrown) {
+					print_r2(jqXHR.responseText);
+				}
+			});
+			// reset initiator variable
+			numbers_frontend_form_submit_hidden_initiator = null;
+		}, 5);
 		return false;
 	},
 
@@ -241,13 +248,25 @@ Numbers.Form = {
 	 * Get path
 	 *
 	 * @param object element
+	 * @param string neighbour
+	 * @param string detail
 	 * @returns array
 	 */
-	getPath: function(element, neighbour) {
+	getPath: function(element, neighbour, detail) {
 		var temp = $(element).attr('name').replace(/\]/g, '').split('[');
-		if (neighbour) {
-			temp.pop();
-			temp.push(neighbour);
+		if (detail) {
+			var temp2 = [];
+			for (var i in temp) {
+				temp2.push(temp[i]);
+				if (i != 0 && temp[i - 1] == detail) break;
+			}
+			if (neighbour) temp2.push(neighbour);
+			temp = temp2;
+		} else {
+			if (neighbour) {
+				temp.pop();
+				temp.push(neighbour);
+			}
 		}
 		return temp;
 	},

@@ -205,8 +205,13 @@ Numbers.Format = {
 		var format = array_key_get(Numbers, 'flag.global.format'), type;
 		// if currency code is passed we need to load symbol
 		if (options.currency_code) {
-			options.symbol = Numbers.CountriesCurrencies.data[options.currency_code].symbol;
-			options.decimals = Numbers.CountriesCurrencies.data[options.currency_code].fraction_digits;
+			if (!isset(options.symbol) || (isset(options.symbol) && options.symbol !== false)) {
+				options.symbol = Numbers.CountriesCurrencies.data[options.currency_code].symbol;
+			}
+			// override decimals only if not set
+			if (!isset(options.decimals)) {
+				options.decimals = Numbers.CountriesCurrencies.data[options.currency_code].fraction_digits;
+			}
 		}
 		// user defined monetary options
 		if (!options.skip_user_settings) {
@@ -268,6 +273,29 @@ Numbers.Format = {
 		if (!options) options = {};
 		options.symbol = false;
 		options.decimals = Numbers.ObjectDataDomains.getSetting('quantity', 'scale');
+		return this.amount(amount, options);
+	},
+
+	/**
+	 * Unit price
+	 *
+	 * @see Format::amount()
+	 */
+	unitPrice: function(amount, options) {
+		if (!options) options = {};
+		options.decimals = Numbers.ObjectDataDomains.getSetting('unit_price', 'scale');
+		return this.amount(amount, options);
+	},
+
+	/**
+	 * Unit price (no symbol)
+	 *
+	 * @see Format::amount()
+	 */
+	unitPrice2: function(amount, options) {
+		if (!options) options = {};
+		options.symbol = false;
+		options.decimals = Numbers.ObjectDataDomains.getSetting('unit_price', 'scale');
 		return this.amount(amount, options);
 	},
 

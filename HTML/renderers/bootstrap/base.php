@@ -500,7 +500,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 	 */
 	public static function modal(array $options = []) : string {
 		$options['class'] = $options['class'] ?? '';
-		if ($options['class'] == 'large') {
+		if ($options['class'] == 'large' || empty($options['class'])) {
 			$options['class'] = 'modal-lg';
 		}
 		$closeable = '';
@@ -513,10 +513,10 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 			$result.= '<div class="modal-dialog ' . $options['class'] . '">';
 				$result.= '<div class="modal-content">';
 					$result.= '<div class="modal-header">';
+						$result.= '<h4 class="modal-title">' . ($options['title'] ?? '') . '</h4>';
 						if (empty($options['no_header_close'])) {
 							$result.= '<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>';
 						}
-						$result.= '<h4 class="modal-title">' . ($options['title'] ?? '') . '</h4>';
 					$result.= '</div>';
 					$result.= '<div class="modal-body">';
 						$result.= $options['body'] ?? '';

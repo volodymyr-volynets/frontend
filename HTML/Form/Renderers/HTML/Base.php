@@ -252,6 +252,10 @@ class Base {
 				'onsubmit' => empty($this->object->options['no_ajax_form_reload']) ? 'return Numbers.Form.onFormSubmit(this);' : null
 			]);
 		}
+		// active element
+		if (!empty($this->object->options['input']['__ajax_form_active_element_id'])) {
+			\Layout::onLoad("$('#" . $this->object->options['input']['__ajax_form_active_element_id'] . "').focus();");
+		}
 		// if we came from ajax we return as json object
 		if (!empty($this->object->options['input']['__ajax'])) {
 			$onload = '';
@@ -304,6 +308,12 @@ class Base {
 		// sort rows
 		array_key_sort($v['rows'], ['order' => SORT_ASC]);
 		foreach ($v['rows'] as $k2 => $v2) {
+			// acl on tabs
+			if (!empty($v2['options']['acl'])) {
+				if (!\Can::systemFeaturesExists($v2['options']['acl'])) {
+					continue;
+				}
+			}
 			$this->object->current_tab[] = "{$tab_id}_{$k2}";
 			$labels = '';
 			foreach (['records', 'danger', 'warning', 'success', 'info'] as $v78) {
