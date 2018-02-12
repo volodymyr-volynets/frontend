@@ -121,6 +121,7 @@ class Base {
 					$params[$v] = $this->object->options['input'][$v] ?? '';
 				}
 			}
+			$params['__refresh'] = rand(1000, 9999) . '_' . rand(1000, 9999) . '_' . rand(1000, 9999);
 			$this->object->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => 32000, 'icon' => 'fas fa-sync', 'href' => $mvc['full'] . '?' . http_build_query2($params) . "#form_{$this->object->form_link}_form_anchor", 'internal_action' => true];
 			// override
 			if (is_array($this->object->options['actions']['refresh'])) {
