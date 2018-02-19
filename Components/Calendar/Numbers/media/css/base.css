@@ -83,3 +83,10 @@
 	text-decoration: line-through !important;
 	cursor: not-allowed;
 }
+.numbers_calendar_div table td, .numbers_calendar_div table tr, .numbers_calendar_div table td table td, .numbers_calendar_div table td table tr {
+	background: transparent !important;
+	border: none !important;
+}
+.numbers_calendar_div table td, .numbers_calendar_div table th {
+	padding: 0.25em !important;
+}
