@@ -121,6 +121,9 @@ class Base {
 					$params[$v] = $this->object->options['input'][$v] ?? '';
 				}
 			}
+			if (!empty($this->object->options['collection_current_tab_id'])) {
+				$params[$this->object->options['collection_current_tab_id']] = $this->object->form_link;
+			}
 			$params['__refresh'] = rand(1000, 9999) . '_' . rand(1000, 9999) . '_' . rand(1000, 9999);
 			$this->object->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => 32000, 'icon' => 'fas fa-sync', 'href' => $mvc['full'] . '?' . http_build_query2($params) . "#form_{$this->object->form_link}_form_anchor", 'internal_action' => true];
 			// override
@@ -206,6 +209,10 @@ class Base {
 		$result.= \HTML::hidden(['name' => '__form_link', 'value' => $this->object->form_link]);
 		$result.= \HTML::hidden(['name' => '__form_values_loaded', 'value' => $this->object->values_loaded]);
 		$result.= \HTML::hidden(['name' => '__form_onchange_field_values_key', 'value' => '']);
+		// form is within tabs
+		if (!empty($this->object->options['collection_current_tab_id'])) {
+			$result.= \HTML::hidden(['name' => $this->object->options['collection_current_tab_id'] . '_active_hidden', 'value' => $this->object->form_link]);
+		}
 		// form data in onload
 		$js_data = [
 			'submitted' => $this->object->submitted,
@@ -1329,6 +1336,7 @@ render_custom_renderer:
 					$current = current($value);
 					if (is_array($current) && key($current) == $options['options']['multiple_column']) {
 						$value = array_extract_values_by_key($value ?? [], $options['options']['multiple_column']);
+						print_r2($value);
 					}
 				}
 				$options_array_processed = \Object\Data\Common::processOptions($result_options['options_model'], $this->object, $result_options['options_params'], $value, $skip_values, $result_options['options_options']);
@@ -1445,8 +1453,24 @@ render_custom_renderer:
 						$result_options['value'] = i18n($result_options['i18n'] ?? null, $result_options['value'] ?? null);
 						$flag_translated = true;
 					}
-				} else {
-					// editable fields
+				} else { // editable fields
+					// special handling for
+					if ($element_method == '\HTML::radio') {
+						$result_options['value'] = '';
+						$radio_counter = 1;
+						foreach ($result_options['options'] as $k => $v) {
+							$result_options['value'].= \HTML::radio([
+								'id' => $result_options['id'] . '_' . $radio_counter,
+								'name' => $result_options['name'],
+								'value' => $k,
+								'checked' => $k == $value
+							]);
+							$result_options['value'].= ' <label for="' . $result_options['id'] . '_' . $radio_counter . '">' . i18n(null, $v['name']) . '</label>';
+							$radio_counter++;
+						}
+						$element_method = '\HTML::div';
+						goto render_element;
+					}
 					$result_options['value'] = $value;
 					// if we need to empty value, mostly for password fields
 					if (!empty($result_options['empty_value'])) {
@@ -1559,9 +1583,10 @@ render_custom_renderer:
 			default:
 				Throw new Exception('Render detail type: ' . $data['fm_part_type']);
 		}
+render_element:
 		// handling html_method
 		if (isset($element_method)) {
-			$method = \Factory::method($element_method, 'html');
+			$method = \Factory::method($element_method, 'HTML');
 			$field_method_object = \Factory::model($method[0], true);
 			// todo: unset non html attributes
 			$value = $field_method_object->{$method[1]}($result_options);

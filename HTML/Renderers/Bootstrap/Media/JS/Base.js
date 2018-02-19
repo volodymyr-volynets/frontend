@@ -1,5 +1,6 @@
 
 $(document).ready(function() {
+	// menu click
 	$('.dropdown-menu a.dropdown-toggle').on('click', function (event) {
 		var elem = $(this);
 		// if we are in desktop mode

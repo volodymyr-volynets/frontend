@@ -223,7 +223,7 @@ hr.small {
 	background-color: lightcoral;
 }
 .grid_table_details_11 td, .grid_table_details_11 th {
-	border: none !important;
+	border: none;
 }
 .grid_button_right {
 	text-align: right;

@@ -123,18 +123,10 @@ var Numbers_Calendar = function (options) {
 				hour: ['Hour', 'Hr.'],
 				minute: ['Minute', 'Min.'],
 				second: ['Second', 'Sec.']
+			},
+			presets: {
+				today: 'Today / Now'
 			}
-			/* todo: determine a list of presets
-			 presets: {
-			 today: 'Today/Now',
-			 yesterday: 'Yesterday',
-			 month_this: 'This Month',
-			 month_last: 'Last Month',
-			 year_this: 'This Year',
-			 year_last: 'Last Year',
-			 hour_this: 'This Hour',
-			 hour_last: 'Last Hour'
-			 }*/
 		};
 		// translate
 		for (var i in result.i18n.months.full) result.i18n.months.full[i] = i18n(null, result.i18n.months.full[i]);
@@ -145,6 +137,7 @@ var Numbers_Calendar = function (options) {
 		for (var i in result.i18n.time.hour) result.i18n.time.hour[i] = i18n(null, result.i18n.time.hour[i]);
 		for (var i in result.i18n.time.minute) result.i18n.time.minute[i] = i18n(null, result.i18n.time.minute[i]);
 		for (var i in result.i18n.time.second) result.i18n.time.second[i] = i18n(null, result.i18n.time.second[i]);
+		for (var i in result.i18n.presets) result.i18n.presets[i] = i18n(null, result.i18n.presets[i]);
 	}
 	// we need to calculate years range
 	if (result.type == 'date' || result.type == 'datetime') {
@@ -300,24 +293,6 @@ var Numbers_Calendar = function (options) {
 				this.date_month_elem.value = this.date_selected.getMonth();
 				this.date_day_elem.value = this.date_selected.getDate();
 			}
-			// time
-			/*
-			if (this.type == 'datetime' || this.type == 'time') {
-				var selected_hour = this.date_selected.getHours();
-				// special handling for am/pm
-				if (this.flag_time_am_pm) {
-					if (selected_hour > 12) {
-						selected_hour = selected_hour - 12;
-						this.time_am_pm_elem.value = 1;
-					} else {
-						this.time_am_pm_elem.value = 0;
-					}
-				}
-				this.time_hour_elem.value = selected_hour;
-				this.time_minute_elem.vaue = this.date_selected.getMinutes();
-				this.time_second_elem.value = this.date_selected.getSeconds();
-			}
-			*/
 		}
 	};
 
@@ -443,7 +418,6 @@ var Numbers_Calendar = function (options) {
 			if (this.type == 'time' || this.type == 'datetime') {
 				this.time_go_elem = document.getElementById(this.time_go_id);
 			}
-			// todo: fix responsive here
 		}
 		// hide/show calendar
 		if (this.div_elem.style.display != 'none' && !only_show) {
@@ -715,9 +689,9 @@ var Numbers_Calendar = function (options) {
 			html += '<input type="hidden" id="' + this.date_day_id + '" value="" />';
 		}
 		if (this.type == 'date') {
-			html += '<input type="hidden" id="' + this.date_hour_id + '" value="" />';
-			html += '<input type="hidden" id="' + this.date_minute_id + '" value="" />';
-			html += '<input type="hidden" id="' + this.date_second_id + '" value="" />';
+			html += '<input type="hidden" id="' + this.time_hour_id + '" value="" />';
+			html += '<input type="hidden" id="' + this.time_minute_id + '" value="" />';
+			html += '<input type="hidden" id="' + this.time_second_id + '" value="" />';
 			html += '<input type="hidden" id="' + this.time_am_pm_id + '" value="" />';
 		}
 		// time elements
@@ -807,16 +781,16 @@ var Numbers_Calendar = function (options) {
 			html += '</tr>';
 		}
 		// whether we need to show presets panel
-		/* todo: add presets here
-		 if (this.flag_show_presets) {
-		 html+= '<tr>';
-		 html+= '<td colspan="3"><hr/></td>';
-		 html+= '</tr>';
-		 html+= '<tr>';
-		 html+= '<td colspan="3">' + presets + '</td>';
-		 html+= '</tr>';
-		 }
-		 */
+		if (this.flag_show_presets) {
+			html+= '<tr>';
+				html+= '<td colspan="3"><hr/></td>';
+			html+= '</tr>';
+			html+= '<tr>';
+				html+= '<td colspan="3">';
+					html+= '<a href="javascript:void(0);" onclick="' + this.var_id + '.updateInputElement(new Date());">' + result.i18n.presets.today + '</a><br/>';
+				html+= '</td>';
+			html+= '</tr>';
+		}
 		html += '</table>';
 		// adding content to the div
 		this.div_elem.innerHTML = html;

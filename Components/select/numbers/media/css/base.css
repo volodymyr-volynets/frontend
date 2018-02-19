@@ -62,9 +62,6 @@ html[dir="ltr"] .numbers_select_icons {
 	min-width: 15px;
 	text-align: center;
 }
-tr.numbers_select_option_table_tr_hover:hover {
-	background-color: #fafafa;
-}
 .numbers_select_option_table_td {
 	height: 2.5em;
 	vertical-align: middle;
@@ -142,4 +139,7 @@ html[dir="rtl"] .numbers_select_option_table_level_last_left {
 }
 .numbers_select_option_table tbody tr:nth-of-type(odd) {
 	background: transparent;
+}
+tr.numbers_select_option_table_tr_hover:hover {
+	background-color: #fafafa !important;
 }

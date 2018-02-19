@@ -23,7 +23,8 @@ class Base implements \Numbers\Frontend\Components\Calendar\Interface2\Base {
 			'date_week_start_day' => $options['calendar_date_week_start_day'] ?? 1,
 			'date_disable_week_days' => $options['calendar_date_disable_week_days'] ?? null,
 			'master_id' => $options['calendar_master_id'] ?? null,
-			'slave_id' => $options['calendar_slave_id'] ?? null
+			'slave_id' => $options['calendar_slave_id'] ?? null,
+			'show_presets' => $options['show_presets'] ?? true
 		];
 		$options['type'] = 'text';
 		// determine input size

@@ -114,7 +114,8 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 	 * @see \HTML::button2()
 	 */
 	public static function button2(array $options = []) : string {
-		$type = $options['type'] ?? 'default';
+		$type = $options['type'] ?? 'secondary';
+		if ($type == 'default') $type = 'secondary';
 		$options['class'] = array_add_token($options['class'] ?? [], 'btn btn-' . $type, ' ');
 		return parent::button2($options);
 	}
