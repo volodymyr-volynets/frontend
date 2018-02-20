@@ -1595,17 +1595,17 @@ render_element:
 				$name = 'navigation[' . $result_options['name'] . ']';
 				$temp = '<table width="100%" dir="ltr">'; // always left to right
 					$temp.= '<tr>';
-						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[first]', 'value' => \HTML::icon(['type' => 'fas fa-step-backward']), 'onclick' => 'Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'First')]) . '</td>';
+						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[first]', 'value' => \HTML::icon(['type' => 'fas fa-step-backward']), 'onclick' => '$(this.form).attr(\'no_ajax\', 1); Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'First')]) . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
-						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[previous]', 'value' => \HTML::icon(['type' => 'fas fa-caret-left']), 'onclick' => 'Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Previous')]) . '</td>';
+						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[previous]', 'value' => \HTML::icon(['type' => 'fas fa-caret-left']), 'onclick' => '$(this.form).attr(\'no_ajax\', 1); Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Previous')]) . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
 						$temp.= '<td width="90%">' . $value . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
-						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[refresh]', 'value' => \HTML::icon(['type' => 'fas fa-sync']), 'onclick' => 'Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Refresh')]) . '</td>';
+						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[refresh]', 'value' => \HTML::icon(['type' => 'fas fa-sync']), 'onclick' => '$(this.form).attr(\'no_ajax\', 1); Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Refresh')]) . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
-						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[next]', 'value' => \HTML::icon(['type' => 'fas fa-caret-right']), 'onclick' => 'Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Next')]) . '</td>';
+						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[next]', 'value' => \HTML::icon(['type' => 'fas fa-caret-right']), 'onclick' => '$(this.form).attr(\'no_ajax\', 1); Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Next')]) . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
-						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[last]', 'value' => \HTML::icon(['type' => 'fas fa-step-forward']), 'onclick' => 'Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Last')]) . '</td>';
+						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[last]', 'value' => \HTML::icon(['type' => 'fas fa-step-forward']), 'onclick' => '$(this.form).attr(\'no_ajax\', 1); Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Last')]) . '</td>';
 					$temp.= '</tr>';
 				$temp.= '</table>';
 				$value = $temp;
