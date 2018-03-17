@@ -195,6 +195,11 @@ class Base {
 			$value.= '<hr class="simple" />';
 			$result = $value . $result;
 		}
+		// postponed messages
+		if (!empty($_SESSION['numbers']['forms'][$this->object->form_link]['messages']) && empty($this->object->misc_settings['form_postponed_messages'])) {
+			$this->object->errors['general'] = array_merge($this->object->errors['general'] ?? [], $_SESSION['numbers']['forms'][$this->object->form_link]['messages']);
+			unset($_SESSION['numbers']['forms'][$this->object->form_link]['messages']);
+		}
 		// messages
 		if (!empty($this->object->errors['general'])) {
 			$messages = '';
