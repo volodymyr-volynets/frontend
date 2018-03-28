@@ -1341,7 +1341,6 @@ render_custom_renderer:
 					$current = current($value);
 					if (is_array($current) && key($current) == $options['options']['multiple_column']) {
 						$value = array_extract_values_by_key($value ?? [], $options['options']['multiple_column']);
-						print_r2($value);
 					}
 				}
 				$options_array_processed = \Object\Data\Common::processOptions($result_options['options_model'], $this->object, $result_options['options_params'], $value, $skip_values, $result_options['options_options']);
@@ -1614,6 +1613,16 @@ render_element:
 					$temp.= '</tr>';
 				$temp.= '</table>';
 				$value = $temp;
+			}
+			// track previous values
+			if (!empty($options['options']['track_previous_values'])) {
+				if (is_array($result_options['value'])) {
+					foreach ($result_options['value'] as $v) {
+						$value.= \HTML::hidden(['name' => '__track_previous_values[' . $result_options['name'] . '][]', 'value' => $v]);
+					}
+				} else {
+					$value.= \HTML::hidden(['name' => '__track_previous_values[' . $result_options['name'] . ']', 'value' => $result_options['value']]);
+				}
 			}
 		}
 		// html suffix and prefix
