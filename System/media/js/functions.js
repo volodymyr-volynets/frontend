@@ -340,3 +340,23 @@ function cookie_set(name, value) {
 	expires.setTime(expires.getTime() + (1 * 24 * 60 * 60 * 1000));
 	document.cookie = name + '=' + value + ';expires=' + expires.toUTCString();
 }
+
+/**
+ * Decode HTML
+ *
+ * @param string value
+ * @returns string
+ */
+function html_decode(value) {
+    return $("<div />").html(value).text();
+}
+
+/**
+ * Encode HTML
+ *
+ * @param string value
+ * @returns string
+ */
+function html_encode(value) {
+    return $('<div />').text(value).html();
+}
