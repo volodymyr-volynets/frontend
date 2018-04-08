@@ -573,6 +573,8 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 				$active_tab = $k;
 				break;
 			}
+		} else if (empty($header[$active_tab])) { // if active tab is not present
+			$active_tab = key($header);
 		}
 		$result = '';
 		$result.= '<div id="' . $id . '" class="' . ($options['class'] ?? '') . '">';
