@@ -216,7 +216,7 @@ class Base {
 		$result.= \HTML::hidden(['name' => '__form_onchange_field_values_key', 'value' => '']);
 		// form is within tabs
 		if (!empty($this->object->options['collection_current_tab_id'])) {
-			$result.= \HTML::hidden(['name' => $this->object->options['collection_current_tab_id'] . '_active_hidden', 'value' => $this->object->form_link]);
+			$result.= \HTML::hidden(['name' => $this->object->options['collection_current_tab_id'], 'value' => $this->object->form_link]);
 		}
 		// form data in onload
 		$js_data = [
