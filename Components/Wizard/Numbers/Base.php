@@ -29,7 +29,7 @@ class Base implements \Numbers\Frontend\Components\Wizard\Interface2\Base {
 				$flag_description_found = false;
 				$type = $options['type'] ?? 'primary';
 				foreach ($options['options'] as $k => $v) {
-					$row1.= '<th width="' . str_replace(',', '.', $width) . '%" class="numbers_frontend_components_wizard_numbers_base_header">' . (i18n(null, $v['name']) ?? '') . '</th>';
+					$row1.= '<th width="' . \HTML::number($width) . '%" class="numbers_frontend_components_wizard_numbers_base_header">' . (i18n(null, $v['name']) ?? '') . '</th>';
 					// progress bar
 					$row2.= '<td>';
 						$row2.= '<div class="numbers_frontend_components_wizard_numbers_base_holder">';
