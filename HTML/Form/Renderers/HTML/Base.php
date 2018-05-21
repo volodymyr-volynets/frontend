@@ -323,7 +323,7 @@ class Base {
 		foreach ($v['rows'] as $k2 => $v2) {
 			// acl on tabs
 			if (!empty($v2['options']['acl'])) {
-				if (!\Can::systemFeaturesExists($v2['options']['acl'])) {
+				if (!\Can::systemFeaturesExist($v2['options']['acl'])) {
 					continue;
 				}
 			}
