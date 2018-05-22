@@ -1,6 +1,6 @@
 <?php
 
-namespace  Numbers\Frontend\Components\Calendar\Numbers;
+namespace Numbers\Frontend\Components\Calendar\Numbers;
 class Base implements \Numbers\Frontend\Components\Calendar\Interface2\Base {
 
 	/**
