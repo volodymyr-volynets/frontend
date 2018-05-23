@@ -667,7 +667,10 @@ render_custom_renderer:
 		// rendering
 		foreach ($grouped as $k => $v) {
 			$first = current($v);
-			$result['data']['html'].= $this->{'renderRow' . ucfirst($first['type'])}($v, ['class' => $this->object->data[$container_link]['options']['class'] ?? null]);
+			$result['data']['html'].= $this->{'renderRow' . ucfirst($first['type'])}($v, [
+				'class' => $this->object->data[$container_link]['options']['class'] ?? null,
+				'container_options' => $this->object->data[$container_link]['options'] ?? []
+			]);
 		}
 		$result['success'] = true;
 		return $result;
@@ -1226,6 +1229,174 @@ render_custom_renderer:
 	}
 
 	/**
+	 * Render table rows
+	 *
+	 * @param array $rows
+	 * @param array $options
+	 * @return string
+	 */
+	public function renderRowTable($rows, $options = []) {
+		$data = [
+			'class' => $options['class'] ?? null,
+			'header' => [
+				'column' => 'Column'
+			],
+			'options' => [],
+			'skip_header' => true
+		];
+		$column_name_width_percent = $options['container_options']['column_name_width_percent'] ?? 50;
+		foreach ($rows as $k => $v) {
+			$index = 0;
+			array_key_sort($v['value']['elements'], ['order' => SORT_ASC]);
+			// processing buttons
+			/*
+			if (in_array($v['key'], [$this->object::BUTTONS, $this->object::TRANSACTION_BUTTONS])) {
+				$buttons = [
+					'left' => [],
+					'center' => [],
+					'right' => []
+				];
+				foreach ($v['value']['elements'] as $k2 => $v2) {
+					$button_group = $v2['options']['button_group'] ?? 'left';
+					if (!isset($buttons[$button_group])) {
+						$buttons[$button_group] = [];
+					}
+					$v2['options']['tabindex'] = $this->object->tabindex;
+					$this->object->tabindex++;
+					$buttons[$button_group][] = $this->renderElementValue($v2);
+				}
+				// render button groups
+				foreach ($buttons as $k2 => $v2) {
+					$value = implode(' ', $v2);
+					$value = '<div class="grid_button_' . $k2 . '">' . $value . '</div>';
+					$data['options'][$k][$v['key']][$k2] = [
+						'label' => null,
+						'value' => $value,
+						'description' => null,
+						'error' => [],
+						'options' => []
+					];
+				}
+				continue;
+			}
+			*/
+			// group by
+			$groupped = [];
+			$percentages = [];
+			foreach ($v['value']['elements'] as $k2 => $v2) {
+				$groupped[$v2['options']['label_name'] ?? ''][$k2] = $v2;
+				$percentages[$k2] = $v2['options']['percent'] ?? null;
+			}
+			$percentages = \HTML::percentageToGridColumns($percentages);
+			foreach ($groupped as $k2 => $v2) {
+				$first = current($v2);
+				$first_key = key($v2);
+				$inner_data = [
+					'class' => 'numbers_frontend_form_table_renderer_field_table',
+					'header' => [],
+					'options' => [],
+					'skip_header' => true,
+					'width' => '100%'
+				];
+				if ($first_key == $this->object::SEPARATOR_HORIZONTAL) {
+					$data['options'][$k]['column'] = [
+						'value' => \HTML::separator(['value' => $first['options']['label_name'], 'icon' => $first['options']['icon'] ?? null]),
+						'separator' => true
+					];
+					continue;
+				} else {
+					$first['prepend_to_field'] = ':';
+					// column name
+					$column_counter = 1;
+					$column_percentages = 0;
+					foreach ($v2 as $k3 => $v3) {
+						$column_percentages+= $percentages['percent'][$k3];
+					}
+					$inner_data['header'][$k2] = $k2;
+					if (!empty($first['options']['label_name'])) {
+						$column_name_width_percent_oposite = 100 - $column_name_width_percent;
+						$inner_data['options'][$k][$k2] = [
+							'value' => $this->renderElementName($first),
+							'nowrap' => true,
+							'width' => \HTML::number(round($column_percentages * ($column_name_width_percent / 100), 2)) . '%'
+						];
+					} else {
+						$column_name_width_percent_oposite = 100;
+						$inner_data['options'][$k][$k2] = [
+							'value' => '',
+							'nowrap' => true,
+							'width' => '0%'
+						];
+					}
+					// loop through fields
+					foreach ($v2 as $k3 => $v3) {
+						// handling errors
+						$error = $this->object->getFieldErrors($v3);
+						if (!empty($error['counters'])) {
+							$this->object->errorInTabs($error['counters']);
+						}
+						// hidden row
+						$hidden = false;
+						if ($v['key'] === $this->object::HIDDEN && !\Application::get('flag.numbers.frontend.html.form.show_field_settings')) {
+							$v3['options']['row_class'] = ($v3['options']['row_class'] ?? '') . ' grid_row_hidden';
+							$hidden = true;
+						} else if ($v['key'] === $this->object::HIDDEN) {
+							$v3['options']['row_class'] = ($v3['options']['row_class'] ?? '') . ' grid_row_hidden_testing';
+						}
+						// we do not show hidden fields
+						if (($v3['options']['method'] ?? '') == 'hidden') {
+							if (\Application::get('flag.numbers.frontend.html.form.show_field_settings')) {
+								$v3['options']['method'] = 'input';
+							} else {
+								$v3['options']['style'] = ($v3['options']['style'] ?? '') . 'display: none;';
+								$hidden = true;
+							}
+						}
+						if (!$hidden) {
+							$v3['options']['tabindex'] = $this->object->tabindex;
+							$this->object->tabindex++;
+						}
+						// processing value and neighbouring_values
+						if (!empty($v3['options']['detail_11'])) {
+							$neighbouring_values = & $this->object->values[$v3['options']['detail_11']];
+						} else {
+							$neighbouring_values = & $this->object->values;
+						}
+						$value = array_key_get($this->object->values, $v3['options']['values_key']);
+						// generate column
+						$new_column_width = \HTML::number(round($percentages['percent'][$k3] * ($column_name_width_percent_oposite / 100), 2)) . '%';
+						$inner_data['header'][$k3] = $k3;
+						$inner_data['options'][$k][$k3] = [
+							'value' => $this->renderElementValue($v3, $value, $neighbouring_values),
+							'nowrap' => true,
+							'width' => $new_column_width
+						];
+						if (!empty($error)) {
+							$inner_data['options'][$k . '_error'][$k3] = [
+								'value' => $error['message'],
+								'nowrap' => true,
+								'width' => $new_column_width
+							];
+						}
+						if (!empty($v3['options']['description'])) {
+							$inner_data['options'][$k . '_description'][$k2] = [
+								'value' => $v3['options']['description'],
+								'nowrap' => true,
+								'width' => $new_column_width
+							];
+						}
+					}
+				}
+				$data['options'][$k]['column'] = [
+					'value' => \HTML::table($inner_data),
+					'nowrap' => true
+				];
+			}
+		}
+		return \HTML::table($data);
+	}
+
+	/**
 	 * Render elements name
 	 *
 	 * @param array $options
@@ -1420,7 +1591,7 @@ render_custom_renderer:
 				}
 				// value in special order
 				$flag_translated = false;
-				if (in_array($element_method, ['\HTML::a', '\HTML::submit', '\HTML::button', '\HTML::button2', '\HTML::separator'])) {
+				if (in_array($element_method, ['\HTML::a', '\HTML::b', '\HTML::submit', '\HTML::button', '\HTML::button2', '\HTML::separator'])) {
 					// translate value
 					$result_options['value'] = i18n($result_options['i18n'] ?? null, $result_options['value'] ?? null, ['skip_i_symbol' => true]);
 					// process confirm_message

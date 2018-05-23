@@ -43,3 +43,12 @@
 	padding-bottom: 0;
 	margin-bottom: 0;
 }
+/* form */
+.numbers_frontend_form_table_renderer_field_table, .numbers_frontend_form_table_renderer_field_table tr {
+	background: transparent !important;
+	border: none !important;
+	margin: 0;
+}
+.numbers_frontend_form_table_renderer_field_table td {
+	border: none !important;
+}
