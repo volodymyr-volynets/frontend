@@ -378,8 +378,9 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 		$brand_name = $options['brand_name'] ?? null;
 		$brand_url = $options['brand_url'] ?? '/';
 		$brand_logo = $options['brand_logo'] ?? '';
+		$class = $options['class'] ?? 'bg-light';
 		array_key_unset($options, ['options', 'brand']);
-		$result = '<div class="navbar navbar-expand-lg navbar-light bg-light" role="navigation">';
+		$result = '<div class="navbar navbar-expand-lg navbar-light ' . $class . '" role="navigation">';
 			$result.= '<div class="container">';
 				$result.= '<div class="navbar-header">';
 					$result.= '<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">';
@@ -394,6 +395,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 				$result.= '<div class="collapse navbar-collapse" id="navbarSupportedContent">';
 					$result.= '<ul class="navbar-nav mr-auto">';
 						$index = 1;
+						array_key_sort($items, ['order' => SORT_ASC], ['name' => SORT_NUMERIC]);
 						foreach ($items as $k => $v) {
 							$class = !empty($v['options']) ? 'nav-item dropdown' : 'nav-item';
 							$result.= '<li class="navbar-nav-li-level1 ' . $class . '" search-id="' . $index . '">';
@@ -416,37 +418,10 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 							$items[$k]['index'] = $index;
 							$index++;
 						}
-						// and we need to add all tabs again into others tab
-						/*
-						$result.= '<li search-id="0" class="navbar-nav-others">';
-							$result.= '<a href="#" class="dropdown-toggle" data-toggle="dropdown">More <b class="caret"></b></a>';
-							$result.= '<ul class="dropdown-menu navbar-nav-others-ul">'; //multi-level
-								foreach ($items as $k => $v) {
-									$class = !empty($v['options']) ? ' dropdown-submenu' : '';
-									$result.= '<li class="navbar-nav-li-level1-others' . $class . '" search-id="' . $v['index'] . '">';
-										// if we have options
-										if (!empty($v['options'])) {
-											$result.= self::menuSubmenu($v, 1);
-										} else {
-											// create name
-											$name = i18n(null, $v['name']);
-											if (!empty($v['icon'])) {
-												$name = \HTML::icon(['type' => $v['icon']]) . ' ' . $name;
-											}
-											if (!empty($v['url'])) {
-												$result.= \HTML::a(['href' => $v['url'], 'value' => $name]);
-											} else {
-												$result.= $name;
-											}
-										}
-									$result.= '</li>';
-								}
-							$result.= '</ul>';
-						$result.= '</li>';
-						*/
 					$result.= '</ul>';
 					// right menu
 					if (!empty($items_right)) {
+						array_key_sort($items_right, ['order' => SORT_ASC], ['name' => SORT_NUMERIC]);
 						$result.= '<ul class="navbar-nav ml-auto">';
 							foreach ($items_right as $k => $v) {
 								$class = !empty($v['options']) ? 'nav-item dropdown' : 'nav-item';
