@@ -1,5 +1,7 @@
 // special variable to handle buttons
 var numbers_frontend_form_submit_hidden_initiator = null;
+// ajax execution lock
+var numbers_frontend_form_execution_lock = false;
 
 /**
  * Form
@@ -50,6 +52,9 @@ Numbers.Form = {
 		$('#' + mask_id).mask({overlayOpacity: 0.25, delay: 0});
 		// wrap everything into timer function to get focused id
 		setTimeout(function () {
+			// if we have a lock we exit
+			if (numbers_frontend_form_execution_lock) return;
+			// initialize form data
 			var form_data = new FormData(document.getElementById(form_id));
 			form_data.append('__ajax', 1);
 			form_data.append(numbers_frontend_form_submit_hidden_initiator, 1);
@@ -68,6 +73,7 @@ Numbers.Form = {
 				}
 			});
 			// send data to the server
+			numbers_frontend_form_execution_lock = true;
 			$.ajax({
 				url: Numbers.controller_full,
 				method: 'post',
@@ -77,6 +83,8 @@ Numbers.Form = {
 				contentType: false,
 				processData: false,
 				success: function (data) {
+					// release the lock
+					numbers_frontend_form_execution_lock = false;
 					if (data.success) {
 						$('#' + wrapper_id).html(data.html);
 						eval(data.js);
@@ -92,6 +100,9 @@ Numbers.Form = {
 					}
 				},
 				error: function (jqXHR, textStatus, errorThrown) {
+					// release the lock
+					numbers_frontend_form_execution_lock = false;
+					// echo error on the screen
 					print_r2(jqXHR.responseText);
 				}
 			});
