@@ -447,6 +447,15 @@ class Base {
 			'width' => '100%',
 			'options' => []
 		];
+		// prepare text search strings
+		$full_text_search = false;
+		if (!empty($data['full_text_search'])) {
+			$data['full_text_search'] = preg_replace('/\s\s+/', ' ', trim($data['full_text_search']));
+			$full_text_search = explode(' ', $data['full_text_search']);
+			usort($full_text_search, function($a, $b) {
+				return strlen($b) <=> strlen($a);
+			});
+		}
 		// sort columns
 		foreach ($data['columns'] as $k => $v) {
 			array_key_sort($v['elements'], ['order' => SORT_ASC]);
@@ -498,6 +507,10 @@ class Base {
 							}
 						}
 						$width = $v2['options']['width'] ?? ($v2['options']['percent'] . '%');
+						// full text search replaces
+						if (!empty($full_text_search)) {
+							$this->markTextInStr($value, $full_text_search);
+						}
 						$inner_table['options'][$k][$k2] = ['value' => $value, 'nowrap' => true, 'width' => $width, 'align' => $v2['options']['align'] ?? 'left'];
 					}
 					$temp_inner.= \HTML::table($inner_table);
@@ -538,6 +551,10 @@ class Base {
 							}
 						}
 						$inner_table['options'][$k . '_' . $k2][1] = ['value' => '<b>' . $v2['options']['label_name'] . ':</b>', 'width' => '15%', 'align' => 'left'];
+						// full text search replaces
+						if (!empty($full_text_search)) {
+							$this->markTextInStr($value, $full_text_search);
+						}
 						$inner_table['options'][$k . '_' . $k2][2] = ['value' => $value, 'nowrap' => true, 'width' => '85%', 'align' => 'left'];
 					}
 					$temp_inner.= \HTML::table($inner_table);
@@ -548,6 +565,21 @@ class Base {
 			}
 		}
 		return '<div class="numbers_frontend_form_list_table_wrapper_outer"><div class="numbers_frontend_form_list_table_wrapper_inner">' . \HTML::table($table) . '</div></div>';
+	}
+
+	/**
+	 * Mark text in a string
+	 *
+	 * @param mixed $str
+	 * @param array $text
+	 */
+	private function markTextInStr(& $str, array $text) {
+		if (isset($str)) {
+			$str.= '';
+			foreach ($text as $v) {
+				$str = preg_replace("/(" . preg_quote($v) . ")/i", '<span class="numbers_frontend_form_list_text_marks">$1</span>', $str);
+			}
+		}
 	}
 
 	/**
@@ -1591,9 +1623,12 @@ render_custom_renderer:
 				}
 				// value in special order
 				$flag_translated = false;
-				if (in_array($element_method, ['\HTML::a', '\HTML::b', '\HTML::submit', '\HTML::button', '\HTML::button2', '\HTML::separator'])) {
+				if (in_array($element_method, ['\HTML::a', '\HTML::submit', '\HTML::button', '\HTML::button2', '\HTML::separator'])) {
 					// translate value
-					$result_options['value'] = i18n($result_options['i18n'] ?? null, $result_options['value'] ?? null, ['skip_i_symbol' => true]);
+					if (empty($result_options['skip_i18n'])) {
+						$result_options['value'] = i18n($result_options['i18n'] ?? null, $result_options['value'] ?? null, ['skip_i_symbol' => true]);
+						$flag_translated = true;
+					}
 					// process confirm_message
 					$result_options['onclick'] = $result_options['onclick'] ?? '';
 					if (!empty($result_options['confirm_message'])) {
@@ -1609,7 +1644,6 @@ render_custom_renderer:
 							$result_options['onclick'] = 'Numbers.Form.triggerSubmitOnButton(this); ' . $result_options['onclick'];
 						}
 					}
-					$flag_translated = true;
 					// icon
 					if (!empty($result_options['icon']) && $element_method != '\HTML::separator') {
 						$result_options['value'] = \HTML::icon(['type' => $result_options['icon']]) . ' ' . $result_options['value'];
@@ -1620,11 +1654,11 @@ render_custom_renderer:
 						$result_options['accesskey'] = $accesskey[2];
 						$result_options['title'] = ($result_options['title'] ?? '') . ' ' . i18n(null, 'Shortcut Key: ') . $accesskey[2];
 					}
-				} else if (in_array($element_method, ['\HTML::div', '\HTML::span'])) {
-					if (!isset($result_options['value'])) {
+				} else if (in_array($element_method, ['\HTML::div', '\HTML::span', '\HTML::b'])) {
+					if (!empty($value)) {
 						$result_options['value'] = $value;
 					}
-					if (!empty($result_options['i18n'])) {
+					if (empty($result_options['skip_i18n'])) {
 						$result_options['value'] = i18n($result_options['i18n'] ?? null, $result_options['value'] ?? null);
 						$flag_translated = true;
 					}

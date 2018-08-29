@@ -36,6 +36,9 @@
 	border-top: none;
 	padding: 0 !important;
 }
+.numbers_frontend_form_list_text_marks {
+	color: red;
+}
 .control-label {
 	display: block;
 }
