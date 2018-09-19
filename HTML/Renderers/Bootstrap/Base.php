@@ -13,7 +13,11 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 		$footer = $options['footer'] ?? null;
 		$result = '<div class="card">';
 			if ($header != null) {
-				$bg_class = $type ? ('bg-' . $type . ' text-white') : '';
+				if ($type != 'default') {
+					$bg_class = $type ? ('bg-' . $type . ' text-white') : '';
+				} else {
+					$bg_class = $type ? ('bg-' . $type) : '';
+				}
 				if (is_array($header)) {
 					$icon = !empty($header['icon']) ? (\HTML::icon($header['icon']) . ' ') : null;
 					$result.= '<div class="card-header ' . $bg_class . '">' . $icon . $header['title'] . '</div>';
@@ -321,8 +325,13 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 		if (!empty($item['icon'])) {
 			$name = \HTML::icon(['type' => $item['icon']]) . ' ' . $name;
 		}
-		//'data-toggle' => 'dropdown'
-		$result = \HTML::a(['href' => $item['url'] ?? 'javascript:void(0);', 'class' => 'nav-link dropdown-toggle', 'id' => 'menu_item_id_' . $item['menu_id'], 'value' => $name, 'role' => 'button', 'data-toggle' => 'dropdown', 'aria-haspopup' => 'true', 'aria-expanded' => 'false']);
+		// item url
+		if (!empty($item['url'])) {
+			$temp_url = http_append_to_url($item['url'], ['__menu_id' => $item['__menu_id'] ?? '']);
+		} else {
+			$temp_url = 'javascript:void(0);';
+		}
+		$result = \HTML::a(['href' => $temp_url, 'class' => 'nav-link dropdown-toggle', 'id' => 'menu_item_id_' . $item['menu_id'], 'value' => $name, 'role' => 'button', 'data-toggle' => 'dropdown', 'aria-haspopup' => 'true', 'aria-expanded' => 'false']);
 		$result.= '<ul class="dropdown-menu" aria-labelledby="menu_item_id_' . $item['menu_id'] . '">';
 			// sort
 			foreach ($item['options'] as $k2 => $v2) {
@@ -358,7 +367,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 							$name = \HTML::icon(['type' => $v2['icon']]) . ' ' . $name;
 						}
 						if (!empty($v2['url'])) {
-							$result.= \HTML::a(['href' => $v2['url'], 'class' => $class, 'id' => 'menu_item_id_' . $v2['menu_id'], 'title' => $v2['title'] ?? null, 'value' => $name]);
+							$result.= \HTML::a(['href' => http_append_to_url($v2['url'], ['__menu_id' => $v2['__menu_id'] ?? '']), 'class' => $class, 'id' => 'menu_item_id_' . $v2['menu_id'], 'title' => $v2['title'] ?? null, 'value' => $name]);
 						} else {
 							$result.= \HTML::div(['title' => $v2['title'] ?? null, 'value' => $name]);
 						}
@@ -409,7 +418,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 										$name = \HTML::icon(['type' => $v['icon']]) . ' ' . $name;
 									}
 									if (!empty($v['url'])) {
-										$result.= \HTML::a(['href' => $v['url'], 'class' => 'nav-link', 'value' => $name]);
+										$result.= \HTML::a(['href' => http_append_to_url($v['url'], ['__menu_id' => $v['__menu_id'] ?? '']), 'class' => 'nav-link', 'value' => $name]);
 									} else {
 										$result.= $name;
 									}
@@ -440,7 +449,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 											$name = \HTML::icon(['type' => $v['icon']]) . ' ' . $name;
 										}
 										if (!empty($v['url'])) {
-											$result.= \HTML::a(['href' => $v['url'], 'class' => 'nav-link', 'id' => 'menu_item_id_' . $v['menu_id'], 'value' => $name]);
+											$result.= \HTML::a(['href' => http_append_to_url($v['url'], ['__menu_id' => $v['__menu_id'] ?? '']), 'class' => 'nav-link', 'id' => 'menu_item_id_' . $v['menu_id'], 'value' => $name]);
 										} else {
 											$result.= $name;
 										}

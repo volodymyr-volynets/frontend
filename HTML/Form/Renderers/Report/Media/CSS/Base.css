@@ -2,8 +2,9 @@
 	overflow-x: scroll;
 }
 .numbers_frontend_form_report_screen_wrapper_inner {
-	min-width: 1100px;
+	min-width: 1000px;
 	margin: 0 auto;
+	width: 100%;
 }
 .numbers_frontend_form_report_screen_table_global, .numbers_frontend_form_report_screen_table_global table {
 	margin: 0;
@@ -32,7 +33,7 @@
 	/*background-color: #ffffff;*/
 }
 .numbers_frontend_form_report_screen_table_global_row_first_odd_even {
-	border-top: 1px solid rgba(192, 192, 192, 0.20);
+	border-top: 1px solid rgba(192, 192, 192, 0.50);
 }
 .numbers_frontend_form_report_screen_table_global_separator {}
 /* cell styles */
@@ -70,7 +71,7 @@
 }
 .numbers_frontend_form_report_screen_cell_data.as_header {
 	font-style: italic;
-	border-bottom: 1px solid #000;
+	border-bottom: 1px solid rgba(192, 192, 192, 0.50);
 }
 .numbers_frontend_form_report_screen_cell_data.linethrough {
 	text-decoration: line-through;
