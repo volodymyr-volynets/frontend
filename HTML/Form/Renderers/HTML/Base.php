@@ -1776,6 +1776,10 @@ render_custom_renderer:
 						$result_options['placeholder'] = strip_tags(i18n(null, $placeholder));
 					}
 				}
+				// auto placeholder for selects
+				if (in_array($element_method, ['\HTML::select', '\HTML::multiselect']) && !array_key_exists('placeholder', $result_options)) {
+					$result_options['placeholder'] = strip_tags(i18n(null, \Object\Content\Messages::PLEASE_CHOOSE));
+				}
 				// events
 				foreach (\Numbers\Frontend\HTML\Renderers\Common\HTML5::$events as $e) {
 					if (!empty($result_options['readonly'])) { // important - readonly emenets cannot have events

@@ -1,0 +1,94 @@
+.numbers_tree_option_table td {
+	padding: 0;
+	border: none;
+	vertical-align: middle;
+}
+.numbers_tree_option_table tr, .numbers_tree_option_multiple_item_close, .numbers_tree_icons {
+	cursor: pointer;
+	cursor: hand;
+}
+.numbers_tree_option_table_icon {
+	min-width: 15px;
+	text-align: center;
+}
+.numbers_tree_option_table_td {
+	height: 2.5em;
+	vertical-align: middle;
+	padding-left: 3px;
+}
+html[dir="rtl"] .numbers_tree_option_table_td {
+	text-align: right;
+}
+.numbers_tree_option_table_level {
+	width: 2em;
+	height: 2.5em;
+}
+.numbers_tree_option_table_level_nextchild {
+	width: 1em;
+	height: 100%;
+	float: right;
+	border-left: 1px solid #d3d3d3 !important;
+}
+html[dir="rtl"] .numbers_tree_option_table_level_nextchild {
+	border-right: 1px solid #d3d3d3 !important;
+	border-left: none;
+}
+.numbers_tree_option_table_level_nextchild tr {
+	height: 0.5em !important;
+}
+.numbers_tree_option_table_level_nextchild_sep, .numbers_tree_option_table_level_last_sep {
+	width: 1em;
+	border-top: 1px solid #d3d3d3 !important;
+}
+.numbers_tree_option_table_level_last {
+	width: 1em;
+	height: 100%;
+	float: right;
+}
+.numbers_tree_option_table_level_last_left {
+	border-left: 1px solid #d3d3d3 !important;
+	padding: 0;
+}
+html[dir="rtl"] .numbers_tree_option_table_level_last_left {
+	border-right: 1px solid #d3d3d3 !important;
+	border-left: none;
+}
+.numbers_tree_option_table_color {
+	display: inline-block;
+	width: 1.5em !important;
+	border: 1px solid #d3d3d3 !important;
+}
+.numbers_tree_row_selected i.numbers_tree_row_selected_icon:before {
+	content: "\f00c";
+	padding-right: 5px;
+}
+.numbers_tree_option_table_hide_tree td, .numbers_tree_option_table_hide_tree .numbers_tree_option_table_level_next, .numbers_tree_option_table_hide_tree .numbers_tree_option_table_level_nextchild {
+	border: none !important;
+}
+.numbers_tree_multiple_item {
+	border: 1px solid #d3d3d3 !important;
+	border-radius: 4px;
+	padding-top : 1px;
+	padding-bottom: 1px;
+	padding-left: 3px;
+	padding-right: 3px;
+	margin-left: 2px;
+	display: inline-block;
+}
+.numbers_tree_option_multiple_item_close {
+	color: inherit !important;
+}
+.numbers_tree_option_table_data {
+	display: inline-block;
+	vertical-align: middle !important;
+}
+.numbers_tree_option_table_data td, .numbers_tree_option_table_data th {
+	padding: 0;
+	border-top: none;
+}
+.numbers_tree_option_table tbody tr:nth-of-type(odd) {
+	background: transparent;
+}
+tr.numbers_tree_option_table_tr_hover:hover {
+	background-color: #fafafa !important;
+}
