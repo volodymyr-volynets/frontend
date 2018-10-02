@@ -20,6 +20,13 @@ var Numbers = {
 	flag: {},
 
 	/**
+	 * Locks used by application
+	 *
+	 * @type object
+	 */
+	locks: {},
+
+	/**
 	 * Generate url
 	 *
 	 * @param mixed controller
