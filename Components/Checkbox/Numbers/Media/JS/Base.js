@@ -28,7 +28,7 @@ var NumbersCheckbox = function (options) {
 	container.style.textAlign = 'left';
 	container.className = 'numbers_frontend_components_select_numbers_base_group';
 	container.id = result.div_id;
-	container.innerHTML = '<div class="numbers_frontend_components_select_numbers_base_wrapper">\n\
+	container.innerHTML = '<div class="numbers_frontend_components_select_numbers_base_wrapper' + (result.readonly ? ' numbers_frontend_components_select_numbers_base_readonly ' : '') + '">\n\
 								<div class="numbers_frontend_components_select_numbers_base_toggle_on numbers_prevent_selection">' + Numbers.I18n.get(null, label_on) + '</div>\n\
 								<span class="numbers_frontend_components_select_numbers_base_toggle_middle numbers_prevent_selection">&nbsp;</span>\n\
 								<div class="numbers_frontend_components_select_numbers_base_toggle_off numbers_prevent_selection">' + Numbers.I18n.get(null, label_off) + '</div>\n\

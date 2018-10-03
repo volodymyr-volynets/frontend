@@ -71,3 +71,11 @@
 	right: 0;
 	top: 0;
 }
+.numbers_frontend_components_select_numbers_base_readonly div, .numbers_frontend_components_select_numbers_base_readonly div:hover, .numbers_frontend_components_select_numbers_base_readonly div:focus, .numbers_frontend_components_select_numbers_base_readonly div:active, .numbers_frontend_components_select_numbers_base_readonly div.active {
+	color: #333333;
+	background-color: #fff;
+	border-color: #adadad;
+}
+.numbers_frontend_components_select_numbers_base_readonly span.numbers_frontend_components_select_numbers_base_toggle_middle {
+	display: none;
+}

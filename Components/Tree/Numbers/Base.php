@@ -45,7 +45,7 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base {
 					$selected_class = ' numbers_tree_row_selected numbers_selected ';
 				}
 				// title
-				$title = $v['value'] ?? '';
+				$title = $v['title'] ?? '';
 				// if disabled
 				if (!empty($v['disabled'])) {
 					$html.= '<tr class="numbers_tree_option_table_tr ' . $inactive_class . ' numbers_disabled" search-id="' . $i . '" title="' . $title . '">';
@@ -108,7 +108,7 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base {
 								}
 							}
 							if (!$status) {
-								if (j < $v['level']) {
+								if ($j < $v['level']) {
 									for ($k = $i + 1; $k < $items_count; $k++) {
 										if ($result[$k]['level'] == $j + 1) {
 											$status = 'next';
@@ -163,13 +163,25 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base {
 					}
 					$colspan = $data_max_level - $v['level'] + 1;
 					$html.= '<td colspan="' . $colspan . '" valign="middle" class="numbers_tree_option_table_td">';
-						if (!empty($result[$i]['icon_class'])) {
-							$html.= '<i class="numbers_tree_option_table_icon ' . $result[$i]['icon_class'] . '"></i> ';
+						if (!empty($v['toolbar'])) {
+							$icon = '';
+							if (!empty($result[$i]['icon_class'])) {
+								$icon = '<i class="numbers_tree_option_table_icon ' . $result[$i]['icon_class'] . '"></i> ';
+							}
+							$html.= '<table width="100%" border="0">';
+								$html.= '<tr><td>&nbsp;</td></tr>';
+								$html.= '<tr><td>' . $icon . $v['name'] . '</td></tr>';
+								$html.= '<tr><td class="numbers_tree_mini_toolbar">' . implode(' | ', $v['toolbar']) . '</td></tr>';
+							$html.= '</table>';
+						} else {
+							if (!empty($result[$i]['icon_class'])) {
+								$html.= '<i class="numbers_tree_option_table_icon ' . $result[$i]['icon_class'] . '"></i> ';
+							}
+							if (!empty($result[$i]['photo_id'])) {
+								$html.= '<img class="navbar-menu-item-avatar-img" src="' . $result[$i]['photo_id'] . '" width="24" height="24" /> ';
+							}
+							$html.= $v['name'];
 						}
-						if (!empty($result[$i]['photo_id'])) {
-							$html.= '<img class="navbar-menu-item-avatar-img" src="' . $result[$i]['photo_id'] . '" width="24" height="24" /> ';
-						}
-						$html.= $v['value'];
 					$html.= '</td>';
 					//$html.= '<td width="1%">&nbsp;</td>';
 				$html.= '</tr>';

@@ -92,3 +92,7 @@ html[dir="rtl"] .numbers_tree_option_table_level_last_left {
 tr.numbers_tree_option_table_tr_hover:hover {
 	background-color: #fafafa !important;
 }
+td.numbers_tree_mini_toolbar {
+    font-size: 0.75em;
+    padding-left: 2em;
+}

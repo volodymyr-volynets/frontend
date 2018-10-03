@@ -142,7 +142,7 @@ class Base {
 		array_key_sort($this->object->data, ['order' => SORT_ASC]);
 		foreach ($this->object->data as $k => $v) {
 			if (!$v['flag_child']) {
-				if ($v['type'] == 'fields' || $v['type'] == 'details') {
+				if ($v['type'] == 'fields' || $v['type'] == 'details' || $v['type'] == 'trees') {
 					// reset tabs
 					$this->object->current_tab = [];
 					// list container
@@ -657,6 +657,10 @@ render_custom_renderer:
 		if (($this->object->data[$container_link]['type'] ?? '') == 'details') {
 			return $this->renderContainerTypeDetails($container_link);
 		}
+		// if its tree we need to render it differently
+		if (($this->object->data[$container_link]['type'] ?? '') == 'trees') {
+			return $this->renderContainerTypeTrees($container_link);
+		}
 		// render tabs
 		if (($this->object->data[$container_link]['type'] ?? '') == 'tabs') { // tabs
 			$temp_result = [];
@@ -703,6 +707,44 @@ render_custom_renderer:
 				'class' => $this->object->data[$container_link]['options']['class'] ?? null,
 				'container_options' => $this->object->data[$container_link]['options'] ?? []
 			]);
+		}
+		$result['success'] = true;
+		return $result;
+	}
+
+	/**
+	 * Render container type trees
+	 *
+	 * @param string $container_link
+	 * @return boolean
+	 */
+	public function renderContainerTypeTrees($container_link) {
+		$result = [
+			'success' => false,
+			'error' => [],
+			'data' => [
+				'html' => '',
+				'js' => '',
+				'css' => ''
+			]
+		];
+		// sorting rows
+		array_key_sort($this->object->data[$container_link]['rows'], ['order' => SORT_ASC]);
+		// get the data
+		$key = $this->object->data[$container_link]['options']['details_key'];
+		$data = $this->object->values[$key] ?? [];
+		// names only
+		if ($this->object->data[$container_link]['options']['details_rendering_type'] == 'name_only') {
+			$new_data = [];
+			foreach ($data as $k => $v) {
+				$key2 = $v[$this->object->data[$container_link]['options']['details_tree_key']];
+				$method = \Factory::method($this->object->data[$container_link]['options']['details_tree_name_only_custom_renderer'], null, true, [['skip_processing' => true]]);
+				$new_data[$key2] = call_user_func_array($method, [& $this->object, & $this->object->data[$container_link]['rows'], & $v]);
+				$new_data[$key2]['__parent'] = $v[$this->object->data[$container_link]['options']['details_tree_parent_key']];
+				$new_data[$key2]['toolbar'] = $new_data[$key2]['toolbar'] ?? [];
+			}
+			$new_data = \Helper\Tree::convertByParent($new_data, '__parent');
+			$result['data']['html'] = \HTML::tree(['options' => $new_data]);
 		}
 		$result['success'] = true;
 		return $result;
@@ -1822,6 +1864,10 @@ render_element:
 					$temp.= '</tr>';
 				$temp.= '</table>';
 				$value = $temp;
+			}
+			// if we need to load values on change
+			if (!empty($options['options']['refetch_values_on_change'])) {
+				$options['options']['track_previous_values'] = true;
 			}
 			// track previous values
 			if (!empty($options['options']['track_previous_values'])) {
