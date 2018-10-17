@@ -166,11 +166,17 @@ class Base {
 					$temp = $this->renderContainer($k);
 					if ($temp['success']) {
 						$result[$k]['html'] = \HTML::modal([
-							'id' => "form_{$this->object->form_link}_modal_{$k}_dialog",
+							'id' => $v['options']['modal_id'],
 							'class' => '',
 							'title' => isset($v['label_name']) ? i18n(null, $v['label_name']) : '',
 							'body' => $temp['data']['html'],
 						]);
+						// if we have an error we need to display modal
+						if (!empty($this->object->misc_settings['errors_in_modal'])) {
+							foreach ($this->object->misc_settings['errors_in_modal'] as $v2) {
+								\Layout::onLoad("Numbers.Modal.show('{$v2}');");
+							}
+						}
 					}
 				}
 			}
@@ -735,18 +741,120 @@ render_custom_renderer:
 		$data = $this->object->values[$key] ?? [];
 		// names only
 		if ($this->object->data[$container_link]['options']['details_rendering_type'] == 'name_only') {
-			$new_data = [];
-			foreach ($data as $k => $v) {
-				$key2 = $v[$this->object->data[$container_link]['options']['details_tree_key']];
-				$method = \Factory::method($this->object->data[$container_link]['options']['details_tree_name_only_custom_renderer'], null, true, [['skip_processing' => true]]);
-				$new_data[$key2] = call_user_func_array($method, [& $this->object, & $this->object->data[$container_link]['rows'], & $v]);
-				$new_data[$key2]['__parent'] = $v[$this->object->data[$container_link]['options']['details_tree_parent_key']];
-				$new_data[$key2]['toolbar'] = $new_data[$key2]['toolbar'] ?? [];
-			}
-			$new_data = \Helper\Tree::convertByParent($new_data, '__parent');
-			$result['data']['html'] = \HTML::tree(['options' => $new_data]);
+			$result['data']['html'] = $this->renderContainerTypeTreeNamesOnly($this->object->data[$container_link]['rows'], $data, $this->object->data[$container_link]['options']);
 		}
 		$result['success'] = true;
+		return $result;
+	}
+
+	/**
+	 * Render Tree Name Only
+	 *
+	 * @param array $rows
+	 * @param array $values
+	 * @param array $options
+	 * @return string
+	 */
+	public function renderContainerTypeTreeNamesOnly($rows, $values, $options = []) {
+		$result = '';
+		$new_data = [];
+		$row_number = 1;
+		foreach ($values as $k0 => $v0) {
+			$key2 = $v0[$options['details_tree_key']];
+			$method = \Factory::method($options['details_tree_name_only_custom_renderer'], null, true, [['skip_processing' => true]]);
+			$new_data[$key2] = call_user_func_array($method, [& $this->object, & $rows, & $v0]);
+			$new_data[$key2]['__parent'] = $v0[$options['details_tree_parent_key']];
+			$new_data[$key2]['toolbar'] = $new_data[$key2]['toolbar'] ?? [];
+			// we need to process all fields as hidden
+			foreach ($rows as $k => $v) {
+				// row_id
+				if (empty($options['details_parent_key'])) {
+					$row_id_temp = str_replace('\\', '_', $options['details_key']);
+					$row_id = "form_{$this->object->form_link}_details_{$row_id_temp}_{$row_number}_row";
+				} else {
+					$row_details_parent_key = str_replace('\\', '_', $options['details_parent_key']);
+					$row_details_key = str_replace('\\', '_', $options['details_key']);
+					$row_id = "form_{$this->object->form_link}_subdetails_{$row_details_parent_key}_{$options['__parent_row_number']}_{$row_details_key}_{$row_number}_row";
+				}
+				array_key_sort($v['elements'], ['order' => SORT_ASC]);
+				// group by
+				$groupped = [];
+				foreach ($v['elements'] as $k2 => $v2) {
+					$groupped[$v2['options']['label_name'] ?? ''][$k2] = $v2;
+				}
+				foreach ($groupped as $k2 => $v2) {
+					$first = current($v2);
+					$first_key = key($v2);
+					if ($first_key != $this->object::SEPARATOR_HORIZONTAL) {
+						$first['prepend_to_field'] = ':';
+						foreach ($v2 as $k3 => $v3) {
+							// generate id, name and error name
+							if (empty($options['details_parent_key'])) {
+								// 1 to 1
+								if (!empty($options['details_11'])) {
+									$name = "{$options['details_key']}[{$k3}]";
+									$id01 = strtolower(str_replace('\\', '_', $options['details_key']));
+									$id = "form_{$this->object->form_link}_details_{$id01}_{$k3}";
+									$error_name = "{$options['details_key']}[{$k3}]";
+									$values_key = [$options['details_key'], $k3];
+									$field_values_key = [$options['details_key'], $k3];
+								} else { // 1 to M
+									$name = "{$options['details_key']}[{$row_number}][{$k3}]";
+									$id01 = strtolower(str_replace('\\', '_', $options['details_key']));
+									$id = "form_{$this->object->form_link}_details_{$id01}_{$row_number}_{$k3}";
+									$error_name = "{$options['details_key']}[{$k0}][{$k3}]";
+									$values_key = [$options['details_key'], $k0, $k3];
+									$field_values_key = [$options['details_key'], $row_number, $k3];
+								}
+							} else {
+								// 1 to 1
+								if (!empty($options['details_11'])) {
+									$name = "{$options['details_parent_key']}[{$options['__parent_row_number']}][{$options['details_key']}][{$k3}]";
+									$id01 = strtolower(str_replace('\\', '_', $options['details_parent_key']));
+									$id02 = strtolower(str_replace('\\', '_', $options['details_key']));
+									$id = "form_{$this->object->form_link}_subdetails_{$id01}_{$options['__parent_row_number']}_{$id02}_{$row_number}_{$k3}";
+									$error_name = "{$options['details_parent_key']}[{$options['__parent_key']}][{$options['details_key']}][{$k3}]";
+									$values_key = [$options['details_parent_key'], $options['__parent_key'], $options['details_key'], $k3];
+									$field_values_key = [$options['details_parent_key'], $options['__parent_row_number'], $options['details_key'], $k3];
+								} else {
+									$name = "{$options['details_parent_key']}[{$options['__parent_row_number']}][{$options['details_key']}][{$k0}][{$k3}]";
+									$id01 = strtolower(str_replace('\\', '_', $options['details_parent_key']));
+									$id02 = strtolower(str_replace('\\', '_', $options['details_key']));
+									$id = "form_{$this->object->form_link}_subdetails_{$id01}_{$options['__parent_row_number']}_{$id02}_{$row_number}_{$k3}";
+									$error_name = "{$options['details_parent_key']}[{$options['__parent_key']}][{$options['details_key']}][{$k0}][{$k3}]";
+									$values_key = [$options['details_parent_key'], $options['__parent_key'], $options['details_key'], $k0, $k3];
+									$field_values_key = [$options['details_parent_key'], $options['__parent_row_number'], $options['details_key'], $k0, $k3];
+								}
+							}
+							// hidden row
+							$hidden = false;
+							if ($k === $this->object::HIDDEN && !\Application::get('flag.numbers.frontend.html.form.show_field_settings')) {
+								$v3['options']['row_class'] = ($v3['options']['row_class'] ?? '') . ' grid_row_hidden';
+								$hidden = true;
+							}
+							// generate proper element
+							$value_options = $v3;
+							$value_options['options']['id'] = $id;
+							$value_options['options']['name'] = $name;
+							$value_options['options']['error_name'] = $error_name;
+							$value_options['options']['details_parent_key'] = $options['details_parent_key'] ?? null;
+							$value_options['options']['__parent_row_number'] = $options['__parent_row_number'] ?? null;
+							$value_options['options']['__row_number'] = $row_number;
+							$value_options['options']['__new_row'] = false;
+							// need to set values_key
+							$value_options['options']['values_key'] = $values_key;
+							$value_options['options']['field_values_key'] = $field_values_key;
+							$value_options['options']['__detail_values'] = $options['__detail_values'] ?? null;
+							// we need to pass proper options
+							$result.= $this->renderElementValue($value_options, $v0[$k3] ?? null, $v0);
+						}
+					}
+				}
+			}
+			$row_number++;
+		}
+		$new_data = \Helper\Tree::convertByParent($new_data, '__parent');
+		$result.= \HTML::tree(['options' => $new_data]);
 		return $result;
 	}
 
@@ -825,6 +933,7 @@ render_custom_renderer:
 		if (!empty($this->object->misc_settings['details_unique_select'][$parent_key . '::' . $key])) {
 			foreach ($this->object->misc_settings['details_unique_select'][$parent_key . '::' . $key] as $k => $v) {
 				foreach ($data as $k2 => $v2) {
+					// todo process json_contains
 					if (!empty($v2[$k])) {
 						$this->object->misc_settings['details_unique_select'][$parent_key . '::' . $key][$k][$options['__parent_row_number']][$v2[$k]] = $v2[$k];
 					}
@@ -936,7 +1045,6 @@ render_custom_renderer:
 				$k0 = $row_number;
 				$v0 = [];
 			}
-			$i0 = $row_number;
 			// we need to preset default values
 			if (!empty($options['details_parent_key'])) {
 				$fields = $this->object->sortFieldsForProcessing($this->object->detail_fields[$options['details_parent_key']]['subdetails'][$options['details_key']]['elements'], $this->object->detail_fields[$options['details_parent_key']]['subdetails'][$options['details_key']]['options']);
@@ -994,12 +1102,12 @@ render_custom_renderer:
 									$values_key = [$options['details_key'], $k3];
 									$field_values_key = [$options['details_key'], $k3];
 								} else { // 1 to M
-									$name = "{$options['details_key']}[{$i0}][{$k3}]";
+									$name = "{$options['details_key']}[{$row_number}][{$k3}]";
 									$id01 = strtolower(str_replace('\\', '_', $options['details_key']));
 									$id = "form_{$this->object->form_link}_details_{$id01}_{$row_number}_{$k3}";
 									$error_name = "{$options['details_key']}[{$k0}][{$k3}]";
 									$values_key = [$options['details_key'], $k0, $k3];
-									$field_values_key = [$options['details_key'], $i0, $k3];
+									$field_values_key = [$options['details_key'], $row_number, $k3];
 								}
 							} else {
 								// 1 to 1

@@ -284,7 +284,7 @@ var NumbersSelect = function (options) {
 		if (this.elem.multiple) {
 			// we need to refresh data
 			if (!this.flag_data_prepered) {
-				this.refresh_data();
+				this.refreshData();
 				this.flag_data_prepered = true;
 			}
 			var text = this.get_search_input();
@@ -416,7 +416,7 @@ var NumbersSelect = function (options) {
 	/**
 	 * Refresh data
 	 */
-	result.refresh_data = function () {
+	result.refreshData = function () {
 		this.data = [];
 		var level = 0, elem, optgroup_label, index = 0, hash = {};
 		// we need to add all/none options if multiple
@@ -500,7 +500,7 @@ var NumbersSelect = function (options) {
 	 */
 	result.render_skeleton = function () {
 		if (!this.flag_data_prepered) {
-			this.refresh_data();
+			this.refreshData();
 			this.flag_data_prepered = true;
 		}
 		var i, j, k, title, inactive_class, colspan, status = '', hash = {}, hash2 = {}, selected_class, cell, temp;
@@ -686,6 +686,9 @@ var NumbersSelect = function (options) {
 	// we need to set a variable in global scope
 	result.renderValue();
 	window[result.var_id] = result;
+	if (window.jQuery) {
+		$('#' + options.id).change(function () { result.renderValue(); });
+	}
 };
 
 /**

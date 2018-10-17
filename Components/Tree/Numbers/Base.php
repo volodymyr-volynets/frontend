@@ -72,10 +72,10 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base {
 									}
 								}
 							}
-							if ($status == 'next' && hash2[j]) {
+							if ($status == 'next' && !empty($hash2[$j])) {
 								$status = 'blank';
 							}
-							if ($status == 'next' && j == $v['level'] - 1) {
+							if ($status == 'next' && $j == $v['level'] - 1) {
 								$status = 'nextchild';
 							}
 							if ($status == 'nextchild' && $i + 1 < $items_count) {
@@ -124,7 +124,7 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base {
 										$status = 'blank';
 									}
 								}
-								if ($status == 'next' && j == $v['level'] - 1) {
+								if ($status == 'next' && $j == $v['level'] - 1) {
 									$status = 'nextchild';
 								}
 								if ($status == 'nextchild' && $i + 1 < $items_count) {
@@ -190,9 +190,8 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base {
 			if ($items_count == 0) {
 				$html.= '<tr>';
 					$html.= '<td class="numbers_tree_option_table_tr" colspan="' . $data_max_level . '">';
-						$html.= i18n(null, \Object\Content\Messages::NO_ROWS_FOUND);
+						$html.= \HTML::message(['type' => 'warning', 'options' => [i18n(null, \Object\Content\Messages::NO_ROWS_FOUND)]]);
 					$html.= '</td>';
-					//$html.= '<td width="1%">&nbsp;</td>';
 				$html.= '</tr>';
 			}
 		$html.= '</table>';

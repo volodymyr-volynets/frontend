@@ -249,8 +249,11 @@ Numbers.Form = {
 		var result = {};
 		// get all elements
 		$.each($(form)[0].elements, function(index, elem) {
-			var keys = $(elem).attr('name').replace(/\]/g, '').split('[');
-			result = array_key_set(result, keys, $(elem).val());
+			var name = $(elem).attr('name');
+			if (name) {
+				var keys = name.replace(/\]/g, '').split('[');
+				result = array_key_set(result, keys, $(elem).val());
+			}
 		});
 		return result;
 	},
