@@ -142,7 +142,7 @@ class Base {
 		}
 		// other actions
 		foreach ($this->object->options['actions'] ?? [] as $k => $v) {
-			if (in_array($k, ['refresh', 'new', 'back'])) continue;
+			if (in_array($k, ['refresh', 'new', 'back', 'activate'])) continue;
 			$this->object->actions['form_custom_' . $k] = $v;
 		}
 		// assembling everything into result variable
