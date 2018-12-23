@@ -12,6 +12,9 @@ var NumbersCheckbox = function (options) {
 	var result = new Object();
 	result.id = options.id;
 	result.elem = document.getElementById(options.id);
+	if (!result.elem) {
+		return;
+	}
 	result.var_id = 'numbers_checkbox_var_' + result.id;
 	result.div_id = options.id + '_checkbox_div';
 	result.checked = result.elem.checked;

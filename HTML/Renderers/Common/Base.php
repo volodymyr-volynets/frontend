@@ -40,6 +40,9 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 	public static function tag(array $options = []) : string {
 		$value = isset($options['value']) ? $options['value'] : '';
 		$tag = $options['tag'] ?? 'div';
+		if (!empty($options['align'])) {
+			$options['style'] = ($options['style'] ?? '') . 'text-align: ' . $options['align'] . ';';
+		}
 		unset($options['value'], $options['tag']);
 		return '<' . $tag . ' ' . self::generateAttributes($options, $tag) . '>' . $value . '</' . $tag . '>';
 	}
@@ -303,6 +306,9 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 	public static function file(array $options = []) : string {
 		$options['type'] = 'file';
 		unset($options['value']);
+		if (!empty($options['multiple']) && strpos($options['name'] ?? '', '[]') === false) {
+			$options['name'].= '[]';
+		}
 		return \HTML::input($options);
 	}
 

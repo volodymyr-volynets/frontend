@@ -86,6 +86,15 @@ class Base {
 				$this->object->actions['form_import'] = array_merge($this->object->actions['form_import'], $this->object->options['actions']['import']);
 			}
 		}
+		// activate
+		if (!empty($this->object->options['actions']['activate']) && \Application::$controller->can('Activate_Data', 'Activate')) {
+			$onclick = '';
+			$this->object->actions['form_activate'] = ['value' => 'Activate', 'sort' => -30900, 'icon' => 'fas fa-link', 'href' => $mvc['controller'] . '/_Activate', 'onclick' => $onclick, 'internal_action' => true];
+			// override
+			if (is_array($this->object->options['actions']['activate'])) {
+				$this->object->actions['form_activate'] = array_merge($this->object->actions['form_activate'], $this->object->options['actions']['activate']);
+			}
+		}
 		// back to list/edit
 		if (!empty($this->object->options['actions']['back'])) {
 			$params = [];
@@ -323,7 +332,6 @@ class Base {
 		$tab_header = [];
 		$tab_values = [];
 		$tab_options = [];
-		$have_tabs = false;
 		// sort rows
 		array_key_sort($v['rows'], ['order' => SORT_ASC]);
 		foreach ($v['rows'] as $k2 => $v2) {
@@ -340,14 +348,11 @@ class Base {
 			}
 			$tab_header[$k2] = i18n(null, $v2['options']['label_name']) . $labels;
 			$tab_values[$k2] = '';
-			// handling override_tabs method
-			if (!empty($this->object->wrapper_methods['overrideTabs']['main'])) {
+			// hidden tabs
+			if (!empty($v2['options']['hidden'])) {
+				$tab_options[$k2]['hidden'] = true;
+			} else if (!empty($this->object->wrapper_methods['overrideTabs']['main'])) { // handling override_tabs method
 				$tab_options[$k2] = call_user_func_array($this->object->wrapper_methods['overrideTabs']['main'], [& $this->object, & $v2, & $k2, & $this->object->values]);
-				if (empty($tab_options[$k2]['hidden'])) {
-					$have_tabs = true;
-				}
-			} else {
-				$have_tabs = true;
 			}
 			// tab index for not hidden tabs
 			if (empty($tab_options[$k2]['hidden'])) {
@@ -366,17 +371,15 @@ class Base {
 			array_pop($this->object->current_tab);
 		}
 		// if we do not have tabs
-		if ($have_tabs) {
-			$class = ['form-tabs'];
-			if (!empty($v['options']['class'])) $class[] = $v['options']['class'];
-			$result[$k]['html'] = \HTML::tabs([
-				'id' => $tab_id,
-				'class' => implode(' ', $class),
-				'header' => $tab_header,
-				'options' => $tab_values,
-				'tab_options' => $tab_options
-			]);
-		}
+		$class = ['form-tabs'];
+		if (!empty($v['options']['class'])) $class[] = $v['options']['class'];
+		$result[$k]['html'] = \HTML::tabs([
+			'id' => $tab_id,
+			'class' => implode(' ', $class),
+			'header' => $tab_header,
+			'options' => $tab_values,
+			'tab_options' => $tab_options
+		]);
 	}
 
 	/**
@@ -514,8 +517,11 @@ class Base {
 						}
 						$width = $v2['options']['width'] ?? ($v2['options']['percent'] . '%');
 						// full text search replaces
-						if (!empty($full_text_search)) {
+						if (!empty($full_text_search) && empty($v2['options']['skip_fts'])) {
 							$this->markTextInStr($value, $full_text_search);
+						}
+						if (!is_html($value)) {
+							$value = nl2br($value);
 						}
 						$inner_table['options'][$k][$k2] = ['value' => $value, 'nowrap' => true, 'width' => $width, 'align' => $v2['options']['align'] ?? 'left'];
 					}
@@ -1016,7 +1022,7 @@ render_custom_renderer:
 			$processing_values = 1;
 		} else {
 			$max_rows = count($values);
-			if (empty($this->object->misc_settings['global']['readonly'])) {
+			if (empty($this->object->misc_settings['global']['readonly']) && empty($this->object->misc_settings['acl_subresource_locks'][$options['container_link']]['no_new'])) {
 				$max_rows+= ($options['details_new_rows'] ?? 0);
 			} else {
 				$options['details_new_rows'] = 0;
@@ -1268,7 +1274,7 @@ render_custom_renderer:
 				];
 			}
 			// delete link
-			if (empty($options['details_cannot_delete']) && empty($this->object->misc_settings['global']['readonly'])) {
+			if (empty($options['details_cannot_delete']) && empty($this->object->misc_settings['global']['readonly']) && empty($this->object->misc_settings['acl_subresource_locks'][$options['container_link']]['no_delete'])) {
 				$link = \HTML::a(['href' => 'javascript:void(0);', 'value' => '<i class="far fa-trash-alt"></i>', 'onclick' => "if (confirm('" . strip_tags(i18n(null, \Object\Content\Messages::CONFIRM_DELETE)) . "')) { Numbers.Form.detailsDeleteRow('form_{$this->object->form_link}_form', '{$row_id}'); } return false;"]);
 			} else {
 				$link = '';
@@ -1813,6 +1819,10 @@ render_custom_renderer:
 						$flag_translated = true;
 					}
 				} else { // editable fields
+					// inputs should not be date type, use input_type to override
+					if ($element_method == '\HTML::input') {
+						$result_options['type'] = 'text';
+					}
 					// special handling for
 					if ($element_method == '\HTML::radio') {
 						$result_options['value'] = '';
