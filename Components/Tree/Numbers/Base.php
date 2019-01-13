@@ -28,6 +28,7 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base {
 			$result[$counter] = $v;
 			$counter++;
 		}
+		$icon_key = $options['icon_key'] ?? 'icon_class';
 		// render
 		$hash = $hash2 = [];
 		$items_count = count($result);
@@ -163,10 +164,11 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base {
 					}
 					$colspan = $data_max_level - $v['level'] + 1;
 					$html.= '<td colspan="' . $colspan . '" valign="middle" class="numbers_tree_option_table_td">';
+						// if we have toolbar
 						if (!empty($v['toolbar'])) {
 							$icon = '';
-							if (!empty($result[$i]['icon_class'])) {
-								$icon = '<i class="numbers_tree_option_table_icon ' . $result[$i]['icon_class'] . '"></i> ';
+							if (!empty($result[$i][$icon_key])) {
+								$icon = '<i class="numbers_tree_option_table_icon ' . $result[$i][$icon_key] . '"></i> ';
 							}
 							$html.= '<table width="100%" border="0">';
 								$html.= '<tr><td>&nbsp;</td></tr>';
@@ -174,13 +176,24 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base {
 								$html.= '<tr><td class="numbers_tree_mini_toolbar">' . implode(' | ', $v['toolbar']) . '</td></tr>';
 							$html.= '</table>';
 						} else {
-							if (!empty($result[$i]['icon_class'])) {
-								$html.= '<i class="numbers_tree_option_table_icon ' . $result[$i]['icon_class'] . '"></i> ';
+							$name = '';
+							if (!empty($result[$i][$icon_key])) {
+								$name.= '<i class="numbers_tree_option_table_icon ' . $result[$i][$icon_key] . '"></i> ';
 							}
 							if (!empty($result[$i]['photo_id'])) {
-								$html.= '<img class="navbar-menu-item-avatar-img" src="' . $result[$i]['photo_id'] . '" width="24" height="24" /> ';
+								$name.= '<img class="navbar-menu-item-avatar-img" src="' . $result[$i]['photo_id'] . '" width="24" height="24" /> ';
 							}
-							$html.= $v['name'];
+							$name.= $v['name'];
+							// if we have url
+							if (!empty($result[$i]['url'])) {
+								if (!empty($result[$i]['__menu_id'])) {
+									$temp_url = http_append_to_url($result[$i]['url'], ['__menu_id' => $result[$i]['__menu_id'] ?? '']);
+								} else {
+									$temp_url = $result[$i]['url'];
+								}
+								$name = \HTML::a(['href' => $temp_url, 'value' => $name]);
+							}
+							$html.= $name;
 						}
 					$html.= '</td>';
 					//$html.= '<td width="1%">&nbsp;</td>';

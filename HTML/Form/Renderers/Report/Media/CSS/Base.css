@@ -67,7 +67,7 @@
 	color: #ff0000;
 }
 .numbers_frontend_form_report_screen_cell_data.underline {
-	text-decoration: underline;
+	border-bottom: 1px solid rgba(192, 192, 192, 0.50);
 }
 .numbers_frontend_form_report_screen_cell_data.as_header {
 	font-style: italic;
@@ -76,7 +76,9 @@
 .numbers_frontend_form_report_screen_cell_data.linethrough {
 	text-decoration: line-through;
 }
-
+.numbers_frontend_form_report_title {
+	text-align: center;
+}
 /* printable */
 /*
 html[layout="blank"] .numbers_frontend_form_report_screen_table_global_row_header, html[layout="blank"] .numbers_frontend_form_report_screen_cell_data {

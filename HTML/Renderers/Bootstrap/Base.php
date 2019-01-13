@@ -26,7 +26,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 				}
 			}
 			$result.= '<div class="card-body">';
-				$result.= '<p class="card-text">' . $value . '</p>';
+				$result.= '<div class="card-text">' . $value . '</div>';
 				if (!empty($options['bottom'])) {
 					$result.= '<p class="card-text"><small class="text-muted">' . $options['bottom'] . '</small></p>';
 				}

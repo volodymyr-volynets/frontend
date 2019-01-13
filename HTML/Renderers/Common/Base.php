@@ -792,6 +792,13 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 	}
 
 	/**
+	 * @see \HTML::flag()
+	 */
+	public static function flag(array $options = []) : string {
+		return '';
+	}
+
+	/**
 	 * @see \HTML::menu();
 	 */
 	public static function menu(array $options = []) : string {

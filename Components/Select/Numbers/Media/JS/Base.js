@@ -294,6 +294,9 @@ var NumbersSelect = function (options) {
 					var span = document.createElement("span");
 					//span.setAttribute('contenteditable', false);
 					html = '';
+					if (this.data[i].flag_class) {
+						html+= '<i class="' + this.data[i].flag_class + '"></i> ';
+					}
 					if (this.data[i].icon_class) {
 						html+= '<i class="numbers_select_option_table_icon ' + this.data[i].icon_class + '"></i> ';
 					}
@@ -317,6 +320,10 @@ var NumbersSelect = function (options) {
 				this.filter();
 			}
 		} else if (!this.elem.multiple && this.elem.selectedIndex != -1) {
+			var flag_class = this.elem.options[this.elem.selectedIndex].getAttribute('flag_class');
+			if (flag_class) {
+				html+= '<i class="' + flag_class + '"></i> ';
+			}
 			var icon_class = this.elem.options[this.elem.selectedIndex].getAttribute('icon_class');
 			if (icon_class) {
 				html+= '<i class="' + icon_class + '"></i> ';
@@ -434,6 +441,7 @@ var NumbersSelect = function (options) {
 				level: 0,
 				title: '',
 				icon_class: '',
+				flag_class: '',
 				photo_id: '',
 				text_right: ''
 			};
@@ -455,6 +463,7 @@ var NumbersSelect = function (options) {
 				level: level,
 				title: this.elem.options[i].getAttribute('title'),
 				icon_class: this.elem.options[i].getAttribute('icon_class'),
+				flag_class: this.elem.options[i].getAttribute('flag_class'),
 				photo_id: this.elem.options[i].getAttribute('photo_id'),
 				text_right: this.elem.options[i].getAttribute('text_right')
 			};
@@ -477,6 +486,7 @@ var NumbersSelect = function (options) {
 							level: 0,
 							title: '',
 							icon_class: '',
+							flag_class: '',
 							photo_id: '',
 							text_right: ''
 						};
@@ -649,6 +659,9 @@ var NumbersSelect = function (options) {
 						colspan = this.data_max_level + 1;
 					}
 					html+= '<td colspan="' + colspan + '" valign="middle" class="numbers_select_option_table_td">';
+						if (this.data[i].flag_class) {
+							html+= '<i class="' + this.data[i].flag_class + '"></i> ';
+						}
 						if (this.data[i].icon_class) {
 							html+= '<i class="numbers_select_option_table_icon ' + this.data[i].icon_class + '"></i> ';
 						}
