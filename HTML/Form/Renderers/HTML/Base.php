@@ -168,6 +168,8 @@ class Base {
 					}
 				} else if ($v['type'] == 'tabs') { // tabs
 					$this->renderTabs($k, $v, $result);
+				} else if ($v['type'] == 'panels') { // pannels
+					$this->renderPanels($k, $v, $result);
 				} else if ($v['type'] == 'modal') { // modal windows
 					// reset tabs
 					$this->object->current_tab = [];
@@ -380,6 +382,42 @@ class Base {
 			'options' => $tab_values,
 			'tab_options' => $tab_options
 		]);
+	}
+
+	/**
+	 * Render panels
+	 *
+	 * @param string $k
+	 * @param array $v
+	 * @param array $result
+	 */
+	private function renderPanels($k, $v, & $result) {
+		array_key_sort($v['rows'], ['order' => SORT_ASC]);
+		$grid = [
+			'options' => [],
+		];
+		foreach ($v['rows'] as $k2 => $v2) {
+			array_key_sort($v2['elements'], ['order' => SORT_ASC]);
+			foreach ($v2['elements'] as $k3 => $v3) {
+				$temp = $this->renderContainer($v3['options']['container']);
+				if ($temp['success']) {
+					$grid['options'][$k][$k2][$k2] = [
+						'value' => \HTML::segment([
+							'header' => [
+								'title' => i18n(null, $v2['options']['label_name']),
+								'icon' => $v2['options']['panel_icon'] ?? null,
+							],
+							'type' => $v2['options']['panel_type'] ?? 'default',
+							'value' => $temp['data']['html']
+						]),
+						'options' => [
+							'percent' => $v2['options']['percent']
+						]
+					];
+				}
+			}
+		}
+		$result[$k]['html'] = \HTML::grid($grid);
 	}
 
 	/**
