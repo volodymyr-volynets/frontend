@@ -398,24 +398,27 @@ class Base {
 		];
 		foreach ($v['rows'] as $k2 => $v2) {
 			array_key_sort($v2['elements'], ['order' => SORT_ASC]);
+			$temp_panels = '';
 			foreach ($v2['elements'] as $k3 => $v3) {
 				$temp = $this->renderContainer($v3['options']['container']);
 				if ($temp['success']) {
-					$grid['options'][$k][$k2][$k2] = [
-						'value' => \HTML::segment([
-							'header' => [
-								'title' => i18n(null, $v2['options']['label_name']),
-								'icon' => $v2['options']['panel_icon'] ?? null,
-							],
-							'type' => $v2['options']['panel_type'] ?? 'default',
-							'value' => $temp['data']['html']
-						]),
-						'options' => [
-							'percent' => $v2['options']['percent']
-						]
-					];
+					$temp_panels.= $temp['data']['html'];
 				}
 			}
+			// add all containers
+			$grid['options'][$k][$k2][$k2] = [
+				'value' => \HTML::segment([
+					'header' => [
+						'title' => i18n(null, $v2['options']['label_name']),
+						'icon' => $v2['options']['panel_icon'] ?? null,
+					],
+					'type' => $v2['options']['panel_type'] ?? 'default',
+					'value' => $temp_panels
+				]),
+				'options' => [
+					'percent' => $v2['options']['percent']
+				]
+			];
 		}
 		$result[$k]['html'] = \HTML::grid($grid);
 	}
