@@ -25,7 +25,9 @@ class Base {
 		}
 		$this->object->tabindex = 1;
 		// css & js
-		\Numbers\Frontend\Media\Libraries\jsSHA\Base::add();
+		\Library::add('jsSHA');
+		\Library::add('BCMath');
+		\Library::add('LoadMask');
 		\Layout::addJs('/numbers/media_submodules/Numbers_Frontend_HTML_Form_Renderers_HTML_Media_JS_Base.js', -10000);
 		\Layout::addCss('/numbers/media_submodules/Numbers_Frontend_HTML_Form_Renderers_HTML_Media_CSS_Base.css', -10000);
 		// include master js
@@ -41,8 +43,6 @@ class Base {
 		if (!empty($this->object->options['include_css'])) {
 			\Layout::addCss($this->object->options['include_css']);
 		}
-		// load mask
-		\Numbers\Frontend\Media\Libraries\LoadMask\Base::add();
 		// acl on actions
 		$this->object->options['actions'] = $this->object->options['actions'] ?? [];
 		foreach ($this->object->options['actions'] as $k => $v) {
@@ -1634,7 +1634,12 @@ render_custom_renderer:
 	public function renderElementName($options) {
 		if ((isset($options['options']['label_name']) && ($options['options']['label_name'] . '') != '') || isset($options['options']['label_i18n'])) {
 			$value = i18n($options['options']['label_i18n'] ?? null, $options['options']['label_name']);
-			$prepend = isset($options['prepend_to_field']) ? $options['prepend_to_field'] : null;
+			if ($options['options']['label_name'] == ' ') {
+				$prepend = '';
+				$value = '<br/>';
+			} else {
+				$prepend = isset($options['prepend_to_field']) ? $options['prepend_to_field'] : null;
+			}
 			// todo: preset for attribute label_for = id
 			$label_options = array_key_extract_by_prefix($options['options'], 'label_');
 			// prepending mandatory string
@@ -1697,6 +1702,7 @@ render_custom_renderer:
 		array_key_extract_by_prefix($result_options, 'label_');
 		$element_expand = !empty($result_options['expand']);
 		$html_suffix = $result_options['html_suffix'] ?? '';
+		$html_table_description = $result_options['html_table_description'] ?? '';
 		// unset certain keys
 		unset($result_options['order'], $result_options['required'], $result_options['html_suffix']);
 		// processing options
@@ -1866,18 +1872,22 @@ render_custom_renderer:
 					}
 					// special handling for
 					if ($element_method == '\HTML::radio') {
-						$result_options['value'] = '';
+						$result_options['value'] = '<table width="100%">';
 						$radio_counter = 1;
 						foreach ($result_options['options'] as $k => $v) {
-							$result_options['value'].= \HTML::radio([
+							$result_options['value'].= '<tr>';
+							$result_options['value'].= '<td width="1%">' . \HTML::radio([
 								'id' => $result_options['id'] . '_' . $radio_counter,
 								'name' => $result_options['name'],
 								'value' => $k,
-								'checked' => $k == $value
-							]);
-							$result_options['value'].= ' <label for="' . $result_options['id'] . '_' . $radio_counter . '">' . i18n(null, $v['name']) . '</label>';
+								'checked' => ($k == $value),
+								'style' => 'vertical-align: middle;'
+							]) . '</td>';
+							$result_options['value'].= '</td><td width="99%"><span class="numbers_frontend_form_html_table_description">' . i18n(null, $v['name']) . '</span></td>';
+							$result_options['value'].= '</tr>';
 							$radio_counter++;
 						}
+						$result_options['value'].= '</table>';
 						$element_method = '\HTML::div';
 						goto render_element;
 					}
@@ -1969,9 +1979,9 @@ render_custom_renderer:
 				} else if (!empty($result_options['validator_method']) && empty($result_options['value']) && empty($result_options['multiple_column'])) {
 					$temp = \Object\Validator\Base::method($result_options['validator_method'], $result_options['value'], $result_options['validator_params'] ?? [], $options['options'], $neighbouring_values);
 					if ($flag_select_or_autocomplete) {
-						$placeholder = $temp['placeholder_select'];
+						$placeholder = $temp['placeholder_select'] ?? null;
 					} else {
-						$placeholder = $temp['placeholder'];
+						$placeholder = $temp['placeholder'] ?? null;
 					}
 					if (!empty($placeholder)) {
 						$result_options['placeholder'] = strip_tags(i18n(null, $placeholder));
@@ -2042,6 +2052,9 @@ render_element:
 		// html suffix and prefix
 		if (!empty($html_suffix)) {
 			$value.= $html_suffix;
+		}
+		if (!empty($html_table_description)) {
+			$value = '<table><tr><td>' . $value . '</td><td><span class="numbers_frontend_form_html_table_description">' . $html_table_description . '</span></td></tr></table>';
 		}
 		// if we need to display settings
 		if (\Application::get('flag.numbers.frontend.html.form.show_field_settings')) {

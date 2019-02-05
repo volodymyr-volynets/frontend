@@ -142,6 +142,6 @@ class Base {
 				]
 			]
 		];
-		return \HTML::grid($grid);
+		return '<div class="numbers_frontend_form_list_pagination_container">' . \HTML::grid($grid) . '</div>';
 	}
 }

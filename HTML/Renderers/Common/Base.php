@@ -95,7 +95,11 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 				}
 				$v = implode(' ', $v);
 			}
-			$result[] = $k . '="' . htmlentities($v) . '"';
+			if ($k == 'src') {
+				$result[] = $k . '="' . $v . '"';
+			} else {
+				$result[] = $k . '="' . htmlentities($v) . '"';
+			}
 		}
 		return implode(' ', $result);
 	}

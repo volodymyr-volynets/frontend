@@ -195,7 +195,7 @@ Numbers.Form = {
 		}
 		var form = this.getForm(form_or_element);
 		if (field) {
-			var field_element = $('[name="' + field + '"]', $(form));
+			var field_element = $('[name="' + $.escapeSelector(field) + '"]', $(form));
 			var form_group = $(field_element).closest('.form-group');
 			var text_class = 'text-' + (isset(type) ? type : 'primary');
 			if (type == 'reset') {
@@ -342,7 +342,7 @@ Numbers.Form = {
 		} else {
 			var name = path;
 		}
-		$('[name="' + addslashes(name) + '"]', $(form)).val(value);
+		$('[name="' + $.escapeSelector(name) + '"]', $(form)).val(value).change();
 	},
 
 	/**

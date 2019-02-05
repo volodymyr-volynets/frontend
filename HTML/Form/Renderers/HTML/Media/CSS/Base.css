@@ -39,6 +39,9 @@
 .numbers_frontend_form_list_text_marks {
 	color: red;
 }
+.numbers_frontend_form_list_pagination_container, .numbers_frontend_form_list_pagination_container .form-control, .numbers_frontend_form_list_pagination_container button {
+	font-size: 0.75rem;
+}
 .control-label {
 	display: block;
 }
@@ -54,4 +57,7 @@
 }
 .numbers_frontend_form_table_renderer_field_table td {
 	border: none !important;
+}
+.numbers_frontend_form_html_table_description {
+	padding-left: 1em;
 }

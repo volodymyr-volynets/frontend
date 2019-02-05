@@ -211,6 +211,11 @@ var Numbers = {
 		}
 	},
 
+	/**
+	 * Currencies
+	 *
+	 * @type object
+	 */
 	CountriesCurrencies: {
 
 		/**
@@ -219,7 +224,13 @@ var Numbers = {
 		 * @type object
 		 */
 		data: {}
-	}
+	},
+
+	/* Widgets */
+	Widgets: {},
+
+	/* Other data */
+	OtherData: {}
 };
 
 // initializing

@@ -240,7 +240,9 @@ var NumbersSelect = function (options) {
 			this.show();
 		}
 		// we need to trigger onchange event
-		$(this.elem).trigger('change');
+		if (window.jQuery) {
+			$(this.elem).change();
+		}
 	};
 
 	/**
@@ -273,6 +275,10 @@ var NumbersSelect = function (options) {
 			} else {
 				trs[i].className+= ' numbers_select_row_selected';
 			}
+		}
+		// we need to trigger onchange event
+		if (window.jQuery) {
+			$(this.elem).change();
 		}
 	};
 

@@ -138,7 +138,7 @@ class HTML5 {
 		'param' => ['name', 'value'],
 		'progress' => ['value', 'max'],
 		'q' => ['cite'],
-		'script' => ['src', 'async', 'defer', 'type', 'charset'],
+		'script' => ['src', 'async', 'defer', 'type', 'charset', 'crossorigin'],
 		'select' => ['autofocus', 'disabled', 'form', 'multiple', 'name', 'required', 'size'],
 		'source' => ['src', 'type', 'media'],
 		'style' => ['media', 'type', 'scoped'],
