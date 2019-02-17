@@ -7,11 +7,14 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 	 * @see \HTML::segment()
 	 */
 	public static function segment(array $options = []) : string {
+		if (!empty($options['pannel_skip_segment'])) {
+			return $options['value'];
+		}
 		$value = $options['value'] ?? '';
 		$type = $options['type'] ?? '';
 		$header = $options['header'] ?? null;
 		$footer = $options['footer'] ?? null;
-		$result = '<div class="card">';
+		$result = '<div class="card ' . ($options['class'] ?? '') . '">';
 			if ($header != null) {
 				if ($type != 'default') {
 					$bg_class = $type ? ('bg-' . $type . ' text-white') : '';

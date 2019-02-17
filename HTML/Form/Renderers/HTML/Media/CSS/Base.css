@@ -61,3 +61,7 @@
 .numbers_frontend_form_html_table_description {
 	padding-left: 1em;
 }
+/* form pannels */
+.numbers_frontend_form_table_row_container {
+	width: 100%;
+}

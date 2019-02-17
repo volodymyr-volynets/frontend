@@ -364,9 +364,16 @@ class Base {
 			// render containers
 			array_key_sort($v2['elements'], ['order' => SORT_ASC]);
 			foreach ($v2['elements'] as $k3 => $v3) {
-				$temp = $this->renderContainer($v3['options']['container']);
-				if ($temp['success']) {
-					$tab_values[$k2].= $temp['data']['html'];
+				// pannels go first
+				if (($this->object->data[$v3['container']]['options']['type'] ?? '') == 'panels') {
+					$pannel_result = [];
+					$this->renderPanels($k3, $this->object->data[$v3['container']], $pannel_result);
+					$tab_values[$k2].= $pannel_result[$k3]['html'];
+				} else { // other containers
+					$temp = $this->renderContainer($v3['options']['container']);
+					if ($temp['success']) {
+						$tab_values[$k2].= $temp['data']['html'];
+					}
 				}
 			}
 			// remove last element from an array
@@ -413,10 +420,12 @@ class Base {
 						'icon' => $v2['options']['panel_icon'] ?? null,
 					],
 					'type' => $v2['options']['panel_type'] ?? 'default',
-					'value' => $temp_panels
+					'value' => $temp_panels,
+					'class' => 'numbers_frontend_form_pannel_segment',
+					'pannel_skip_segment' => $v2['options']['pannel_skip_segment'] ?? false,
 				]),
 				'options' => [
-					'percent' => $v2['options']['percent']
+					'percent' => $v2['options']['percent'],
 				]
 			];
 		}
@@ -1053,6 +1062,19 @@ render_custom_renderer:
 				'row_delete' => ['value' => '&nbsp;', 'width' => '1%'],
 			];
 		}
+		// max_records_warning_message
+		if (isset($this->object->misc_settings['max_records'][$options['details_key']])) {
+			if ($this->object->misc_settings['max_records'][$options['details_key']] > $options['details_max_records']) {
+				$message = i18n(null, $options['details_max_records_warning_message'], ['replace' => [
+				    '[number]' => \Format::id($options['details_max_records'])
+				]]);
+				$table['options'][PHP_INT_MAX] = [
+					'row_number' => ['value' => '&nbsp;', 'width' => '1%'],
+					'row_data' => \HTML::message(['type' => 'warning', 'options' => [$message]])
+				];
+				goto render_table;
+			}
+		}
 		// we must sort
 		array_key_sort($rows, ['order' => SORT_ASC]);
 		// generating rows
@@ -1345,6 +1367,7 @@ render_custom_renderer:
 				'row_data' => $message
 			];
 		}
+render_table:
 		return \HTML::table($table);
 	}
 
@@ -1867,7 +1890,7 @@ render_custom_renderer:
 					}
 				} else { // editable fields
 					// inputs should not be date type, use input_type to override
-					if ($element_method == '\HTML::input') {
+					if ($element_method == '\HTML::input' && empty($options['options']['static'])) {
 						$result_options['type'] = 'text';
 					}
 					// special handling for
@@ -1999,6 +2022,29 @@ render_custom_renderer:
 						$result_options[$e] = str_replace('this.form.submit();', 'Numbers.Form.triggerSubmit(this);', $result_options[$e]);
 						$result_options[$e] = str_replace('this.form.extended.', $this->object->misc_settings['extended_js_class'] . '.', $result_options[$e]);
 					}
+				}
+				// static
+				if (!empty($options['options']['static'])) {
+					$element_method = $result_options['method'] = '\HTML::div';
+					$hidden_fields = [];
+					if (isset($options_array_processed)) {
+						if (is_array($result_options['value'])) {
+							$temp = [];
+							foreach ($result_options['value'] as $k => $v) {
+								$temp[] = $options_array_processed[$v]['name'];
+								$hidden_fields[] = \HTML::hidden(['name' => $result_options['name'] . '[]', 'value' => $v]);
+							}
+							$result_options['value'] = implode(\Format::$symbol_semicolon, $temp);
+						} else {
+							$hidden_fields[] = \HTML::hidden(['name' => $result_options['name'], 'value' => $result_options['value']]);
+							if (($result_options['value'] ?? '') != '') {
+								$result_options['value'] = $options_array_processed[$result_options['value']]['name'];
+							}
+						}
+					} else {
+						$hidden_fields[] = \HTML::hidden(['name' => $result_options['name'], 'value' => $result_options['value']]);
+					}
+					$result_options['value'].= implode('', $hidden_fields);
 				}
 				break;
 			case 'html':

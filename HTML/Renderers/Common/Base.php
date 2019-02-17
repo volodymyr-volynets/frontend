@@ -234,7 +234,7 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 			$rtl = ' dir="auto" ';
 		}
 		// generate html
-		$options['value'] = isset($options['value']) ? htmlspecialchars($options['value']) : '';
+		$options['value'] = isset($options['value']) ? htmlspecialchars($options['value'], ENT_COMPAT, 'UTF-8') : '';
 		return '<input ' . self::generateAttributes($options, 'input') . $rtl . ' />';
 	}
 
@@ -372,6 +372,8 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 		}
 		// readonly
 		if (!empty($options['readonly'])) {
+			$options['onmousedown'] = 'return false;';
+			$options['onkeydown'] = 'return false;';
 			\Layout::onload("$('#{$options['id']} option:not(:selected)').prop('disabled', true);");
 		}
 		// options & optgroups
