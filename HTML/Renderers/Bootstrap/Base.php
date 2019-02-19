@@ -87,7 +87,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 		}
 		unset($options['left'], $options['right']);
 		$options['value'] = implode('', $temp);
-		$options['class'] = 'input-group mb-3';
+		$options['class'] = 'input-group';
 		return \HTML::div($options);
 	}
 
