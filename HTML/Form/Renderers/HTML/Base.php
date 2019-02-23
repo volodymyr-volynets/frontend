@@ -228,7 +228,14 @@ class Base {
 		// couple hidden fields
 		$result.= \HTML::hidden(['name' => '__collection_link', 'value' => $this->object->options['collection_link'] ?? '']);
 		$result.= \HTML::hidden(['name' => '__collection_screen_link', 'value' => $this->object->options['collection_screen_link'] ?? '']);
-		$result.= \HTML::hidden(['name' => '__form_link', 'value' => $this->object->form_link]);
+		// if we came from the parent
+		if (!empty($this->object->options['parent_form_link'])) {
+			$result.= \HTML::hidden(['name' => '__form_link', 'value' => $this->object->options['parent_form_link']]);
+			$result.= \HTML::hidden(['name' => '__subform_link', 'value' => $this->object->form_link]);
+		} else {
+			$result.= \HTML::hidden(['name' => '__form_link', 'value' => $this->object->form_link]);
+			$result.= \HTML::hidden(['name' => '__subform_link', 'value' => '']);
+		}
 		$result.= \HTML::hidden(['name' => '__form_values_loaded', 'value' => $this->object->values_loaded]);
 		$result.= \HTML::hidden(['name' => '__form_onchange_field_values_key', 'value' => '']);
 		// form is within tabs
@@ -252,6 +259,11 @@ class Base {
 		$js = "Numbers.Form.data['form_{$this->object->form_link}_form'] = " . json_encode($js_data) . ";\n";
 		if (!$this->object->hasErrors()) {
 			$js.= "Numbers.Form.listFilterSortToggle('#form_{$this->object->form_link}_form', true);\n";
+			// on success subform
+			if (!empty($this->object->options['on_success_refresh_parent']) && !$this->object->refresh) {
+				$js.= "Numbers.Modal.hide('form_subform_{$this->object->form_link}_form');\n";
+				$js.= "$('#form_{$this->object->options['parent_form_link']}_form').submit();\n";
+			}
 		}
 		\Layout::onLoad($js);
 		// bypass values
@@ -296,7 +308,9 @@ class Base {
 				'success' => true,
 				'error' => [],
 				'html' => $result,
-				'js' => \Layout::$onload . $onload
+				'js' => \Layout::$onload . $onload,
+				'media_js' => \Layout::renderJs(['return_list' => true]),
+				'media_css' => \Layout::renderCss(['return_list' => true]),
 			];
 			\Layout::renderAs($result, 'application/json');
 		} else {
@@ -319,6 +333,10 @@ class Base {
 		}
 		// anchor
 		$result = \HTML::a(['id' => "form_{$this->object->form_link}_form_anchor", 'value' => null]) . $result;
+		// if we have a subform we need to render place holder
+		if (!empty($this->object->form_parent->subforms)) {
+			$result.= \HTML::div(['id' => "form_{$this->object->form_link}_form_subform_holder", 'value' => '']);
+		}
 		return $result;
 	}
 
@@ -533,8 +551,14 @@ class Base {
 				}
 				$temp_inner.= \HTML::table($inner_table);
 			}
-			$table['options']['header'][1] = ['value' => '&nbsp;', 'nowrap' => true, 'width' => '1%'];
-			$table['options']['header'][2] = ['value' => $temp_inner, 'class' => 'numbers_frontend_form_list_header_inner_td', 'nowrap' => true, 'width' => '99%'];
+			if (!empty($this->object->misc_settings['subforms']['url_delete'])) {
+				$table['options']['header'][1] = ['value' => '&nbsp;', 'nowrap' => true, 'width' => '1%'];
+				$table['options']['header'][2] = ['value' => $temp_inner, 'class' => 'numbers_frontend_form_list_header_inner_td', 'nowrap' => true, 'width' => '98%'];
+				$table['options']['header'][3] = ['value' => '&nbsp;', 'nowrap' => true, 'width' => '1%'];
+			} else {
+				$table['options']['header'][1] = ['value' => '&nbsp;', 'nowrap' => true, 'width' => '1%'];
+				$table['options']['header'][2] = ['value' => $temp_inner, 'class' => 'numbers_frontend_form_list_header_inner_td', 'nowrap' => true, 'width' => '99%'];
+			}
 			// generate rows
 			$row_number_final = $data['offset'] + 1;
 			$cached_options = [];
@@ -561,7 +585,14 @@ class Base {
 								$value = $this->object->renderListContainerDefaultOptions($v2['options'], $value, $v0);
 							}
 							// urls
-							if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
+							if (!empty($v2['options']['url_edit']) && isset($this->object->misc_settings['subforms']['url_edit'])) {
+								if (!empty($this->object->misc_settings['subforms']['url_edit'])) {
+									$params = $this->renderURLEditHref($v0, ['json' => true]);
+									$temp_collection_link = $this->object->options['collection_link'] ?? '';
+									$temp_collection_screen_link = $this->object->options['collection_screen_link'] ?? '';
+									$value = \HTML::a(['href' => 'javascript:void(0);', 'onclick' => "Numbers.Form.openSubformWindow('{$temp_collection_link}', '{$temp_collection_screen_link}', '{$this->object->form_link}', '{$this->object->misc_settings['subforms']['url_edit']['subform_link']}', {$params});", 'value' => $value]);
+								}
+							} else if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
 								$value = \HTML::a(['href' => $this->renderURLEditHref($v0), 'value' => $value]);
 							}
 						}
@@ -577,8 +608,19 @@ class Base {
 					}
 					$temp_inner.= \HTML::table($inner_table);
 				}
-				$table['options'][$row_number_final][1] = ['value' => \Format::id($row_number_final) . '.', 'nowrap' => true, 'width' => '1%'];
-				$table['options'][$row_number_final][2] = ['value' => $temp_inner, 'nowrap' => true, 'class' => 'numbers_frontend_form_list_header_inner_td', 'width' => '99%'];
+				// if we have delete link
+				if (!empty($this->object->misc_settings['subforms']['url_delete'])) {
+					$table['options'][$row_number_final][1] = ['value' => \Format::id($row_number_final) . '.', 'nowrap' => true, 'width' => '1%'];
+					$table['options'][$row_number_final][2] = ['value' => $temp_inner, 'nowrap' => true, 'class' => 'numbers_frontend_form_list_header_inner_td', 'width' => '98%'];
+					$params = $this->renderURLEditHref($v0, ['json' => true]);
+					$temp_collection_link = $this->object->options['collection_link'] ?? '';
+					$temp_collection_screen_link = $this->object->options['collection_screen_link'] ?? '';
+					$value = \HTML::a(['href' => 'javascript:void(0);', 'onclick' => "if (confirm('" . strip_tags(i18n(null, \Object\Content\Messages::CONFIRM_DELETE)) . "')) { Numbers.Form.openSubformWindow('{$temp_collection_link}', '{$temp_collection_screen_link}', '{$this->object->form_link}', '{$this->object->misc_settings['subforms']['url_delete']['subform_link']}', {$params}, {__submit_delete: true, __hide_popup_window: true}); }", 'value' => '<i class="far fa-trash-alt"></i>']);
+					$table['options'][$row_number_final][3] = ['value' => $value, 'nowrap' => true, 'width' => '1%'];
+				} else {
+					$table['options'][$row_number_final][1] = ['value' => \Format::id($row_number_final) . '.', 'nowrap' => true, 'width' => '1%'];
+					$table['options'][$row_number_final][2] = ['value' => $temp_inner, 'nowrap' => true, 'class' => 'numbers_frontend_form_list_header_inner_td', 'width' => '99%'];
+				}
 				$row_number_final++;
 			}
 		} else { // preview
@@ -608,7 +650,14 @@ class Base {
 								$value = $this->object->renderListContainerDefaultOptions($v2['options'], $value, $v0);
 							}
 							// urls
-							if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
+							if (!empty($v2['options']['url_edit']) && isset($this->object->misc_settings['subforms']['url_edit'])) {
+								if (!empty($this->object->misc_settings['subforms']['url_edit'])) {
+									$params = $this->renderURLEditHref($v0, ['json' => true]);
+									$temp_collection_link = $this->object->options['collection_link'] ?? '';
+									$temp_collection_screen_link = $this->object->options['collection_screen_link'] ?? '';
+									$value = \HTML::a(['href' => 'javascript:void(0);', 'onclick' => "Numbers.Form.openSubformWindow('{$temp_collection_link}', '{$temp_collection_screen_link}', '{$this->object->form_link}', '{$this->object->misc_settings['subforms']['url_edit']['subform_link']}', {$params});", 'value' => $value]);
+								}
+							} else if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
 								$value = \HTML::a(['href' => $this->renderURLEditHref($v0), 'value' => $value]);
 							}
 						}
@@ -648,10 +697,16 @@ class Base {
 	 * Generate edit URL
 	 *
 	 * @param array $values
+	 * @param array $options
+	 *	boolean json - return json object
 	 * @return string
 	 */
-	public function renderURLEditHref($values) {
-		$model = \Factory::model($this->object->form_parent->query_primary_model, true);
+	public function renderURLEditHref($values, $options = []) {
+		if (!empty($this->object->form_parent->query_primary_model)) {
+			$model = \Factory::model($this->object->form_parent->query_primary_model, true);
+		} else {
+			$model = $this->object->collection_object->primary_model;
+		}
 		$pk = [];
 		foreach ($model->pk as $v) {
 			// skip tenant
@@ -662,7 +717,17 @@ class Base {
 		if ($model->module ?? false) {
 			$pk['__module_id'] = $values[$model->module_column];
 		}
-		return \Application::get('mvc.controller') . '/_Edit?' . http_build_query2($pk);
+		if (!empty($options['json'])) {
+			// bypass variables
+			if (!empty($this->object->options['bypass_hidden_from_input'])) {
+				foreach ($this->object->options['bypass_hidden_from_input'] as $v) {
+					$pk[$v] = $this->object->options['input'][$v] ?? '';
+				}
+			}
+			return json_encode($pk);
+		} else {
+			return \Application::get('mvc.controller') . '/_Edit?' . http_build_query2($pk);
+		}
 	}
 
 	/**

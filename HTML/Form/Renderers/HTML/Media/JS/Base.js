@@ -64,14 +64,16 @@ Numbers.Form = {
 			}
 			form_data.append('__ajax_form_active_element_id', active_element);
 			form_data.append('__ajax_form_id', form_id);
-			$('input[type=file]').each(function() {
+			/* no longer needed
+			$('input[type=file]', $(form)).each(function() {
 				if ($(this)[0].files[0]) {
 					var file = $(this)[0].files[0];
 					var filename = $(this).attr("data-filename");
-					var	name = $(this).attr("name");
+					var name = $(this).attr("name");
 					form_data.append(name, file, filename);
 				}
 			});
+			*/
 			// send data to the server
 			numbers_frontend_form_execution_lock = true;
 			$.ajax({
@@ -86,14 +88,33 @@ Numbers.Form = {
 					// release the lock
 					numbers_frontend_form_execution_lock = false;
 					if (data.success) {
+						// preload javascript files
+						var wait_for_scripts = false;
+						if (data.media_js) {
+							wait_for_scripts = Numbers.preloadNewJs(data.media_js);
+						}
+						// prelaod css files
+						if (data.media_css) {
+							Numbers.preloadNewCss(data.media_css);
+						}
+						// add html
 						$('#' + wrapper_id).html(data.html);
-						eval(data.js);
+						// execute js
+						if (data.js) {
+							if (wait_for_scripts) {
+								setTimeout(function() {
+									eval(data.js);
+								}, 100);
+							} else {
+								eval(data.js);
+							}
+						}
 						// remove mask after 100 miliseconds to let js to take affect
 						setTimeout(function() {
 							$('#' + mask_id).unmask();
 							// we need to trigger resize to redraw a screen
 							$(window).trigger('resize');
-						}, 100);
+						}, 150);
 					} else {
 						// todo: open error dialog in popup window
 						print_r2(data.error);
@@ -151,7 +172,7 @@ Numbers.Form = {
 	 */
 	detailsDeleteRow: function(form_id, row_id) {
 		var tr = $('#' + row_id), that = this, form = $('#' + form_id);
-        tr.css('background-color', 'lightcoral');
+		tr.css('background-color', 'lightcoral');
 		tr.find('td').fadeOut(400, function() {
 			tr.remove();
 			that.triggerSubmit(form)
@@ -437,6 +458,77 @@ Numbers.Form = {
 		} else {
 			$('.numbers_form_filter_sort_container', form).toggle();
 		}
+	},
+
+	/**
+	 * Open subform window
+	 *
+	 * @param string collection_link
+	 * @param string collection_screen_link
+	 * @param string form_link
+	 * @param string subform_link
+	 * @param object params
+	 * @param object options
+	 */
+	openSubformWindow: function(collection_link, collection_screen_link, form_link, subform_link, params, options) {
+		if (!params) params = {};
+		if (!options) options = {};
+		params = Object.assign(params, options);
+		params['__ajax'] = 1;
+		params['__ajax_form_id'] = 'form_' + form_link + '_form';
+		params['__form_link'] = form_link;
+		params['__subform_link'] = subform_link;
+		params['__subform_load_window'] = true;
+		params['__collection_screen_link'] = collection_screen_link;
+		params['__collection_link'] = collection_link;
+		$.ajax({
+			url: Numbers.controller_full,
+			method: 'get',
+			data: params,
+			dataType: 'json',
+			cache: false,
+			success: function (data) {
+				// release the lock
+				if (data.success) {
+					// preload javascript files
+					var wait_for_scripts = false;
+					if (data.media_js) {
+						wait_for_scripts = Numbers.preloadNewJs(data.media_js);
+					}
+					// prelaod css files
+					if (data.media_css) {
+						Numbers.preloadNewCss(data.media_css);
+					}
+					// set html
+					$('#form_' + form_link + '_form_subform_holder').html(data.html);
+					// execute js
+					if (data.js) {
+						if (wait_for_scripts) {
+							setTimeout(function() {
+								eval(data.js);
+							}, 100);
+						} else {
+							eval(data.js);
+						}
+					}
+					// remove mask after 100 miliseconds to let js to take affect
+					if (!options['__hide_popup_window']) {
+						setTimeout(function() {
+							Numbers.Modal.show('form_subform_' + subform_link + '_form');
+							// we need to trigger resize to redraw a screen
+							$(window).trigger('resize');
+						}, 150);
+					}
+				} else {
+					// todo: open error dialog in popup window
+					print_r2(data.error);
+				}
+			},
+			error: function (jqXHR, textStatus, errorThrown) {
+				// echo error on the screen
+				print_r2(jqXHR.responseText);
+			}
+		});
 	}
 }
 

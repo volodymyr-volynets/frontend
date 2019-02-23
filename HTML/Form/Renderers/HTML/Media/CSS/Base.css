@@ -65,3 +65,8 @@
 .numbers_frontend_form_table_row_container {
 	width: 100%;
 }
+/* form modals */
+.numbers_frontend_modal_full_width {
+	max-width: 1120px;
+	width: 100%;
+}
