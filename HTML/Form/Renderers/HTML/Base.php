@@ -109,32 +109,30 @@ class Base {
 			}
 		}
 		// refresh action
+		$refresh_params = [];
+		if ($this->object->values_loaded) {
+			$refresh_params = $this->object->pk;
+			// remove tenant
+			if (!empty($this->object->collection_object->primary_model->tenant)) {
+				unset($refresh_params[$this->object->collection_object->primary_model->tenant_column]);
+			}
+		}
+		if ($this->object->collection_object->primary_model->module ?? false) {
+			$refresh_params['__module_id'] = $refresh_params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
+		}
+		if (!empty($this->object->options['bypass_hidden_from_input'])) {
+			foreach ($this->object->options['bypass_hidden_from_input'] as $v) {
+				$refresh_params[$v] = $this->object->options['input'][$v] ?? '';
+			}
+		}
+		if (!empty($this->object->options['collection_current_tab_id'])) {
+			$refresh_params[$this->object->options['collection_current_tab_id']] = $this->object->form_link;
+		}
+		$refresh_params['__refresh'] = rand(1000, 9999) . '_' . rand(1000, 9999) . '_' . rand(1000, 9999);
+		$refresh_href = $mvc['full'] . '?' . http_build_query2($refresh_params) . "#form_{$this->object->form_link}_form_anchor";
 		if (!empty($this->object->options['actions']['refresh'])) {
 			$url = $mvc['full'];
-			$params = [];
-			// add primary key
-			if ($this->object->values_loaded) {
-				$params = $this->object->pk;
-				// remove tenant
-				if (!empty($this->object->collection_object->primary_model->tenant)) {
-					unset($params[$this->object->collection_object->primary_model->tenant_column]);
-				}
-			}
-			// we need to pass module #
-			if ($this->object->collection_object->primary_model->module ?? false) {
-				$params['__module_id'] = $params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
-			}
-			// bypass variables
-			if (!empty($this->object->options['bypass_hidden_from_input'])) {
-				foreach ($this->object->options['bypass_hidden_from_input'] as $v) {
-					$params[$v] = $this->object->options['input'][$v] ?? '';
-				}
-			}
-			if (!empty($this->object->options['collection_current_tab_id'])) {
-				$params[$this->object->options['collection_current_tab_id']] = $this->object->form_link;
-			}
-			$params['__refresh'] = rand(1000, 9999) . '_' . rand(1000, 9999) . '_' . rand(1000, 9999);
-			$this->object->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => 32000, 'icon' => 'fas fa-sync', 'href' => $mvc['full'] . '?' . http_build_query2($params) . "#form_{$this->object->form_link}_form_anchor", 'internal_action' => true];
+			$this->object->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => 32000, 'icon' => 'fas fa-sync', 'href' => $refresh_href, 'internal_action' => true];
 			// override
 			if (is_array($this->object->options['actions']['refresh'])) {
 				$this->object->actions['form_refresh'] = array_merge($this->object->actions['form_refresh'], $this->object->options['actions']['refresh']);
@@ -301,8 +299,13 @@ class Base {
 		// if we came from ajax we return as json object
 		if (!empty($this->object->options['input']['__ajax'])) {
 			$onload = '';
+			// if we have collection and we inserted into main form we need to force refresh of collecion
+			if ($this->object->values_inserted && !empty($this->object->options['__main_form_in_collection'])) {
+				$onload.= "window.location.href = '{$refresh_href}';";
+			}
+			// if we need to redirect
 			if (!empty($this->object->misc_settings['redirect'])) {
-				$onload = " window.location.href = '{$this->object->misc_settings['redirect']}';";
+				$onload.= "window.location.href = '{$this->object->misc_settings['redirect']}';";
 			}
 			$result = [
 				'success' => true,
