@@ -309,6 +309,7 @@ class Base {
 				'error' => [],
 				'html' => $result,
 				'js' => \Layout::$onload . $onload,
+				'js_first' => \Layout::$onload_first,
 				'media_js' => \Layout::renderJs(['return_list' => true]),
 				'media_css' => \Layout::renderCss(['return_list' => true]),
 			];
@@ -579,22 +580,21 @@ class Base {
 						if (!empty($v2['options']['custom_renderer'])) {
 							$method = \Factory::method($v2['options']['custom_renderer'], null, true, [['skip_processing' => true]]);
 							$value = call_user_func_array($method, [& $this->object, & $v2, & $value, & $v0]);
-						} else {
-							// process options
-							if (!empty($v2['options']['options_model'])) {
-								$value = $this->object->renderListContainerDefaultOptions($v2['options'], $value, $v0);
+						}
+						// process options
+						if (!empty($v2['options']['options_model'])) {
+							$value = $this->object->renderListContainerDefaultOptions($v2['options'], $value, $v0);
+						}
+						// urls
+						if (!empty($v2['options']['url_edit']) && isset($this->object->misc_settings['subforms']['url_edit'])) {
+							if (!empty($this->object->misc_settings['subforms']['url_edit'])) {
+								$params = $this->renderURLEditHref($v0, ['json' => true]);
+								$temp_collection_link = $this->object->options['collection_link'] ?? '';
+								$temp_collection_screen_link = $this->object->options['collection_screen_link'] ?? '';
+								$value = \HTML::a(['href' => 'javascript:void(0);', 'onclick' => "Numbers.Form.openSubformWindow('{$temp_collection_link}', '{$temp_collection_screen_link}', '{$this->object->form_link}', '{$this->object->misc_settings['subforms']['url_edit']['subform_link']}', {$params});", 'value' => $value]);
 							}
-							// urls
-							if (!empty($v2['options']['url_edit']) && isset($this->object->misc_settings['subforms']['url_edit'])) {
-								if (!empty($this->object->misc_settings['subforms']['url_edit'])) {
-									$params = $this->renderURLEditHref($v0, ['json' => true]);
-									$temp_collection_link = $this->object->options['collection_link'] ?? '';
-									$temp_collection_screen_link = $this->object->options['collection_screen_link'] ?? '';
-									$value = \HTML::a(['href' => 'javascript:void(0);', 'onclick' => "Numbers.Form.openSubformWindow('{$temp_collection_link}', '{$temp_collection_screen_link}', '{$this->object->form_link}', '{$this->object->misc_settings['subforms']['url_edit']['subform_link']}', {$params});", 'value' => $value]);
-								}
-							} else if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
-								$value = \HTML::a(['href' => $this->renderURLEditHref($v0), 'value' => $value]);
-							}
+						} else if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
+							$value = \HTML::a(['href' => $this->renderURLEditHref($v0), 'value' => $value]);
 						}
 						$width = $v2['options']['width'] ?? ($v2['options']['percent'] . '%');
 						// full text search replaces
@@ -644,22 +644,21 @@ class Base {
 						if (!empty($v2['options']['custom_renderer'])) {
 							$method = \Factory::method($v2['options']['custom_renderer'], null, true, [['skip_processing' => true]]);
 							$value = call_user_func_array($method, [& $this->object, & $v2, & $value, & $v0]);
-						} else {
-							// process options
-							if (!empty($v2['options']['options_model'])) {
-								$value = $this->object->renderListContainerDefaultOptions($v2['options'], $value, $v0);
+						}
+						// process options
+						if (!empty($v2['options']['options_model'])) {
+							$value = $this->object->renderListContainerDefaultOptions($v2['options'], $value, $v0);
+						}
+						// urls
+						if (!empty($v2['options']['url_edit']) && isset($this->object->misc_settings['subforms']['url_edit'])) {
+							if (!empty($this->object->misc_settings['subforms']['url_edit'])) {
+								$params = $this->renderURLEditHref($v0, ['json' => true]);
+								$temp_collection_link = $this->object->options['collection_link'] ?? '';
+								$temp_collection_screen_link = $this->object->options['collection_screen_link'] ?? '';
+								$value = \HTML::a(['href' => 'javascript:void(0);', 'onclick' => "Numbers.Form.openSubformWindow('{$temp_collection_link}', '{$temp_collection_screen_link}', '{$this->object->form_link}', '{$this->object->misc_settings['subforms']['url_edit']['subform_link']}', {$params});", 'value' => $value]);
 							}
-							// urls
-							if (!empty($v2['options']['url_edit']) && isset($this->object->misc_settings['subforms']['url_edit'])) {
-								if (!empty($this->object->misc_settings['subforms']['url_edit'])) {
-									$params = $this->renderURLEditHref($v0, ['json' => true]);
-									$temp_collection_link = $this->object->options['collection_link'] ?? '';
-									$temp_collection_screen_link = $this->object->options['collection_screen_link'] ?? '';
-									$value = \HTML::a(['href' => 'javascript:void(0);', 'onclick' => "Numbers.Form.openSubformWindow('{$temp_collection_link}', '{$temp_collection_screen_link}', '{$this->object->form_link}', '{$this->object->misc_settings['subforms']['url_edit']['subform_link']}', {$params});", 'value' => $value]);
-								}
-							} else if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
-								$value = \HTML::a(['href' => $this->renderURLEditHref($v0), 'value' => $value]);
-							}
+						} else if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
+							$value = \HTML::a(['href' => $this->renderURLEditHref($v0), 'value' => $value]);
 						}
 						$inner_table['options'][$k . '_' . $k2][1] = ['value' => '<b>' . $v2['options']['label_name'] . ':</b>', 'width' => '15%', 'align' => 'left'];
 						// full text search replaces

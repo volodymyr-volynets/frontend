@@ -88,6 +88,10 @@ Numbers.Form = {
 					// release the lock
 					numbers_frontend_form_execution_lock = false;
 					if (data.success) {
+						// first javascript
+						if (data.js_first) {
+							eval(data.js_first);
+						}
 						// preload javascript files
 						var wait_for_scripts = false;
 						if (data.media_js) {
@@ -490,6 +494,10 @@ Numbers.Form = {
 			success: function (data) {
 				// release the lock
 				if (data.success) {
+					// first javascript
+					if (data.js_first) {
+						eval(data.js_first);
+					}
 					// preload javascript files
 					var wait_for_scripts = false;
 					if (data.media_js) {
