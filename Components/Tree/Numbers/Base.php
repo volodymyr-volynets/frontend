@@ -100,7 +100,7 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base {
 							}
 							if ($status == 'next') {
 								for ($k = $i + 1; $k < $items_count; $k++) {
-									if ($result[$k]['level'] >= j) {
+									if ($result[$k]['level'] >= $j) {
 										continue;
 									} else {
 										$status = 'next';
