@@ -454,7 +454,7 @@ Numbers.Form = {
 		if (data.has_errors) {
 			$('.numbers_form_filter_sort_container', form).show();
 		} else if (show) {
-			if (data.submitted || data.list_rendered) {
+			if (data.submitted || (!data.refresh && !data.submitted) || data.list_rendered) {
 				$('.numbers_form_filter_sort_container', form).hide();
 			} else {
 				$('.numbers_form_filter_sort_container', form).show();

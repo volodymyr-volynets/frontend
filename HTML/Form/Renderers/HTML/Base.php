@@ -212,7 +212,8 @@ class Base {
 		}
 		// postponed messages
 		if (!empty($_SESSION['numbers']['forms'][$this->object->form_link]['messages']) && empty($this->object->misc_settings['form_postponed_messages'])) {
-			$this->object->errors['general'] = array_merge($this->object->errors['general'] ?? [], $_SESSION['numbers']['forms'][$this->object->form_link]['messages']);
+			$this->object->errors['general'] = $_SESSION['numbers']['forms'][$this->object->form_link]['messages'];
+			//array_merge($this->object->errors['general'] ?? [], $_SESSION['numbers']['forms'][$this->object->form_link]['messages']);
 			unset($_SESSION['numbers']['forms'][$this->object->form_link]['messages']);
 		}
 		// messages
@@ -490,7 +491,9 @@ class Base {
 				'css' => ''
 			]
 		];
-		if (!$this->object->list_rendered) return $result;
+		if (!$this->object->list_rendered) {
+			return $result;
+		}
 		// merge options
 		$data = $this->object->misc_settings['list'] ?? [];
 		$options = $this->object->form_parent->list_options ?? [];

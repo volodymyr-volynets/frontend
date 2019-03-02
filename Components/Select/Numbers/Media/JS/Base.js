@@ -312,7 +312,11 @@ var NumbersSelect = function (options) {
 					if (this.color_picker && this.data[i].value != '') {
 						html+= '<span class="numbers_select_option_table_color" style="background-color:#' + this.data[i].value + ';">&nbsp;</span> ';
 					}
-					html+= this.data[i].text;
+					if (this.data[i].text_selected) {
+						html+= this.data[i].text_selected;
+					} else {
+						html+= this.data[i].text;
+					}
 					html+= ' <a href="javascript: void(0);" class="numbers_select_option_multiple_item_close" onclick="window[\'' + this.var_id + '\'].unchoose(' + i + ');"><i class="fa fa-times"></i></a> ';
 					span.innerHTML = html;
 					span.className = 'numbers_select_multiple_item numbers_select_noneditable_item';
