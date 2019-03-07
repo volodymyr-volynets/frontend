@@ -424,9 +424,13 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 										$name = \HTML::icon(['type' => $v['icon']]) . ' ' . $name;
 									}
 									if (!empty($v['url'])) {
-										$result.= \HTML::a(['href' => http_append_to_url($v['url'], ['__menu_id' => $v['__menu_id'] ?? '']), 'class' => 'nav-link', 'value' => $name]);
+										$result.= \HTML::a(['href' => http_append_to_url($v['url'], ['__menu_id' => $v['__menu_id'] ?? '']), 'class' => 'nav-link', 'id' => 'menu_item_id_' . $v['__menu_id'], 'value' => $name]);
 									} else {
 										$result.= $name;
+									}
+									// name generator
+									if (!empty($v['name_generator'])) {
+										\Layout::onLoad('Numbers.Menu.name_generator[' . $v['__menu_id'] . '] = "' . $v['name_generator'] . '";');
 									}
 								}
 							$result.= '</li>';
