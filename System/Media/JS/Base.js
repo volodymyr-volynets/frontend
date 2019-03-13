@@ -242,10 +242,11 @@ if (!Numbers) {
 		preloadNewJs: function(js) {
 			var new_scripts = false;
 			for (var i in js) {
-				if (!Array.from(document.querySelectorAll('script')).some(elm => elm.src == js[i])) {
+				if (!script_exists(js[i])) {
 					let script = document.createElement('script');
 					script.src = js[i];
 					script.async = false;
+					script.type = 'text/javascript';
 					document.getElementsByTagName('head')[0].appendChild(script);
 					new_scripts = true;
 				}
@@ -262,7 +263,7 @@ if (!Numbers) {
 		preloadNewCss: function(css) {
 			var new_scripts = false;
 			for (var i in css) {
-				if (!Array.from(document.querySelectorAll('link')).some(elm => elm.href == css[i])) {
+				if (!style_exists(css[i])) {
 					$("<link/>", {
 						rel: "stylesheet",
 						type: "text/css",

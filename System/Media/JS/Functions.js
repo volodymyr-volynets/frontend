@@ -360,3 +360,23 @@ function html_decode(value) {
 function html_encode(value) {
     return $('<div />').text(value).html();
 }
+
+/**
+ * Check if script exists
+ *
+ * @param string url
+ * @returns boolean
+ */
+function script_exists(url) {
+	return document.querySelectorAll('script[src="' + url + '"]').length > 0;
+}
+
+/**
+ * Check if style exists
+ *
+ * @param string url
+ * @returns boolean
+ */
+function style_exists(url) {
+	return document.querySelectorAll('link[href="' + url + '"]').length > 0;
+}
