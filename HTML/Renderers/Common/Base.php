@@ -894,4 +894,12 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 		$result.= '</audio>';
 		return $result;
 	}
+
+	/**
+	 * @see \HTML::iframe()
+	 */
+	public static function iframe(array $options = []) : string {
+		$options['tag'] = 'iframe';
+		return \HTML::tag($options);
+	}
 }

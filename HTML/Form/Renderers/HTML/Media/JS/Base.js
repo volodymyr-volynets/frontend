@@ -1,7 +1,7 @@
 // special variable to handle buttons
 var numbers_frontend_form_submit_hidden_initiator = null;
 // ajax execution lock
-var numbers_frontend_form_execution_lock = false;
+var numbers_frontend_form_execution_lock = {};
 
 /**
  * Form
@@ -16,6 +16,13 @@ Numbers.Form = {
 	 * @type object
 	 */
 	data: {},
+
+	/**
+	 * Misc settings
+	 *
+	 * @type object
+	 */
+	misc_settings: {},
 
 	/**
 	 * Get form data
@@ -53,7 +60,9 @@ Numbers.Form = {
 		// wrap everything into timer function to get focused id
 		setTimeout(function () {
 			// if we have a lock we exit
-			if (numbers_frontend_form_execution_lock) return;
+			if (numbers_frontend_form_execution_lock && numbers_frontend_form_execution_lock[form_id]) {
+				return;
+			}
 			// initialize form data
 			var form_data = new FormData(document.getElementById(form_id));
 			form_data.append('__ajax', 1);
@@ -75,7 +84,7 @@ Numbers.Form = {
 			});
 			*/
 			// send data to the server
-			numbers_frontend_form_execution_lock = true;
+			numbers_frontend_form_execution_lock[form_id] = true;
 			$.ajax({
 				url: Numbers.controller_full,
 				method: 'post',
@@ -86,7 +95,7 @@ Numbers.Form = {
 				processData: false,
 				success: function (data) {
 					// release the lock
-					numbers_frontend_form_execution_lock = false;
+					numbers_frontend_form_execution_lock[form_id] = false;
 					if (data.success) {
 						// first javascript
 						if (data.js_first) {
@@ -126,7 +135,7 @@ Numbers.Form = {
 				},
 				error: function (jqXHR, textStatus, errorThrown) {
 					// release the lock
-					numbers_frontend_form_execution_lock = false;
+					numbers_frontend_form_execution_lock[form_id] = false;
 					// echo error on the screen
 					print_r2(jqXHR.responseText);
 				}
@@ -537,6 +546,19 @@ Numbers.Form = {
 				print_r2(jqXHR.responseText);
 			}
 		});
+	},
+
+	/**
+	 * Refresh collection form
+	 *
+	 * @param string collection_link
+	 */
+	refreshCollectionForms : function(collection_link) {
+		if (this.misc_settings[collection_link]) {
+			for (var i in this.misc_settings[collection_link]) {
+				$('#form_' + i + '_form').submit();
+			}
+		}
 	}
 }
 

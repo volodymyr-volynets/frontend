@@ -243,7 +243,7 @@ class Base {
 		}
 		// form data in onload
 		$js_data = [
-			'submitted' => $this->object->submitted,
+			'submitted' => $this->object->misc_settings['__original_submitted'] ?? $this->object->submitted,
 			'refresh' => $this->object->refresh,
 			'delete' => $this->object->delete,
 			'blank' => $this->object->blank,
@@ -259,7 +259,15 @@ class Base {
 		if (!$this->object->hasErrors()) {
 			$js.= "Numbers.Form.listFilterSortToggle('#form_{$this->object->form_link}_form', true);\n";
 			// on success subform
-			if (!empty($this->object->options['on_success_refresh_parent']) && !$this->object->refresh) {
+			$submitted = $this->object->misc_settings['__original_submitted'] ?? $this->object->submitted;
+			if (!empty($this->object->options['on_success_refresh_collection']) && $submitted && !$this->object->refresh && !$this->object->blank) {
+				$js.= "Numbers.Modal.hide('form_subform_{$this->object->form_link}_form');\n";
+				if (!empty($this->object->options['collection_link'])) {
+					$js.= "Numbers.Form.refreshCollectionForms('{$this->object->options['collection_link']}')\n";
+				} else {
+					$js.= "$('#form_{$this->object->options['parent_form_link']}_form').submit();\n";
+				}
+			} else if (!empty($this->object->options['on_success_refresh_parent']) && $submitted && !$this->object->refresh && !$this->object->blank) {
 				$js.= "Numbers.Modal.hide('form_subform_{$this->object->form_link}_form');\n";
 				$js.= "$('#form_{$this->object->options['parent_form_link']}_form').submit();\n";
 			}
@@ -307,6 +315,13 @@ class Base {
 			// if we need to redirect
 			if (!empty($this->object->misc_settings['redirect'])) {
 				$onload.= "window.location.href = '{$this->object->misc_settings['redirect']}';";
+			}
+			// counter in tabs
+			if ($this->object->initiator_class == 'list' && !empty($this->object->options['collection_link'])) {
+				$form_k = $this->object->options['parent_form_link'] ?? $this->object->form_link;
+				$records_id = "form_collection_tabs_{$this->object->options['collection_link']}_{$form_k}__records";
+				$num = \Format::id($this->object->misc_settings['list']['total']);
+				\Layout::onLoad("$('#{$records_id}').html({$num}); $('#{$records_id}').show();");
 			}
 			$result = [
 				'success' => true,
@@ -1953,6 +1968,16 @@ render_table:
 				} else if (in_array($element_method, ['\HTML::div', '\HTML::span', '\HTML::b'])) {
 					if (!empty($value)) {
 						$result_options['value'] = $value;
+					}
+					// format
+					if (!empty($result_options['format'])) {
+						$result_options['format_options'] = $result_options['format_options'] ?? [];
+						if (!empty($result_options['format_depends'])) {
+							$this->object->processParamsAndDepends($result_options['format_depends'], $neighbouring_values, $options, true);
+							$result_options['format_options'] = array_merge_hard($result_options['format_options'], $result_options['format_depends']);
+						}
+						$method = \Factory::method($result_options['format'], 'Format');
+						$result_options['value'] = call_user_func_array([$method[0], $method[1]], [$result_options['value'], $result_options['format_options']]);
 					}
 					if (empty($result_options['skip_i18n'])) {
 						$result_options['value'] = i18n($result_options['i18n'] ?? null, $result_options['value'] ?? null);
