@@ -368,6 +368,9 @@ class Base {
 	 * @param array $result
 	 */
 	private function renderTabs($k, $v, & $result) {
+		if (!empty($v['options']['skip_rendering'])) {
+			return [];
+		}
 		$tab_id = "form_tabs_{$this->object->form_link}_{$k}";
 		$tab_header = [];
 		$tab_values = [];

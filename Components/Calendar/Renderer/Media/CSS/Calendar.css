@@ -57,6 +57,7 @@
 	font-size: 0.75em;
 	cursor: hand;
 	cursor: pointer;
+	overflow-y: hidden;
 }
 .numbers_account_calendar_singleday_interval:hover {
 	z-index: 32000 !important;

@@ -111,15 +111,16 @@ class Base {
 								$result.= '</div>';
 							}
 						}
-						// onclick
-						$onclick = '';
-						if (!empty($options['onclick_renderer'])) {
-							$method = \Factory::method($options['onclick_renderer'], null, true);
-							$onclick = ' onclick= "' . call_user_func_array([$method[0], $method[1]], [$v2]) . '" ';
-						}
 						// render multi days
 						if (!empty($data_arranged['multiple_days'][$date1h])) {
 							foreach ($data_arranged['multiple_days'][$date1h] as $k2 => $v2) {
+								// onclick
+								$onclick = '';
+								if (!empty($options['onclick_renderer'])) {
+									$method = \Factory::method($options['onclick_renderer'], null, true);
+									$onclick = ' onclick= "' . call_user_func_array([$method[0], $method[1]], [$v2]) . '" ';
+								}
+								// render
 								$result.= '<div class="numbers_account_calendar_multiday_cell">';
 									$result.= '<div class="numbers_account_calendar_multiday_interval" style="color: ' . $v2['slot_text_color']  . '; background-color: ' . $v2['slot_color'] . ';" ' . $onclick . '>';
 										// cell renderer
@@ -136,6 +137,13 @@ class Base {
 						// single day last
 						if (!empty($data_arranged['single_day'][$date1h])) {
 							foreach ($data_arranged['single_day'][$date1h] as $k2 => $v2) {
+								// onclick
+								$onclick = '';
+								if (!empty($options['onclick_renderer'])) {
+									$method = \Factory::method($options['onclick_renderer'], null, true);
+									$onclick = ' onclick= "' . call_user_func_array([$method[0], $method[1]], [$v2]) . '" ';
+								}
+								// render
 								$result.= '<div class="numbers_account_calendar_multiday_cell">';
 									$result.= '<div class="numbers_account_calendar_multiday_interval" style="color: ' . $v2['slot_text_color']  . '; background-color: ' . $v2['slot_color'] . ';" ' . $onclick . '>';
 										// cell renderer

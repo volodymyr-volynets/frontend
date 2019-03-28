@@ -245,7 +245,7 @@ if (!Numbers) {
 				if (!script_exists(js[i])) {
 					let script = document.createElement('script');
 					script.src = js[i];
-					script.async = false;
+					script.async = true;
 					script.type = 'text/javascript';
 					document.getElementsByTagName('head')[0].appendChild(script);
 					new_scripts = true;

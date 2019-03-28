@@ -7,6 +7,24 @@ namespace Numbers\Frontend\HTML\Renderers\Common;
 class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 
 	/**
+	 * Is email
+	 *
+	 * @var boolean
+	 */
+	protected static $is_email = false;
+
+	/**
+	 * Email
+	 *
+	 * @param bool $status
+	 */
+	public static function setMode(bool $email) {
+		if (\Can::submoduleExists('Numbers.Frontend.HTML.Renderers.DOMParser')) {
+			self::$is_email = $status;
+		}
+	}
+
+	/**
 	 * Generate html based on value in options
 	 *
 	 * @param mixed $value

@@ -117,7 +117,7 @@ Numbers.Form = {
 							if (wait_for_scripts) {
 								setTimeout(function() {
 									eval(data.js);
-								}, 100);
+								}, 1000);
 							} else {
 								eval(data.js);
 							}
@@ -523,7 +523,7 @@ Numbers.Form = {
 						if (wait_for_scripts) {
 							setTimeout(function() {
 								eval(data.js);
-							}, 100);
+							}, 1000);
 						} else {
 							eval(data.js);
 						}
