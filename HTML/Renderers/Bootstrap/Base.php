@@ -14,36 +14,59 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 		$type = $options['type'] ?? '';
 		$header = $options['header'] ?? null;
 		$footer = $options['footer'] ?? null;
-		$result = '<div class="card ' . ($options['class'] ?? '') . '">';
-			if ($header != null) {
-				if ($type != 'default') {
-					$bg_class = $type ? ('bg-' . $type . ' text-white') : '';
-				} else {
-					$bg_class = $type ? ('bg-' . $type) : '';
-				}
-				if (is_array($header)) {
-					$icon = !empty($header['icon']) ? (\HTML::icon($header['icon']) . ' ') : null;
-					$result.= '<div class="card-header ' . $bg_class . '">' . $icon . $header['title'] . '</div>';
-				} else {
-					$result.= '<div class="card-header ' . $bg_class . '">' . $header . '</div>';
-				}
+		$result = '';
+		if ($header != null) {
+			if ($type != 'default') {
+				$bg_class = $type ? ('bg-' . $type . ' text-white') : '';
+			} else {
+				$bg_class = $type ? ('bg-' . $type) : '';
 			}
-			$result.= '<div class="card-body">';
-				$result.= '<div class="card-text">' . $value . '</div>';
-				if (!empty($options['bottom'])) {
-					$result.= '<p class="card-text"><small class="text-muted">' . $options['bottom'] . '</small></p>';
-				}
-			$result.= '</div>';
-			if ($footer != null) {
-				if (is_array($footer)) {
-					$icon = !empty($footer['icon']) ? (\HTML::icon($footer['icon']) . ' ') : null;
-					$result.= '<div class="card-footer">' . $icon . $footer['title'] . '</div>';
-				} else {
-					$result.= '<div class="card-footer">' . $footer . '</div>';
-				}
+			if (is_array($header)) {
+				$icon = !empty($header['icon']) ? (\HTML::icon($header['icon']) . ' ') : null;
+				$result.= \HTML::div([
+					'class' => 'card-header ' . $bg_class,
+					'value' => $icon . $header['title'] ?? '',
+				]);
+			} else {
+				$result.= \HTML::div([
+					'class' => 'card-header ' . $bg_class,
+					'value' => $header,
+				]);
 			}
-		$result.= '</div>';
-		return $result;
+		}
+		$result.= \HTML::div([
+			'class' => 'card-body',
+			'value' => \HTML::div([
+				'class' => 'card-text',
+				'value' => $value,
+			]) . (!empty($options['bottom']) ? \HTML::tag([
+				'tag' => 'p',
+				'class' => 'card-text',
+				'value' => \HTML::tag([
+					'tag' => 'small',
+					'class' => 'text-muted',
+					'value' => $options['bottom']
+				])
+			]) : ''),
+		]);
+		if ($footer != null) {
+			if (is_array($footer)) {
+				$icon = !empty($footer['icon']) ? (\HTML::icon($footer['icon']) . ' ') : null;
+				$result.= \HTML::div([
+					'class' => 'card-footer',
+					'value' => $icon . $footer['title'],
+				]);
+			} else {
+				$result.= \HTML::div([
+					'class' => 'card-footer',
+					'value' => $footer,
+				]);
+			}
+		}
+		return \HTML::div([
+			'class' => 'card ' . ($options['class'] ?? ''),
+			'value' => $result,
+		]);
 	}
 
 	/**
@@ -162,6 +185,10 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 	 * @see \HTML::grid()
 	 */
 	public static function grid(array $options = []) : string {
+		// email
+		if (self::$is_email) {
+			return parent::grid($options);
+		}
 		$rtl = \I18n::rtl();
 		$grid_columns = \Application::get('flag.numbers.framework.html.options.grid_columns') ?? 12;
 		$rows = isset($options['options']) ? $options['options'] : [];

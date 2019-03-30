@@ -2143,6 +2143,7 @@ render_table:
 						$hidden_fields[] = \HTML::hidden(['name' => $result_options['name'], 'value' => $result_options['value']]);
 					}
 					$result_options['value'].= implode('', $hidden_fields);
+					$result_options['static'] = true;
 				}
 				break;
 			case 'html':

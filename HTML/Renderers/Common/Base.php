@@ -18,9 +18,13 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 	 *
 	 * @param bool $status
 	 */
-	public static function setMode(bool $email) {
-		if (\Can::submoduleExists('Numbers.Frontend.HTML.Renderers.DOMParser')) {
-			self::$is_email = $status;
+	public static function setMode(bool $status) {
+		self::$is_email = $status;
+		// load dom
+		if (self::$is_email) {
+			\Helper\Ob::start();
+			require(\Application::get(['application', 'path_full']) . 'Layout/' . \Application::get('application.layout.email') . '.html');
+			\Numbers\Frontend\HTML\Renderers\DOMParser\Base::load('email', \Helper\Ob::clean());
 		}
 	}
 
@@ -57,6 +61,10 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 	 */
 	public static function tag(array $options = []) : string {
 		$value = isset($options['value']) ? $options['value'] : '';
+		// email
+		if (self::$is_email && !empty($options['static'])) {
+			$value = wordwrap(strip_tags($value), 50, "<br />\n");
+		}
 		$tag = $options['tag'] ?? 'div';
 		if (!empty($options['align'])) {
 			$options['style'] = ($options['style'] ?? '') . 'text-align: ' . $options['align'] . ';';
@@ -100,6 +108,17 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 	 * @return string
 	 */
 	protected static function generateAttributes($options, $tag = null) {
+		// email
+		if (self::$is_email) {
+			$class = $options['class'] ?? '';
+			if (is_array($class)) {
+				$class = implode(' ', $class);
+			}
+			$email_style = \Numbers\Frontend\HTML\Renderers\DOMParser\Base::getStyle('email', $tag ?? '', $options['id'] ?? '', $class);
+			if (!empty($email_style)) {
+				$options['style'] = ($options['style'] ?? '') . $email_style;
+			}
+		}
 		$result = [];
 		foreach ($options as $k => $v) {
 			// validate HTML 5 attribute
@@ -495,6 +514,10 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 	 * @see \HTML::table()
 	 */
 	public static function table(array $options = []) : string {
+		// email
+		if (self::$is_email) {
+			$options['width'] = $options['width'] ?? '100%';
+		}
 		$rows = isset($options['options']) ? $options['options'] : [];
 		if (!empty($options['header']) && is_array($options['header'])) {
 			$header = $options['header'];
@@ -617,7 +640,12 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 							'colspan' => 24 // maximum grid count
 						];
 					} else {
-						$data['options'][$k][$index] = \HTML::table($cell);
+						$data['options'][$k][$index] = [
+							'width' => ((int) 100 / count($v)) . '%',
+							'row_class' => $v3['row_class'] ?? '',
+							'style' => 'vertical-align: top;',
+							'value' => \HTML::table($cell)
+						];
 					}
 					$data['header'][$index] = $index;
 					$index++;
