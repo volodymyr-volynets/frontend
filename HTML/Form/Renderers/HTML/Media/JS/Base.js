@@ -457,14 +457,18 @@ Numbers.Form = {
 	 *
 	 * @param mixed form
 	 */
-	listFilterSortToggle: function(form_or_element, show) {
+	listFilterSortToggle: function(form_or_element, show, always_show) {
 		var form = this.getForm(form_or_element);
 		var data = this.getFormData(form_or_element);
 		if (data.has_errors) {
 			$('.numbers_form_filter_sort_container', form).show();
 		} else if (show) {
-			if (data.submitted || (!data.refresh && !data.submitted) || data.list_rendered) {
-				$('.numbers_form_filter_sort_container', form).hide();
+			if (!always_show) {
+				if (data.submitted || (!data.refresh && !data.submitted) || data.list_rendered) {
+					$('.numbers_form_filter_sort_container', form).hide();
+				} else {
+					$('.numbers_form_filter_sort_container', form).show();
+				}
 			} else {
 				$('.numbers_form_filter_sort_container', form).show();
 			}

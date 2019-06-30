@@ -203,6 +203,7 @@ Numbers.Format = {
 	amount: function(amount, options) {
 		if (!options) options = {};
 		var format = array_key_get(Numbers, 'flag.global.format'), type;
+		amount = amount.toString().trim();
 		// if currency code is passed we need to load symbol
 		if (options.currency_code) {
 			if (!isset(options.symbol) || (isset(options.symbol) && options.symbol !== false)) {

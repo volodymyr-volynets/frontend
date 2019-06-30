@@ -257,7 +257,11 @@ class Base {
 		];
 		$js = "Numbers.Form.data['form_{$this->object->form_link}_form'] = " . json_encode($js_data) . ";\n";
 		if (!$this->object->hasErrors()) {
-			$js.= "Numbers.Form.listFilterSortToggle('#form_{$this->object->form_link}_form', true);\n";
+			if ($this->object->initiator_class == 'list') {
+				$js.= "Numbers.Form.listFilterSortToggle('#form_{$this->object->form_link}_form', true, false);\n";
+			} else {
+				$js.= "Numbers.Form.listFilterSortToggle('#form_{$this->object->form_link}_form', true, true);\n";
+			}
 			// on success subform
 			$submitted = $this->object->misc_settings['__original_submitted'] ?? $this->object->submitted;
 			if (!empty($this->object->options['on_success_refresh_collection']) && $submitted && !$this->object->refresh && !$this->object->blank) {
@@ -271,6 +275,17 @@ class Base {
 				$js.= "Numbers.Modal.hide('form_subform_{$this->object->form_link}_form');\n";
 				$js.= "$('#form_{$this->object->options['parent_form_link']}_form').submit();\n";
 			}
+		}
+		// redirects from links
+		if (!empty($_SESSION['numbers']['tokens']['email_token']['data']['onclick'])) {
+			if (!empty($this->object->form_parent->subforms)) {
+				$js.= <<<TTT
+					setTimeout(function() {
+						{$_SESSION['numbers']['tokens']['email_token']['data']['onclick']}
+					}, 1000);
+TTT;
+			}
+			unset($_SESSION['numbers']['tokens']['email_token']['data']['onclick']);
 		}
 		\Layout::onLoad($js);
 		// bypass values
@@ -622,7 +637,7 @@ class Base {
 						}
 						$width = $v2['options']['width'] ?? ($v2['options']['percent'] . '%');
 						// full text search replaces
-						if (!empty($full_text_search) && empty($v2['options']['skip_fts'])) {
+						if (!empty($full_text_search) && empty($v2['options']['skip_fts']) && empty($v2['options']['url_edit'])) {
 							$this->markTextInStr($value, $full_text_search);
 						}
 						if (!is_html($value)) {
