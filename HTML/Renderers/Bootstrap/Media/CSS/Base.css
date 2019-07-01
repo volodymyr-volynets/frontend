@@ -42,7 +42,7 @@
 	margin: 0;
 	padding: 0;
 	min-height: 20px;
-	/*z-index: 5000;*/ /* a must */
+	z-index: 32000; /* a must */
 }
 a.nav-link {
 	font-size: 0.9em;
@@ -213,6 +213,11 @@ legend {
 hr.small {
 	margin-top: 3px;
 	margin-bottom: 3px;
+}
+
+/* modal */
+.modal {
+	z-index: 32100;
 }
 
 /* grid */

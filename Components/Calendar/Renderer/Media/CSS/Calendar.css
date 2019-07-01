@@ -35,7 +35,7 @@
 .numbers_account_calendar_label {
 	position: absolute;
 	top: -1em;
-	left: 1em;
+	left: 0.5em;
 }
 .numbers_account_calendar_current {
 	background-color: #eee;
