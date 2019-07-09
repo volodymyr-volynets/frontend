@@ -469,21 +469,24 @@ TTT;
 				}
 			}
 			// add all containers
-			$grid['options'][$k][$k2][$k2] = [
-				'value' => \HTML::segment([
-					'header' => [
-						'title' => i18n(null, $v2['options']['label_name']),
-						'icon' => $v2['options']['panel_icon'] ?? null,
-					],
-					'type' => $v2['options']['panel_type'] ?? 'default',
-					'value' => $temp_panels,
-					'class' => 'numbers_frontend_form_pannel_segment',
-					'pannel_skip_segment' => $v2['options']['pannel_skip_segment'] ?? false,
-				]),
-				'options' => [
-					'percent' => $v2['options']['percent'],
-				]
-			];
+			if (!empty($temp_panels)) {
+				$grid['options'][$k][$k2][$k2] = [
+					'value' => \HTML::segment([
+						'header' => [
+							'title' => i18n(null, $v2['options']['label_name']),
+							'icon' => $v2['options']['panel_icon'] ?? null,
+						],
+						'type' => $v2['options']['panel_type'] ?? 'default',
+						'value' => $temp_panels,
+						'class' => 'numbers_frontend_form_pannel_segment',
+						'pannel_skip_segment' => $v2['options']['pannel_skip_segment'] ?? false,
+						'style' => 'height: 100%;',
+					]),
+					'options' => [
+						'percent' => $v2['options']['percent'],
+					]
+				];
+			}
 		}
 		$result[$k]['html'] = \HTML::grid($grid);
 	}
@@ -1844,6 +1847,17 @@ render_table:
 			if (empty($result_options['options_depends'])) {
 				$result_options['options_depends'] = [];
 			}
+			// if we need to reset
+			if ($this->object->initiator_class == 'list' || $this->object->initiator_class == 'report') {
+				if (!empty($result_options['options_depends'])) {
+					foreach ($result_options['options_depends'] as $v) {
+						if (($this->object->misc_settings['__form_onchange_field_values_key'][0] ?? '') == $v) {
+							$value = null;
+							break;
+						}
+					}
+				}
+			}
 			// options depends & params
 			$this->object->processParamsAndDepends($result_options['options_depends'], $neighbouring_values, $options, true);
 			$this->object->processParamsAndDepends($result_options['options_params'], $neighbouring_values, $options, false);
@@ -2000,6 +2014,9 @@ render_table:
 					if (empty($result_options['skip_i18n'])) {
 						$result_options['value'] = i18n($result_options['i18n'] ?? null, $result_options['value'] ?? null);
 						$flag_translated = true;
+					}
+					if (!empty($result_options['nl2br'])) {
+						$result_options['value'] = nl2br($result_options['value']);
 					}
 				} else { // editable fields
 					// inputs should not be date type, use input_type to override

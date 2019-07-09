@@ -142,7 +142,7 @@ class HTML5 {
 		'select' => ['autofocus', 'disabled', 'form', 'multiple', 'name', 'required', 'size'],
 		'source' => ['src', 'type', 'media'],
 		'style' => ['media', 'type', 'scoped'],
-		'table' => ['width', 'cellpadding', 'cellspacing', 'border'],
+		'table' => ['width', 'cellpadding', 'cellspacing', 'border', 'height'],
 		'td' => ['colspan', 'rowspan', 'headers', 'width', 'align'],
 		'textarea' => ['autocomplete', 'autofocus', 'cols', 'dirname', 'disabled', 'form', 'inputmode', 'maxlength', 'name', 'placeholder', 'readonly', 'required', 'rows', 'wrap'],
 		'th' => ['colspan', 'rowspan', 'headers', 'scope', 'abbr', 'width', 'align'],

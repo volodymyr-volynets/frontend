@@ -517,6 +517,7 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 		// email
 		if (self::$is_email) {
 			$options['width'] = $options['width'] ?? '100%';
+			$options['height'] = $options['height'] ?? '100%';
 		}
 		$rows = isset($options['options']) ? $options['options'] : [];
 		if (!empty($options['header']) && is_array($options['header'])) {
@@ -559,6 +560,16 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 		unset($options['options'], $options['header'], $options['skip_header']);
 		// rows second
 		foreach ($rows as $k => $v) {
+			// empty rows in emails
+			if (self::$is_email) {
+				$have_value = false;
+				foreach ($v as $k0 => $v0) {
+					if (!empty($v0)) {
+						$have_value = true;
+					}
+				}
+				if (!$have_value) continue;
+			}
 			// we need to extract row attributes from first column
 			$row_options = [];
 			foreach ($header as $k2 => $v2) {
@@ -619,7 +630,7 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 		$data = [
 			'header' => [],
 			'options' => [],
-			'skip_header' => true
+			'skip_header' => true,
 		];
 		foreach ($rows as $k => $v) {
 			$index = 0;

@@ -66,6 +66,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 		return \HTML::div([
 			'class' => 'card ' . ($options['class'] ?? ''),
 			'value' => $result,
+			'style' => $options['style'] ?? null,
 		]);
 	}
 
