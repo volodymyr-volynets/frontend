@@ -811,6 +811,7 @@ render_custom_renderer:
 				} else {
 					$method[0] = \Factory::model($method[0], true);
 				}
+				$this->object->misc_settings['currently_rendering'] = $container_link;
 				$temp = call_user_func_array($method, [& $this->object]);
 				if (is_string($temp)) {
 					$result['data']['html'] = $separator . $temp;
