@@ -17,7 +17,8 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base {
 		unset($options['options']);
 		// generate data array
 		$result = $temp = [];
-		\Helper\Tree::convertTreeToOptionsMulti($items, 0, ['name_field' => 'name'], $temp);
+		$options['name_field'] = 'name';
+		\Helper\Tree::convertTreeToOptionsMulti($items, 0, $options, $temp);
 		$data_max_level = 0;
 		$counter = 0;
 		foreach ($temp as $k => $v) {
@@ -206,6 +207,8 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base {
 						$html.= \HTML::message(['type' => 'warning', 'options' => [i18n(null, \Object\Content\Messages::NO_ROWS_FOUND)]]);
 					$html.= '</td>';
 				$html.= '</tr>';
+			} else {
+				\Layout::onLoad('numbers_tree_update_lines(\'' . $options['id'] .  '_tree_table\');');
 			}
 		$html.= '</table>';
 		$options['value'] = $html;

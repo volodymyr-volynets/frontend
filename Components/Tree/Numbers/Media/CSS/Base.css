@@ -1,3 +1,6 @@
+.numbers_tree_option_table {
+	line-height: 1em;
+}
 .numbers_tree_option_table td {
 	padding: 0;
 	border: none;
@@ -12,7 +15,7 @@
 	text-align: center;
 }
 .numbers_tree_option_table_td {
-	height: 2.5em;
+	height: 1.5em;
 	vertical-align: middle;
 	padding-left: 3px;
 }
@@ -21,7 +24,8 @@ html[dir="rtl"] .numbers_tree_option_table_td {
 }
 .numbers_tree_option_table_level {
 	width: 2em;
-	height: 2.5em;
+	min-height: 1em;
+	height: 100%;
 }
 .numbers_tree_option_table_level_nextchild {
 	width: 1em;
@@ -93,6 +97,6 @@ tr.numbers_tree_option_table_tr_hover:hover {
 	background-color: #fafafa !important;
 }
 td.numbers_tree_mini_toolbar {
-    font-size: 0.75em;
-    padding-left: 2em;
+	font-size: 0.75em;
+	padding-left: 2em;
 }

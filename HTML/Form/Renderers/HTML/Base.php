@@ -128,6 +128,11 @@ class Base {
 		if (!empty($this->object->options['collection_current_tab_id'])) {
 			$refresh_params[$this->object->options['collection_current_tab_id']] = $this->object->form_link;
 		}
+		if (isset($this->object->options['actions']['refresh']['preserve_values'])) {
+			foreach ($this->object->options['actions']['refresh']['preserve_values'] as $v) {
+				$refresh_params[$v] = $this->object->values[$v] ?? null;
+			}
+		}
 		$refresh_params['__refresh'] = rand(1000, 9999) . '_' . rand(1000, 9999) . '_' . rand(1000, 9999);
 		$refresh_href = $mvc['full'] . '?' . http_build_query2($refresh_params) . "#form_{$this->object->form_link}_form_anchor";
 		if (!empty($this->object->options['actions']['refresh'])) {
@@ -313,7 +318,8 @@ TTT;
 				'name' => "form_{$this->object->form_link}_form",
 				'id' => "form_{$this->object->form_link}_form",
 				'value' => $result,
-				'onsubmit' => empty($this->object->options['no_ajax_form_reload']) ? 'return Numbers.Form.onFormSubmit(this);' : null
+				'onsubmit' => empty($this->object->options['no_ajax_form_reload']) ? 'return Numbers.Form.onFormSubmit(this);' : null,
+				'data-no_ajax_form_reload' => !empty($this->object->options['no_ajax_form_reload']) ? 1 : '',
 			]);
 		}
 		// active element
@@ -924,7 +930,13 @@ render_custom_renderer:
 		$row_number = 1;
 		foreach ($values as $k0 => $v0) {
 			$key2 = $v0[$options['details_tree_key']];
-			$method = \Factory::method($options['details_tree_name_only_custom_renderer'], null, true, [['skip_processing' => true]]);
+			$method = \Factory::method($options['details_tree_name_only_custom_renderer'], null, false, [['skip_processing' => true]]);
+			// important to use $this if its the same class
+			if ($method[0] == $this->object->form_class) {
+				$method[0] = & $this->object->form_parent;
+			} else {
+				$method[0] = \Factory::model($method[0], true, [['skip_processing' => true]]);
+			}
 			$new_data[$key2] = call_user_func_array($method, [& $this->object, & $rows, & $v0]);
 			$new_data[$key2]['__parent'] = $v0[$options['details_tree_parent_key']];
 			$new_data[$key2]['toolbar'] = $new_data[$key2]['toolbar'] ?? [];
@@ -1017,7 +1029,7 @@ render_custom_renderer:
 			$row_number++;
 		}
 		$new_data = \Helper\Tree::convertByParent($new_data, '__parent');
-		$result.= \HTML::tree(['options' => $new_data]);
+		$result.= \HTML::tree(['options' => $new_data, 'i18n' => $options['details_tree_i18n'] ?? true]);
 		return $result;
 	}
 

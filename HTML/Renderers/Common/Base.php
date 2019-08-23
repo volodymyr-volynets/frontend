@@ -959,4 +959,11 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 		$options['tag'] = 'iframe';
 		return \HTML::tag($options);
 	}
+
+	/**
+	 * see \HTML::highlight();
+	 */
+	public static function highlight($options = []) {
+		return '<pre><code>' . $options['value'] . '</code></pre>';
+	}
 }

@@ -508,6 +508,44 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 	}
 
 	/**
+	 * @see \HTML::menuMini()
+	 */
+	public static function menuMini(array $options = []) : string {
+		$options['id'] = $options['id'] ?? 'menu_mini';
+		$result = '<nav class="navbar-mini-holder navbar navbar-expand-lg">';
+			$result.= '<div class="collapse navbar-collapse" id="' . $options['id'] . '">';
+				$result.= '<ul class="navbar-nav ' . (($options['align'] ?? 'left') == 'right' ? 'ml-auto' : 'mr-auto') . '">';
+					$index = 1;
+					foreach ($options['options'] as $k => $v) {
+						if (empty($v['options'])) {
+							$result.= '<li class="nav-item">';
+								$v['class'] = ($v['class'] ?? '') . ' nav-link';
+								$result.= \HTML::a($v);
+							$result.= '</li>';
+						} else {
+							$result.= '<li class="nav-item dropdown">';
+								$result.= '<a class="nav-link dropdown-toggle" href="' . $v['href'] . '" id="' . $options['id'] . '_' . $index . '" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' . $v['value'] . '</a>';
+								$result.= '<div class="navbar-mini-dropdown dropdown-menu" aria-labelledby="' . $options['id'] . '_' . $index . '">';
+									foreach ($v['options'] as $k2 => $v2) {
+										if (empty($v2['separator'])) {
+											$v2['class'] = ($v2['class'] ?? '') . ' dropdown-item';
+											$result.= \HTML::a($v2);
+										} else {
+											$result.= '<div class="dropdown-divider"></div>';
+										}
+									}
+								$result.= '</div>';
+							$result.= '</li>';
+							$index++;
+						}
+					}
+				$result.= '</ul>';
+			$result.= '</div>';
+		$result.= '</nav>';
+		return $result;
+	}
+
+	/**
 	 * @see \HTML::message()
 	 */
 	public static function message(array $options = []) : string {
@@ -684,7 +722,7 @@ TTT;
 	}
 
 	/**
-	 * @see \HTML::popover
+	 * @see \HTML::popover();
 	 */
 	public static function popover(array $options = []) : string {
 		$options['title'] = $options['title'] ?? '';
@@ -705,5 +743,15 @@ TTT;
 TTT;
 		\Layout::onLoad($js);
 		return $options['value'];
+	}
+
+	/**
+	 * @see \HTML::callout();
+	 */
+	public static function callout(array $options = []) : string {
+		$result = '<div class="callout callout-' . ($options['type'] ?? 'default') . '">';
+			$result.= $options['value'] ?? '';
+		$result.= '</div>';
+		return $result;
 	}
 }
