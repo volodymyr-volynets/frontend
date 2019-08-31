@@ -356,7 +356,12 @@ TTT;
 			\Layout::renderAs($result, 'application/json');
 		} else {
 			if (!empty($this->object->misc_settings['redirect'])) {
-				\Request::redirect($this->object->misc_settings['redirect']);
+				if (empty($this->object->options['on_success_refresh_collection'])) {
+					\Request::redirect($this->object->misc_settings['redirect']);
+				} else {
+					\Layout::$onload = '';
+					\Layout::onLoad("window.location.href = '{$this->object->misc_settings['redirect']}';");
+				}
 			}
 		}
 		$result = "<div id=\"form_{$this->object->form_link}_form_mask\"><div id=\"form_{$this->object->form_link}_form_wrapper\">" . $result . '</div></div>';
