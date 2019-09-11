@@ -426,8 +426,11 @@ var NumbersSelect = function (options) {
 		} else {
 			this.renderValue();
 		}
-		this.div_elem.style.display = 'none';
-		this.replacement_div_elem.blur();
+		var that = this;
+		setTimeout(function () {
+			that.div_elem.style.display = 'none';
+			that.replacement_div_elem.blur();
+		}, 50);
 	};
 
 	/**
@@ -550,7 +553,7 @@ var NumbersSelect = function (options) {
 				if (this.data[i].disabled) {
 					html+= '<tr class="' + this.table_tr_class + inactive_class + ' numbers_disabled" search-id="' + i + '" title="' + title + '">';
 				} else {
-					html+= '<tr onclick="' + this.var_id + '.chosen(' + i + ', this);" class="' + this.table_tr_class + (this.data[i].selected ? (selected_class + ' numbers_select_row_selected ') : '') + inactive_class + ' numbers_select_option_table_tr_hover" search-id="' + i + '" title="' + title + '">';
+					html+= '<tr onclick="window[\'' + result.var_id + '\'].chosen(' + i + ', this);" class="' + this.table_tr_class + (this.data[i].selected ? (selected_class + ' numbers_select_row_selected ') : '') + inactive_class + ' numbers_select_option_table_tr_hover" search-id="' + i + '" title="' + title + '">';
 				}
 					if (this.data[i].level == 0) {
 						hash2 = {};

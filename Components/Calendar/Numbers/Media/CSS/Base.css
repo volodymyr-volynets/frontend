@@ -1,7 +1,7 @@
 /**
  * Default calendar styles
  */
-.numbers_calendar_icon, .numbers_calendar_header_button, .numbers_calendar_date_day_cell, .numbers_calendar_time_button {
+.numbers_calendar_icon, .numbers_calendar_header_button, .numbers_calendar_date_day_cell {
 	color: inherit;
 	cursor: pointer;
 	cursor: hand;

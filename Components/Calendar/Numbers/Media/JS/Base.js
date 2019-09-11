@@ -31,10 +31,15 @@ var Numbers_Calendar = function (options) {
 	div.setAttribute('tabindex', -1);
 	div.style.display = 'none';
 	div.onfocus = function () {
+		result.flag_is_focused = true;
 		window[result.var_id].onfocus();
 	};
 	div.onblur = function () {
 		window[result.var_id].onfocus(true);
+	};
+	div.onclick = function () {
+		result.flag_is_focused = true;
+		window[result.var_id].onfocus();
 	};
 	if (window.addEventListener) {
 		div.addEventListener('DOMMouseScroll', function(event) { window[result.var_id].onscroll(event); }, false);
@@ -317,7 +322,8 @@ var Numbers_Calendar = function (options) {
 				if (!that.checkIfFocused()) {
 					that.close();
 				}
-			}, 100);
+				that.flag_is_focused = false;
+			}, 250);
 		} else {
 			this.flag_is_focused = true;
 		}
@@ -333,6 +339,7 @@ var Numbers_Calendar = function (options) {
 			this.updateInputElement(new Date(year, month, day));
 			this.close();
 		} else if (this.type == 'datetime') {
+			this.flag_is_focused = true;
 			// we must reset year/month/day in case we choose prev/next month
 			this.date_year_elem.value = year;
 			this.date_month_elem.value = month;
@@ -386,10 +393,14 @@ var Numbers_Calendar = function (options) {
 		var value = Numbers.Format.dateFormat(date_object, this.type, {format: this.format});
 		this.elem.value = value;
 		// onchange
-		var event = new Event('change');
+		var event;
+		if (typeof(Event) === 'function') {
+			event = new Event('change');
+		} else {
+			event = document.createEvent('Event');
+			event.initEvent('change', true, true);
+		}
 		this.elem.dispatchEvent(event);
-		// we need to trigger onchange event
-		this.elem.dispatchEvent(new Event('change', {bubbles: true}));
 	};
 
 	/**
@@ -494,6 +505,7 @@ var Numbers_Calendar = function (options) {
 	 * @param int next
 	 */
 	result.prevNext = function (next, prev) {
+		this.flag_is_focused = true;
 		var year = parseInt(this.date_year_elem.value);
 		var month = parseInt(this.date_month_elem.value);
 		// next
@@ -526,6 +538,7 @@ var Numbers_Calendar = function (options) {
 	 * @param boolean down
 	 */
 	result.timeChanged = function (what, down) {
+		this.flag_is_focused = true;
 		var am_pm = parseInt(this.time_am_pm_elem.value);
 		var hour = parseInt(this.time_hour_elem.value);
 		var minute = parseInt(this.time_minute_elem.value);
@@ -709,7 +722,7 @@ var Numbers_Calendar = function (options) {
 							html += '<td' + hide_seconds + '>&nbsp;</td>';
 							html += '<td align="center"' + hide_seconds + '><span onclick="' + this.var_id + '.timeChanged(\'second\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-up"></i></span></td>';
 							html += '<td align="center"' + hide_am_pm + '><span onclick="' + this.var_id + '.timeChanged(\'am_pm\');" class="numbers_calendar_header_button"><i class="fa fa-chevron-up"></i></span></td>';
-							html += '<td align="center" width="33" rowspan="3" valign="middle"><span onclick="' + this.var_id + '.timeChosen();" id="' + this.time_go_id + '" class="numbers_calendar_time_button"><i class="far fa-arrow-alt-circle-right"></span></a></td>';
+							html += '<td align="center" width="33" rowspan="3" valign="middle"><a href="javascript:void(0);" onclick="' + this.var_id + '.timeChosen();" id="' + this.time_go_id + '" class="numbers_calendar_time_button"><i class="far fa-arrow-alt-circle-right"></i></a></td>';
 						html += '</tr>';
 						html += '<tr>';
 							html += '<td align="center">';
@@ -787,7 +800,7 @@ var Numbers_Calendar = function (options) {
 			html+= '</tr>';
 			html+= '<tr>';
 				html+= '<td colspan="3">';
-					html+= '<a href="javascript:void(0);" onclick="' + this.var_id + '.updateInputElement(new Date());">' + result.i18n.presets.today + '</a><br/>';
+					html+= '<a href="javascript:void(0);" onclick="' + this.var_id + '.updateInputElement(new Date()); ' + this.var_id + '.close();">' + result.i18n.presets.today + '</a><br/>';
 				html+= '</td>';
 			html+= '</tr>';
 		}

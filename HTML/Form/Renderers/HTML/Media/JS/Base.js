@@ -99,7 +99,7 @@ Numbers.Form = {
 					if (data.success) {
 						// first javascript
 						if (data.js_first) {
-							eval(data.js_first);
+							evaluate(data.js_first);
 						}
 						// preload javascript files
 						var wait_for_scripts = false;
@@ -116,10 +116,10 @@ Numbers.Form = {
 						if (data.js) {
 							if (wait_for_scripts) {
 								setTimeout(function() {
-									eval(data.js);
+									evaluate(data.js);
 								}, 1000);
 							} else {
-								eval(data.js);
+								evaluate(data.js);
 							}
 						}
 						// remove mask after 100 miliseconds to let js to take affect
@@ -165,6 +165,10 @@ Numbers.Form = {
 		if (!button) {
 			button = '__submit_refresh';
 		}
+		// if refresh we need to clead no ajax
+		$(form).attr('no_ajax', '');
+		$("[name='__format']", "#" + $(form).attr('id')).val('text/html').change();
+		// click refresh button
 		numbers_frontend_form_submit_hidden_initiator = button;
 		$("[name='" + button + "']", "#" + $(form).attr('id')).click();
 	},
@@ -490,7 +494,7 @@ Numbers.Form = {
 	openSubformWindow: function(collection_link, collection_screen_link, form_link, subform_link, params, options) {
 		if (!params) params = {};
 		if (!options) options = {};
-		params = Object.assign(params, options);
+		params = $.extend({}, params, options);
 		params['__ajax'] = 1;
 		params['__ajax_form_id'] = 'form_' + form_link + '_form';
 		params['__form_link'] = form_link;
@@ -509,7 +513,7 @@ Numbers.Form = {
 				if (data.success) {
 					// first javascript
 					if (data.js_first) {
-						eval(data.js_first);
+						evaluate(data.js_first);
 					}
 					// preload javascript files
 					var wait_for_scripts = false;
@@ -526,10 +530,10 @@ Numbers.Form = {
 					if (data.js) {
 						if (wait_for_scripts) {
 							setTimeout(function() {
-								eval(data.js);
+								evaluate(data.js);
 							}, 1000);
 						} else {
-							eval(data.js);
+							evaluate(data.js);
 						}
 					}
 					// remove mask after 100 miliseconds to let js to take affect

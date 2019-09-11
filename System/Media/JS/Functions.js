@@ -380,3 +380,16 @@ function script_exists(url) {
 function style_exists(url) {
 	return document.querySelectorAll('link[href="' + url + '"]').length > 0;
 }
+
+/**
+ * Evaluate
+ * @param string code
+ */
+function evaluate(code) {
+	var scope = this;
+	if (window.execScript) {
+		window.execScript("(" + code + ")");
+		return null;
+	}
+	return scope.eval ? scope.eval(code) : eval(code);
+}
