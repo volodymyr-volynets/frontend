@@ -8,11 +8,11 @@
 .numbers_frontend_components_select_numbers_base_toggle_on, .numbers_frontend_components_select_numbers_base_toggle_off, .numbers_frontend_components_select_numbers_base_toggle_middle {
 	height: 100%;
 	display: inline-block;
-	padding: 6px 18px;
+	padding: 0.25em 1.25em;
 	margin-bottom: 0;
 	font-size: 1em;
 	font-weight: 400;
-	line-height: 1.42857143;
+	line-height: 1.5;
 	text-align: center;
 	white-space: nowrap;
 	vertical-align: middle;
@@ -30,9 +30,9 @@
 	border-color: #357ebd;
 }
 .numbers_frontend_components_select_numbers_base_toggle_on:hover, .numbers_frontend_components_select_numbers_base_toggle_on:focus, .numbers_frontend_components_select_numbers_base_toggle_on:active, .numbers_frontend_components_select_numbers_base_toggle_on.active {
-    color: #ffffff;
-    background-color: #3071a9;
-    border-color: #285e8e
+	color: #ffffff;
+	background-color: #3071a9;
+	border-color: #285e8e;
 }
 .numbers_frontend_components_select_numbers_base_toggle_off {
 	color: #333333;

@@ -144,7 +144,7 @@ class HTML5 {
 		'style' => ['media', 'type', 'scoped'],
 		'table' => ['width', 'cellpadding', 'cellspacing', 'border', 'height'],
 		'td' => ['colspan', 'rowspan', 'headers', 'width', 'align'],
-		'textarea' => ['autocomplete', 'autofocus', 'cols', 'dirname', 'disabled', 'form', 'inputmode', 'maxlength', 'name', 'placeholder', 'readonly', 'required', 'rows', 'wrap'],
+		'textarea' => ['autocomplete', 'autofocus', 'cols', 'dirname', 'disabled', 'form', 'inputmode', 'maxlength', 'name', 'placeholder', 'readonly', 'required', 'rows', 'wrap', 'tabindex'],
 		'th' => ['colspan', 'rowspan', 'headers', 'scope', 'abbr', 'width', 'align'],
 		'time' => ['datetime', 'pubdate'],
 		'track' => ['default', 'kind', 'label', 'src', 'srclang'],

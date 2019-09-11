@@ -307,7 +307,7 @@ Numbers.Format = {
 	 * @param array options
 	 * @return string
 	 */
-	currencyRate: function(amount, options = []) {
+	currencyRate: function(amount, options) {
 		if (!options) options = {};
 		options.decimals = Numbers.ObjectDataDomains.getSetting('currency_rate', 'scale');
 		return this.amount(amount, options);

@@ -369,6 +369,10 @@ TTT;
 		if (isset($this->object->options['segment'])) {
 			$temp = is_array($this->object->options['segment']) ? $this->object->options['segment'] : [];
 			$temp['value'] = $result;
+			if (!empty($temp['include_page_title'])) {
+				$temp['header']['icon']['type'] = \Application::$controller->icon;
+				$temp['header']['title'] = \Application::$controller->title;
+			}
 			if (isset($temp['header']['title'])) {
 				$temp['header']['title'] = i18n(null, $temp['header']['title']);
 			}
@@ -376,6 +380,9 @@ TTT;
 				$temp['footer']['title'] = i18n(null, $temp['footer']['title']);
 			}
 			$result = \HTML::segment($temp);
+			if (!empty($temp['include_page_title'])) {
+				$result.= '<style>h3.page_title { display: none; }</style>';
+			}
 		}
 		// anchor
 		$result = \HTML::a(['id' => "form_{$this->object->form_link}_form_anchor", 'value' => null]) . $result;
@@ -1865,17 +1872,6 @@ render_table:
 			if (empty($result_options['options_depends'])) {
 				$result_options['options_depends'] = [];
 			}
-			// if we need to reset
-			if ($this->object->initiator_class == 'list' || $this->object->initiator_class == 'report') {
-				if (!empty($result_options['options_depends'])) {
-					foreach ($result_options['options_depends'] as $v) {
-						if (($this->object->misc_settings['__form_onchange_field_values_key'][0] ?? '') == $v) {
-							$value = null;
-							break;
-						}
-					}
-				}
-			}
 			// options depends & params
 			$this->object->processParamsAndDepends($result_options['options_depends'], $neighbouring_values, $options, true);
 			$this->object->processParamsAndDepends($result_options['options_params'], $neighbouring_values, $options, false);
@@ -2033,8 +2029,8 @@ render_table:
 						$result_options['value'] = i18n($result_options['i18n'] ?? null, $result_options['value'] ?? null);
 						$flag_translated = true;
 					}
-					if (!empty($result_options['nl2br'])) {
-						$result_options['value'] = nl2br($result_options['value']);
+					if (!empty($result_options['nl2br']) && !is_html($result_options['value'])) {
+						$result_options['value'] = br2nl($result_options['value'], true);
 					}
 				} else { // editable fields
 					// inputs should not be date type, use input_type to override
@@ -2190,7 +2186,11 @@ render_table:
 							}
 						}
 					} else {
-						$hidden_fields[] = \HTML::hidden(['name' => $result_options['name'], 'value' => $result_options['value']]);
+						if (!empty($result_options['nl2br'])) {
+							$hidden_fields[] = \HTML::hidden(['name' => $result_options['name'], 'value' => br2nl($result_options['value'])]);
+						} else {
+							$hidden_fields[] = \HTML::hidden(['name' => $result_options['name'], 'value' => $result_options['value']]);
+						}
 					}
 					$result_options['value'].= implode('', $hidden_fields);
 					$result_options['static'] = true;

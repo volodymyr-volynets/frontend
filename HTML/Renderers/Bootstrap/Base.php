@@ -359,10 +359,12 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 		// item url
 		if (!empty($item['url'])) {
 			$temp_url = http_append_to_url($item['url'], ['__menu_id' => $item['__menu_id'] ?? '']);
+			$onclick = "window.location.href = '{$temp_url}';";
 		} else {
 			$temp_url = 'javascript:void(0);';
+			$onclick = '';
 		}
-		$result = \HTML::a(['href' => $temp_url, 'class' => 'nav-link dropdown-toggle', 'id' => 'menu_item_id_' . $item['menu_id'], 'value' => $name, 'role' => 'button', 'data-toggle' => 'dropdown', 'aria-haspopup' => 'true', 'aria-expanded' => 'false']);
+		$result = \HTML::a(['href' => $temp_url, 'onclick' => $onclick, 'class' => 'nav-link dropdown-toggle', 'id' => 'menu_item_id_' . $item['menu_id'], 'value' => $name, 'role' => 'button', 'data-toggle' => 'dropdown', 'aria-haspopup' => 'true', 'aria-expanded' => 'false']);
 		$result.= '<ul class="dropdown-menu" aria-labelledby="menu_item_id_' . $item['menu_id'] . '">';
 			// sort
 			foreach ($item['options'] as $k2 => $v2) {
