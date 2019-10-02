@@ -18,6 +18,7 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base {
 		// generate data array
 		$result = $temp = [];
 		$options['name_field'] = 'name';
+		$options['prepend_parent_keys'] = true;
 		\Helper\Tree::convertTreeToOptionsMulti($items, 0, $options, $temp);
 		$data_max_level = 0;
 		$counter = 0;
