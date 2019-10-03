@@ -70,3 +70,12 @@
 	max-width: 1120px;
 	width: 100%;
 }
+/* form grid */
+.numbers_frontend_form_class .tab-pane .form-group {
+	padding-right: 5px;
+	padding-left: 5px;
+}
+.numbers_frontend_form_class .tab-pane .row {
+	margin-right: -5px;
+	margin-left: -5px;
+}

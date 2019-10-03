@@ -1,7 +1,7 @@
 .numbers_select_replacement {
-	/*height: auto !important;*/
+	height: auto !important;
 	/*min-height: 34px;*/
-	min-height: 1em;
+	min-height: 2em;
 	padding-left: 12px;
 	padding-right: 2.5em;
 }

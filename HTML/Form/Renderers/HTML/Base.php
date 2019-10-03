@@ -317,6 +317,7 @@ TTT;
 				'action' => $mvc['full'] . "#form_{$this->object->form_link}_form_anchor",
 				'name' => "form_{$this->object->form_link}_form",
 				'id' => "form_{$this->object->form_link}_form",
+				'class' => 'numbers_frontend_form_class',
 				'value' => $result,
 				'onsubmit' => empty($this->object->options['no_ajax_form_reload']) ? 'return Numbers.Form.onFormSubmit(this);' : null,
 				'data-no_ajax_form_reload' => !empty($this->object->options['no_ajax_form_reload']) ? 1 : '',
