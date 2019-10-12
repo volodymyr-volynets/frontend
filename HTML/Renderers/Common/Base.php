@@ -437,7 +437,7 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 			}
 		}
 		// convert certain keys
-		foreach (['preset', 'searchable', 'tree', 'color_picker', 'optgroups'] as $v) {
+		foreach (['preset', 'searchable', 'tree', 'search_first', 'color_picker', 'optgroups'] as $v) {
 			if (isset($options[$v])) {
 				$options['data-' . $v] = $options[$v];
 				unset($options[$v]);
@@ -517,7 +517,8 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 		// email
 		if (self::$is_email) {
 			$options['width'] = $options['width'] ?? '100%';
-			$options['height'] = $options['height'] ?? '100%';
+			// intentionally removed
+			//$options['height'] = $options['height'] ?? '100%';
 		}
 		$rows = isset($options['options']) ? $options['options'] : [];
 		if (!empty($options['header']) && is_array($options['header'])) {
@@ -608,7 +609,7 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 						}
 						$temp2.= '<' . $tag . ' ' . self::generateAttributes($v[$k2], $tag) . '>' . $temp_value . '</' . $tag . '>';
 					} else {
-						$temp2.= '<td nowrap>' . $v[$k2] . '</td>';
+						$temp2.= '<td>' . $v[$k2] . '</td>';
 					}
 				}
 				// reset colspan
