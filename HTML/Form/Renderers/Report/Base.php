@@ -45,6 +45,40 @@ class Base {
 				$counter++;
 			}
 			$outer_table['options']['header'][2] = ['value' => $temp_inner, 'nowrap' => true, 'width' => '99%'];
+			// summary
+			if (!empty($object->data[$report_name]['header_summary'])) {
+				$object->calculateSummary($report_name);
+				$counter = 1;
+				$temp_inner_summary = '';
+				foreach ($new_headers as $header_name => $header_data) {
+					if (empty($object->data[$report_name]['header_summary_calculated'][$header_name])) {
+						continue;
+					}
+					$inner_table = ['options' => [], 'width' => '100%', 'class' => 'numbers_frontend_form_report_screen_table_global_row_summary'];
+					if ($counter == 1) {
+						$inner_table['class'].= ' numbers_frontend_form_report_screen_table_global_row_summary_first';
+					}
+					if ($counter == count($new_headers)) {
+						$inner_table['class'].= ' numbers_frontend_form_report_screen_table_global_row_summary_last';
+					}
+					foreach ($header_data as $k2 => $v2) {
+						$width = $v2['width'] ?? ($v2['percent'] . '%');
+						if (isset($object->data[$report_name]['header_summary_calculated'][$header_name][$v2['__index']])) {
+							$value = $object->data[$report_name]['header_summary_calculated'][$header_name][$v2['__index']]['final'];
+							if (!empty($object->data[$report_name]['header_summary'][$header_name][$v2['__index']]['format'])) {
+								$method = \Factory::method($object->data[$report_name]['header_summary'][$header_name][$v2['__index']]['format'], 'Format');
+								$value = call_user_func_array([$method[0], $method[1]], [$value, $object->data[$report_name]['header_summary'][$header_name][$v2['__index']]['format_options'] ?? []]);
+							}
+						} else {
+							$value = '';
+						}
+						$inner_table['options'][1][$k2] = ['value' => $value, 'align' => $v2['align'] ?? 'left', 'nowrap' => true, 'width' => $width, 'tag' => 'th'];
+					}
+					$temp_inner_summary.= \HTML::table($inner_table);
+					$counter++;
+				}
+				$outer_table['options'][PHP_INT_MIN][2] = ['value' => $temp_inner_summary, 'nowrap' => true, 'width' => '99%'];
+			}
 			// render data
 			$prev_odd_even = null;
 			foreach ($object->data[$report_name]['data'] as $row_number => $row_data) {
@@ -62,7 +96,7 @@ class Base {
 						$cell_class = 'numbers_frontend_form_report_screen_cell_data';
 						$width = $v2['width'] ?? ($v2['percent'] . '%');
 						$value = $row_data[0][$v2['__index']] ?? null;
-						$align = $v2['data_align'] ?? '';
+						$align = $v2['data_align'] ?? $v2['align'] ?? 'left';
 						$bold = $v2['data_bold'] ?? false;
 						$total = $v2['data_total'] ?? false;
 						$subtotal = $v2['data_subtotal'] ?? false;
@@ -78,7 +112,7 @@ class Base {
 							$alarm = $value['alarm'] ?? false;
 							// url
 							if (!empty($value['url'])) {
-								$value = \HTML::a(['href' => $value['url'], 'value' => $value['value']]);
+								$value = \HTML::a(['href' => $value['url'], 'target' => '_blank', 'value' => $value['value']]);
 							} else {
 								$value = $value['value'] ?? null;
 							}
@@ -113,6 +147,26 @@ class Base {
 				}
 				$outer_table['options'][$row_number][2] = ['value' => $temp_inner, 'nowrap' => true, 'width' => '99%', 'class' => $class];
 				$prev_odd_even = $row_data[1] ?? null;
+			}
+			// summary below
+			if (!empty($object->data[$report_name]['header_summary'])) {
+				$outer_table['options'][PHP_INT_MAX - 1001][2] = ['value' => $temp_inner_summary, 'nowrap' => true, 'width' => '99%'];
+			}
+			// legends after
+			if (!empty($object->data[$report_name]['data_legend'])) {
+				$row_number = PHP_INT_MAX - 1000;
+				foreach ($object->data[$report_name]['data_legend'] as $row_number2 => $row_data) {
+					$temp_inner = '';
+					$class = '';
+					if (!empty($row_data[2])) { // separator
+						$temp_inner.= '&nbsp;';
+						$class = 'numbers_frontend_form_report_screen_table_global_separator';
+					} else if (!empty($row_data[4])) { // legend
+						$temp_inner.= $row_data[4];
+					}
+					$outer_table['options'][$row_number][2] = ['value' => $temp_inner, 'nowrap' => true, 'width' => '99%', 'class' => $class];
+					$row_number++;
+				}
 			}
 			// generate a table
 			$result.= \HTML::table($outer_table);

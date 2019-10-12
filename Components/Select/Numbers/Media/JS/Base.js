@@ -21,6 +21,7 @@ var NumbersSelect = function (options) {
 	result.tree = options.tree ? options.tree : (result.elem.getAttribute('data-tree') == 'tree' ? true : false);
 	result.color_picker = options.color_picker ? options.color_picker : (result.elem.getAttribute('data-color_picker') == 'color_picker' ? true : false);
 	result.optgroups = result.elem.getAttribute('data-optgroups') == 'optgroups' ? true : false;
+	result.search_first = options.search_first ? options.search_first : (result.elem.getAttribute('data-search_first') == 'search_first' ? true : false);
 	result.var_id = 'numbers_select_var_' + result.id;
 	result.div_id = options.id + '_select_div';
 	result.table_id = options.id + '_select_table';
@@ -163,7 +164,7 @@ var NumbersSelect = function (options) {
 	 *
 	 * @returns string
 	 */
-	result.get_search_input = function (not_lower) {
+	result.getSearchInput = function (not_lower) {
 		if (this.replacement_div_elem.lastChild && this.replacement_div_elem.lastChild.nodeType == 3) {
 			var temp = this.replacement_div_elem.lastChild.textContent.trim();
 			if (!not_lower) {
@@ -179,16 +180,27 @@ var NumbersSelect = function (options) {
 	 * Filter rows
 	 */
 	result.filter = function () {
-		var text = this.get_search_input();
+		var text = this.getSearchInput();
 		var trs = document.getElementsByClassName(this.table_tr_class), temp, counter = 0, none = 0;
 		for (var i = 0; i < trs.length; i++) {
 			temp = parseInt(trs[i].getAttribute('search-id'));
-			if (this.data[temp].text_lower.indexOf(text) != -1) {
-				trs[i].style.display = 'table-row';
-				counter++;
+			// if we are earching by first letters
+			if (result.search_first) {
+				if (this.data[temp].text_lower.startsWith(text)) {
+					trs[i].style.display = 'table-row';
+					counter++;
+				} else {
+					trs[i].style.display = 'none';
+					none++;
+				}
 			} else {
-				trs[i].style.display = 'none';
-				none++;
+				if (this.data[temp].text_lower.indexOf(text) != -1) {
+					trs[i].style.display = 'table-row';
+					counter++;
+				} else {
+					trs[i].style.display = 'none';
+					none++;
+				}
 			}
 		}
 		// no rows
@@ -293,7 +305,7 @@ var NumbersSelect = function (options) {
 				this.refreshData();
 				this.flag_data_prepered = true;
 			}
-			var text = this.get_search_input();
+			var text = this.getSearchInput();
 			this.replacement_div_elem.innerHTML = '';
 			for (var i = 0; i < this.data.length; i++) {
 				if (this.data[i].selected) {
@@ -413,7 +425,7 @@ var NumbersSelect = function (options) {
 	result.close = function () {
 		// special handling when we have a preset
 		if (this.preset) {
-			var text = this.get_search_input(true);
+			var text = this.getSearchInput(true);
 			if (text && !this.elem.value_exists(text)) {
 				var option = document.createElement('option');
 				option.value = option.text = text;
