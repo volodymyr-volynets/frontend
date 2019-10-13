@@ -14,6 +14,11 @@ class Base {
 		$result = '';
 		$report_counter = 1;
 		foreach (array_keys($object->data) as $report_name) {
+			// chart
+			if ($object->data[$report_name]['options']['type'] == CHART) {
+				$result.= \Numbers\Backend\IO\Chart\Base::render($object, $report_name);
+				continue;
+			}
 			$outer_table = [
 				'width' => '100%',
 				'options' => [],
