@@ -18,7 +18,10 @@ class Base implements \Numbers\Frontend\Components\Select\Interface2\Base {
 			if (empty($options['id']) && !empty($options['name'])) {
 				$options['id'] = $options['name'];
 			}
-			\Layout::onload('NumbersSelect(' . json_encode(['id' => $options['id']]) . ');');
+			\Layout::onload('NumbersSelect(' . json_encode([
+				'id' => $options['id'],
+				'class' => $options['class'] ?? ''
+			]) . ');');
 		}
 		// must gain proper class from previous submodule
 		$options['flag_call_previous_parent'] = true;

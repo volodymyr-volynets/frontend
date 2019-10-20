@@ -11,6 +11,7 @@ var NumbersSelect = function (options) {
 	// initializing object
 	var result = new Object();
 	result.id = options.id;
+	result.class = options.class ? options.class : '';
 	result.elem = document.getElementById(options.id);
 	if (!result.elem) return;
 	result.searchable = options.searchable ? options.searchable : (result.elem.getAttribute('data-searchable') == 'searchable' ? true : false);
@@ -539,7 +540,11 @@ var NumbersSelect = function (options) {
 			this.flag_data_prepered = true;
 		}
 		var i, j, k, title, inactive_class, colspan, status = '', hash = {}, hash2 = {}, selected_class, cell, temp;
-		var html = '<table id="' + this.table_id + '" class="numbers_select_option_table" width="100%" cellpadding="0" cellspacing="0">';
+		var table_class = '';
+		if (result.class) {
+			table_class = result.class + '_table';
+		}
+		var html = '<table id="' + this.table_id + '" class="numbers_select_option_table ' + table_class + '" width="100%" cellpadding="0" cellspacing="0">';
 			// select/deselect
 			if (-1 in this.data) {
 				html+= '<tr search-id="-1">';
