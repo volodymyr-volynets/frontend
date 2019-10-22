@@ -2065,7 +2065,7 @@ render_table:
 						$result_options['value'] = '';
 					}
 					// we need to empty zero integers and sequences, before format
-					if (($result_options['php_type'] ?? '') == 'integer' && ($result_options['type'] ?? '') != 'boolean' && ($result_options['domain'] ?? '') != 'counter' && empty($result_options['value']) && ($result_options['method'] ?? null) != 'hidden') {
+					if (($result_options['php_type'] ?? '') == 'integer' && ($result_options['type'] ?? '') != 'boolean' && ($result_options['domain'] ?? '') != 'counter' && ($result_options['domain'] ?? '') != 'bigcounter' && empty($result_options['value']) && ($result_options['method'] ?? null) != 'hidden') {
 						$result_options['value'] = '';
 					}
 					// format, not for selects/autocompletes/presets
