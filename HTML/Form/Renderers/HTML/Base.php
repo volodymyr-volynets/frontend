@@ -264,6 +264,8 @@ class Base {
 		if (!$this->object->hasErrors()) {
 			if ($this->object->initiator_class == 'list') {
 				$js.= "Numbers.Form.listFilterSortToggle('#form_{$this->object->form_link}_form', true, false);\n";
+			} else if ($this->object->initiator_class == 'report' && $this->object->submitted) {
+				$js.= "Numbers.Form.listFilterSortToggle('#form_{$this->object->form_link}_form', true, false);\n";
 			} else {
 				$js.= "Numbers.Form.listFilterSortToggle('#form_{$this->object->form_link}_form', true, true);\n";
 			}
