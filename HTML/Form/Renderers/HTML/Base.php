@@ -1607,6 +1607,12 @@ render_table:
 							'options' => $v3['options'],
 							'row_class' => $v3['options']['row_class'] ?? null
 						];
+						// list and report should have filter tab counters
+						if (in_array($this->object->initiator_class, ['list', 'report'])) {
+							if (!empty($value)) {
+								$this->object->errorInTabs(['records' => 1]);
+							}
+						}
 					}
 				}
 			}
@@ -1906,6 +1912,7 @@ render_table:
 						$value = array_extract_values_by_key($value ?? [], $options['options']['multiple_column']);
 					}
 				}
+				$result_options['options_options']['include_null_filter'] = $options['options']['include_null_filter'] ?? null;
 				$options_array_processed = \Object\Data\Common::processOptions($result_options['options_model'], $this->object, $result_options['options_params'], $value, $skip_values, $result_options['options_options']);
 				if (strpos($result_options['options_model'], 'optgroups') === false) {
 					$result_options['options'] = $options_array_processed;
