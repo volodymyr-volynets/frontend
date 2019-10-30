@@ -107,6 +107,7 @@ class Base {
 						$subtotal = $v2['data_subtotal'] ?? false;
 						$underline = $v2['data_underline'] ?? false;
 						$as_header = $v2['data_as_header'] ?? false;
+						$topline = $v2['topline'] ?? false;
 						if (is_array($value)) {
 							$align = $value['align'] ?? $align;
 							$bold = $value['bold'] ?? $bold;
@@ -115,6 +116,7 @@ class Base {
 							$total = $value['total'] ?? $total;
 							$subtotal = $value['subtotal'] ?? $subtotal;
 							$alarm = $value['alarm'] ?? false;
+							$topline = $value['topline'] ?? $topline;
 							// url
 							if (!empty($value['url'])) {
 								$value = \HTML::a(['href' => $value['url'], 'target' => '_blank', 'value' => $value['value']]);
@@ -129,7 +131,8 @@ class Base {
 							if ($subtotal) $cell_class.= ' subtotal';
 							if ($alarm) $cell_class.= ' alarm';
 						}
-						if (isset($row_data[5]['cell_even']) && $value . '' != '') {
+						if ($topline) $cell_class.= ' topline';
+						if (isset($row_data[5]['cell_even']) && isset($value)) {
 							if ($row_data[5]['cell_even'] == ODD) {
 								$cell_class.= ' odd';
 							} else if ($row_data[5]['cell_even'] == EVEN) {
