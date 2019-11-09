@@ -91,7 +91,7 @@ Numbers.Menu = {
 				data: '__ajax=1&item=' + i,
 				dataType: 'json',
 				success: function (data) {
-					if (data.success) {
+					if (data && data.success) {
 						$('#menu_item_id_' + data.item).html(data.data);
 					}
 				}

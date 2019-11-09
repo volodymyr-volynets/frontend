@@ -641,7 +641,7 @@ TTT;
 						}
 						// custom renderer
 						if (!empty($v2['options']['custom_renderer'])) {
-							$method = \Factory::method($v2['options']['custom_renderer'], null, true, [['skip_processing' => true]]);
+							$method = \Factory::method($v2['options']['custom_renderer'], $this->object->form_parent, true, [['skip_processing' => true]]);
 							$value = call_user_func_array($method, [& $this->object, & $v2, & $value, & $v0]);
 						}
 						// process options
@@ -705,7 +705,7 @@ TTT;
 						}
 						// custom renderer
 						if (!empty($v2['options']['custom_renderer'])) {
-							$method = \Factory::method($v2['options']['custom_renderer'], null, true, [['skip_processing' => true]]);
+							$method = \Factory::method($v2['options']['custom_renderer'], $this->object->form_parent, true, [['skip_processing' => true]]);
 							$value = call_user_func_array($method, [& $this->object, & $v2, & $value, & $v0]);
 						}
 						// process options
@@ -825,11 +825,11 @@ TTT;
 				}
 			} else {
 render_custom_renderer:
-				$method = \Factory::method($this->object->data[$container_link]['options']['custom_renderer']);
+				$method = \Factory::method($this->object->data[$container_link]['options']['custom_renderer'], $this->object->form_parent);
 				// important to use $this if its the same class
 				if ($method[0] == $this->object->form_class) {
 					$method[0] = & $this->object->form_parent;
-				} else {
+				} else if (!is_object($method[0])) {
 					$method[0] = \Factory::model($method[0], true);
 				}
 				$this->object->misc_settings['currently_rendering'] = $container_link;
@@ -945,11 +945,11 @@ render_custom_renderer:
 		$row_number = 1;
 		foreach ($values as $k0 => $v0) {
 			$key2 = $v0[$options['details_tree_key']];
-			$method = \Factory::method($options['details_tree_name_only_custom_renderer'], null, false, [['skip_processing' => true]]);
+			$method = \Factory::method($options['details_tree_name_only_custom_renderer'], $this->object->form_parent, false, [['skip_processing' => true]]);
 			// important to use $this if its the same class
 			if ($method[0] == $this->object->form_class) {
 				$method[0] = & $this->object->form_parent;
-			} else {
+			} else if (!is_object($method[0])) {
 				$method[0] = \Factory::model($method[0], true, [['skip_processing' => true]]);
 			}
 			$new_data[$key2] = call_user_func_array($method, [& $this->object, & $rows, & $v0]);
@@ -1841,7 +1841,7 @@ render_table:
 		$options['options']['data-field_values_key'] = implode('[::]', $options['options']['field_values_key'] ?? [$options['options']['field_name']]);
 		// custom renderer
 		if (!empty($options['options']['custom_renderer'])) {
-			$method = \Factory::method($options['options']['custom_renderer'], null, true, [['skip_processing' => true]]);
+			$method = \Factory::method($options['options']['custom_renderer'], $this->object->form_parent, true, [['skip_processing' => true]]);
 			$options_custom_renderer = $options;
 			$temp = call_user_func_array($method, [& $this->object, & $options, & $value, & $neighbouring_values]);
 			if (!is_null($temp)) {
