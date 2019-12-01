@@ -29,6 +29,16 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 	}
 
 	/**
+	 * Get mode
+	 *
+	 * @param bool $status
+	 * @return boolean
+	 */
+	public static function getMode() {
+		return self::$is_email;
+	}
+
+	/**
 	 * Generate html based on value in options
 	 *
 	 * @param mixed $value

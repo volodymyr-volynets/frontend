@@ -2,7 +2,8 @@
 var numbers_frontend_form_submit_hidden_initiator = null;
 // ajax execution lock
 var numbers_frontend_form_execution_lock = {};
-
+var numbers_timeout_canceled = false;
+var numbers_timeout_not_fired = false;
 /**
  * Form
  *
@@ -47,6 +48,8 @@ Numbers.Form = {
 	 * @returns boolean
 	 */
 	onFormSubmit: function(form) {
+		numbers_timeout_canceled = false;
+		numbers_timeout_not_fired = false;
 		// some functions would require full form submittion
 		var no_ajax = $(form).attr('no_ajax');
 		if (no_ajax) {
@@ -57,6 +60,7 @@ Numbers.Form = {
 		var wrapper_id = form_id + '_wrapper';
 		var mask_id = form_id + '_mask';
 		$('#' + mask_id).mask({overlayOpacity: 0.25, delay: 0});
+		var that = this;
 		// wrap everything into timer function to get focused id
 		setTimeout(function () {
 			// if we have a lock we exit
@@ -94,6 +98,11 @@ Numbers.Form = {
 				contentType: false,
 				processData: false,
 				success: function (data) {
+					numbers_timeout_not_fired = true;
+					if (numbers_timeout_canceled) {
+						numbers_timeout_canceled = false;
+						return;
+					}
 					// release the lock
 					numbers_frontend_form_execution_lock[form_id] = false;
 					if (data.success) {
@@ -125,6 +134,10 @@ Numbers.Form = {
 						// remove mask after 100 miliseconds to let js to take affect
 						setTimeout(function() {
 							$('#' + mask_id).unmask();
+							// need to scroll to the top
+							if (data.anchor && data.values_changed) {
+								Numbers.Form.scrollToElement(data.anchor);
+							}
 							// we need to trigger resize to redraw a screen
 							$(window).trigger('resize');
 						}, 150);
@@ -143,6 +156,14 @@ Numbers.Form = {
 			// reset initiator variable
 			numbers_frontend_form_submit_hidden_initiator = null;
 		}, 5);
+		// 2 minute time out
+		setTimeout(function() {
+			if (numbers_timeout_not_fired) return;
+			numbers_timeout_canceled = true;
+			$('#' + mask_id).unmask();
+			$(window).trigger('resize');
+			that.error(form, 'danger', 'Request time out, please retry again!');
+		}, 2 * 60 * 1000);
 		return false;
 	},
 
@@ -256,9 +277,10 @@ Numbers.Form = {
 		} else {
 			var message_continer = $(form).find('.form_message_container');
 			if (message_continer.find('.alert-' + type).length === 0) {
-				message_continer.append('<div role="alert" class="alert alert-' + type + '"><ul></ul></div>');
+				message_continer.append('<div role="alert" class="alert alert-' + type + '"><ul class="ul-alert-' + type + '"></ul></div>');
 			}
-			message_continer.find('ul').prepend('<li>' + message + '</li>');
+			message_continer.find('li[data-field_value_hash="' + hash + '"]').remove();
+			message_continer.find('ul.ul-alert-' + type).prepend('<li data-field_value_hash="' + hash + '">' + message + '</li>');
 		}
 	},
 
@@ -569,6 +591,15 @@ Numbers.Form = {
 				}
 			}
 		}
+	},
+
+	/**
+	 * Scroll to element
+	 *
+	 * @param string id
+	 */
+	scrollToElement : function(id){
+		$('html,body').animate({scrollTop: $('#' + id).offset().top - 75}, 'slow');
 	}
 }
 

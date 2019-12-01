@@ -43,9 +43,19 @@ class Base {
 			$displaying.= '<tr>';
 				// preview button
 				if (!empty($options['preview'])) {
-					$preview_icon = 'fas fa-list';
-					$preview_value = 0;
-					$preview_title = i18n(null, 'List');
+					if ($options['preview'] == 1) {
+						if (empty($options['preview_as_line'])) {
+							goto previewLabel;
+						}
+						$preview_icon = 'fas fa-grip-lines';
+						$preview_value = 2;
+						$preview_title = i18n(null, 'Line');
+					} else if ($options['preview'] == 2) {
+previewLabel:
+						$preview_icon = 'fas fa-list';
+						$preview_value = 0;
+						$preview_title = i18n(null, 'List');
+					}
 				} else {
 					$preview_icon = 'fas fa-th-list';
 					$preview_value = 1;

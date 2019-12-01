@@ -65,7 +65,7 @@ class Base {
 			if ($this->object->collection_object->primary_model->module ?? false) {
 				$params['__module_id'] = $params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
 			}
-			$this->object->actions['form_new'] = ['value' => 'New', 'sort' => -31000, 'icon' => 'far fa-file', 'href' => $mvc['controller'] . '/_Edit?' . http_build_query2($params), 'onclick' => $onclick, 'internal_action' => true];
+			$this->object->actions['form_new'] = ['value' => 'New', 'sort' => -31000, 'icon' => 'far fa-file', 'href' => $mvc['controller'] . '/_Edit?' . http_build_query($params), 'onclick' => $onclick, 'internal_action' => true];
 			// override
 			if (is_array($this->object->options['actions']['new'])) {
 				$this->object->actions['form_new'] = array_merge($this->object->actions['form_new'], $this->object->options['actions']['new']);
@@ -80,7 +80,7 @@ class Base {
 			if ($this->object->collection_object->primary_model->module ?? false) {
 				$params['__module_id'] = $params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
 			}
-			$this->object->actions['form_import'] = ['value' => 'Import', 'sort' => -30900, 'icon' => 'fas fa-upload', 'href' => $mvc['controller'] . '/_Import?' . http_build_query2($params), 'onclick' => $onclick, 'internal_action' => true];
+			$this->object->actions['form_import'] = ['value' => 'Import', 'sort' => -30900, 'icon' => 'fas fa-upload', 'href' => $mvc['controller'] . '/_Import?' . http_build_query($params), 'onclick' => $onclick, 'internal_action' => true];
 			// override
 			if (is_array($this->object->options['actions']['import'])) {
 				$this->object->actions['form_import'] = array_merge($this->object->actions['form_import'], $this->object->options['actions']['import']);
@@ -102,20 +102,28 @@ class Base {
 			if ($this->object->collection_object->primary_model->module ?? false) {
 				$params['__module_id'] = $params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
 			}
-			$this->object->actions['form_back'] = ['value' => 'Back', 'sort' => -32000, 'icon' => 'fas fa-arrow-left', 'href' => $mvc['controller'] . '/_Index?' . http_build_query2($params), 'internal_action' => true];
+			// __form_filter_id
+			if (!empty($this->object->values['__form_filter_id'])) {
+				$params['__form_filter_id'] = $this->object->values['__form_filter_id'];
+			}
+			$this->object->actions['form_back'] = ['value' => 'Back', 'sort' => -32000, 'icon' => 'fas fa-arrow-left', 'href' => $mvc['controller'] . '/_Index?' . http_build_query($params), 'internal_action' => true];
 			// override
 			if (is_array($this->object->options['actions']['back'])) {
 				$this->object->actions['form_back'] = array_merge($this->object->actions['form_back'], $this->object->options['actions']['back']);
 			}
 		}
+		// anchor
+		$anchor = "form_{$this->object->form_link}_form_anchor";
 		// refresh action
 		$refresh_params = [];
+		$pdf_params = [];
 		if ($this->object->values_loaded) {
 			$refresh_params = $this->object->pk;
 			// remove tenant
 			if (!empty($this->object->collection_object->primary_model->tenant)) {
 				unset($refresh_params[$this->object->collection_object->primary_model->tenant_column]);
 			}
+			$pdf_params = $refresh_params;
 		}
 		if ($this->object->collection_object->primary_model->module ?? false) {
 			$refresh_params['__module_id'] = $refresh_params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
@@ -134,13 +142,23 @@ class Base {
 			}
 		}
 		$refresh_params['__refresh'] = rand(1000, 9999) . '_' . rand(1000, 9999) . '_' . rand(1000, 9999);
-		$refresh_href = $mvc['full'] . '?' . http_build_query2($refresh_params) . "#form_{$this->object->form_link}_form_anchor";
+		$refresh_href = $mvc['full'] . '?' . http_build_query2($refresh_params) . "#" . $anchor;
 		if (!empty($this->object->options['actions']['refresh'])) {
 			$url = $mvc['full'];
 			$this->object->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => 32000, 'icon' => 'fas fa-sync', 'href' => $refresh_href, 'internal_action' => true];
 			// override
 			if (is_array($this->object->options['actions']['refresh'])) {
 				$this->object->actions['form_refresh'] = array_merge($this->object->actions['form_refresh'], $this->object->options['actions']['refresh']);
+			}
+		}
+		// pdf
+		if (!empty($this->object->options['actions']['pdf']) && !empty($pdf_params) && \Application::$controller->can('Record_View', 'Edit')) {
+			$onclick = '';
+			$crypt = new \Crypt();
+			$this->object->actions['form_pdf'] = ['value' => 'Print to PDF', 'sort' => -30900, 'icon' => 'far fa-file-pdf', 'href' => $mvc['controller'] . '/_PDF?token=' . $crypt->tokenCreate(0, 'view.pdf', $pdf_params), 'onclick' => $onclick, 'internal_action' => true];
+			// override
+			if (is_array($this->object->options['actions']['pdf'])) {
+				$this->object->actions['form_pdf'] = array_merge($this->object->actions['form_pdf'], $this->object->options['actions']['pdf']);
 			}
 		}
 		// other actions
@@ -158,10 +176,18 @@ class Base {
 					// reset tabs
 					$this->object->current_tab = [];
 					// list container
-					if ($k == $this->object::LIST_CONTAINER) {
-						$temp = $this->renderListContainer($k);
-						if ($temp['success']) {
-							$result[$k] = $temp['data'];
+					if ($k == $this->object::LIST_CONTAINER || $k == $this->object::LIST_LINE_CONTAINER) {
+						$preview = $this->object->values['__preview'];
+						if ((empty($preview) || $preview == 1) && $k == $this->object::LIST_CONTAINER) {
+							$temp = $this->renderListContainer($k);
+							if ($temp['success']) {
+								$result[$k] = $temp['data'];
+							}
+						} else if ($preview == 2 && $k == $this->object::LIST_LINE_CONTAINER) {
+							$temp = $this->renderListContainer($k);
+							if ($temp['success']) {
+								$result[$k] = $temp['data'];
+							}
 						}
 					} else { // regular containers
 						$temp = $this->renderContainer($k);
@@ -228,6 +254,8 @@ class Base {
 				$messages.= \HTML::message(['options' => $v, 'type' => $k]);
 			}
 			$result = '<div class="form_message_container">' . $messages . '</div>' . $result;
+		} else {
+			$result = '<div class="form_message_container">' . '</div>' . $result;
 		}
 		// couple hidden fields
 		$result.= \HTML::hidden(['name' => '__collection_link', 'value' => $this->object->options['collection_link'] ?? '']);
@@ -258,7 +286,8 @@ class Base {
 			'values_inserted' => $this->object->values_inserted,
 			'values_updated' => $this->object->values_updated,
 			'list_rendered' => $this->object->list_rendered,
-			'hasErrors' => $this->object->hasErrors()
+			'hasErrors' => $this->object->hasErrors(),
+			'anchor' => $anchor,
 		];
 		$js = "Numbers.Form.data['form_{$this->object->form_link}_form'] = " . json_encode($js_data) . ";\n";
 		if (!$this->object->hasErrors()) {
@@ -316,7 +345,7 @@ TTT;
 		if (empty($this->object->options['skip_form'])) {
 			$mvc = \Application::get('mvc');
 			$result = \HTML::form([
-				'action' => $mvc['full'] . "#form_{$this->object->form_link}_form_anchor",
+				'action' => $mvc['full'] . "#" . $anchor,
 				'name' => "form_{$this->object->form_link}_form",
 				'id' => "form_{$this->object->form_link}_form",
 				'class' => 'numbers_frontend_form_class',
@@ -355,6 +384,8 @@ TTT;
 				'js_first' => \Layout::$onload_first,
 				'media_js' => \Layout::renderJs(['return_list' => true]),
 				'media_css' => \Layout::renderCss(['return_list' => true]),
+				'anchor' => $anchor,
+				'values_changed' => $this->object->values_saved || $this->object->values_deleted || $this->object->values_inserted || $this->object->values_updated
 			];
 			\Layout::renderAs($result, 'application/json');
 		} else {
@@ -388,7 +419,7 @@ TTT;
 			}
 		}
 		// anchor
-		$result = \HTML::a(['id' => "form_{$this->object->form_link}_form_anchor", 'value' => null]) . $result;
+		$result = \HTML::a(['id' => $anchor, 'value' => null]) . $result;
 		// if we have a subform we need to render place holder
 		if (!empty($this->object->form_parent->subforms)) {
 			$result.= \HTML::div(['id' => "form_{$this->object->form_link}_form_subform_holder", 'value' => '']);
@@ -657,7 +688,15 @@ TTT;
 								$value = \HTML::a(['href' => 'javascript:void(0);', 'onclick' => "Numbers.Form.openSubformWindow('{$temp_collection_link}', '{$temp_collection_screen_link}', '{$this->object->form_link}', '{$this->object->misc_settings['subforms']['url_edit']['subform_link']}', {$params});", 'value' => $value]);
 							}
 						} else if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
-							$value = \HTML::a(['href' => $this->renderURLEditHref($v0), 'value' => $value]);
+							// if single record and we need to auto open
+							if (!empty($this->object->options['open_edit_if_single']) && count($data['rows']) == 1) {
+								$this->object->redirect($this->renderURLEditHref($v0, ['skip_form_filter' => true]));
+							}
+							$link_target = [];
+							if (!empty($this->object->options['open_in_new_tab']) || \Can::userFeatureExists('SM::OPEN_RECORD_IN_NEW_TAB')) {
+								$link_target['target'] = '_blank';
+							}
+							$value = \HTML::a(['href' => $this->renderURLEditHref($v0), 'value' => $value] + $link_target);
 						}
 						$width = $v2['options']['width'] ?? ($v2['options']['percent'] . '%');
 						// full text search replaces
@@ -667,7 +706,7 @@ TTT;
 						if (!is_html($value)) {
 							$value = nl2br($value);
 						}
-						$inner_table['options'][$k][$k2] = ['value' => $value, 'nowrap' => true, 'width' => $width, 'align' => $v2['options']['align'] ?? 'left'];
+						$inner_table['options'][$k][$k2] = ['value' => $value, 'nowrap' => false, 'width' => $width, 'align' => $v2['options']['align'] ?? 'left', 'class' => 'numbers_word_wrap'];
 					}
 					$temp_inner.= \HTML::table($inner_table);
 				}
@@ -686,7 +725,7 @@ TTT;
 				}
 				$row_number_final++;
 			}
-		} else { // preview
+		} else if ($data['preview'] == 1) { // preview 1 multiline grid
 			// generate rows
 			$row_number_final = $data['offset'] + 1;
 			$cached_options = [];
@@ -721,7 +760,15 @@ TTT;
 								$value = \HTML::a(['href' => 'javascript:void(0);', 'onclick' => "Numbers.Form.openSubformWindow('{$temp_collection_link}', '{$temp_collection_screen_link}', '{$this->object->form_link}', '{$this->object->misc_settings['subforms']['url_edit']['subform_link']}', {$params});", 'value' => $value]);
 							}
 						} else if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
-							$value = \HTML::a(['href' => $this->renderURLEditHref($v0), 'value' => $value]);
+							// if single record and we need to auto open
+							if (!empty($this->object->options['open_edit_if_single']) && count($data['rows']) == 1) {
+								$this->object->redirect($this->renderURLEditHref($v0, ['skip_form_filter' => true]));
+							}
+							$link_target = [];
+							if (!empty($this->object->options['open_in_new_tab']) || \Can::userFeatureExists('SM::OPEN_RECORD_IN_NEW_TAB')) {
+								$link_target['target'] = '_blank';
+							}
+							$value = \HTML::a(['href' => $this->renderURLEditHref($v0), 'value' => $value] + $link_target);
 						}
 						$inner_table['options'][$k . '_' . $k2][1] = ['value' => '<b>' . $v2['options']['label_name'] . ':</b>', 'width' => '15%', 'align' => 'left'];
 						// full text search replaces
@@ -734,6 +781,70 @@ TTT;
 				}
 				$table['options'][$row_number_final . '_' . $k][1] = ['value' => \Format::id($row_number_final) . '.', 'nowrap' => true, 'width' => '1%'];
 				$table['options'][$row_number_final . '_' . $k][2] = ['value' => $temp_inner, 'nowrap' => true, 'width' => '99%'];
+				$row_number_final++;
+			}
+		} else if ($data['preview'] == 2) {
+			// generate rows
+			$row_number_final = $data['offset'] + 1;
+			$cached_options = [];
+			// header
+			$columns_counter = 1;
+			$table['header'][$columns_counter] = ['value' => '&nbsp;', 'nowrap' => true, 'width' => '1%'];
+			$columns_counter++;
+			foreach ($data['columns']['row1']['elements'] as $k2 => $v2) {
+				$table['header'][$columns_counter] = ['value' => i18n(null, $v2['options']['label_name']), 'nowrap' => 'nowrap'];
+				$columns_counter++;
+			}
+			foreach ($data['rows'] as $k0 => $v0) {
+				$columns_counter = 1;
+				$table['options'][$row_number_final . '_' . $k][$columns_counter] = ['value' => \Format::id($row_number_final) . '.', 'nowrap' => true, 'width' => '1%'];
+				$columns_counter++;
+				foreach ($data['columns']['row1']['elements'] as $k2 => $v2) {
+					$value = $v0[$k2] ?? null;
+					// format
+					if (!empty($v2['options']['format']) && empty($v2['options']['options_model'])) {
+						$method = \Factory::method($v2['options']['format'], 'Format');
+						$value = call_user_func_array([$method[0], $method[1]], [$value, $v2['options']['format_options'] ?? []]);
+					}
+					// custom renderer
+					if (!empty($v2['options']['custom_renderer'])) {
+						$method = \Factory::method($v2['options']['custom_renderer'], $this->object->form_parent, true, [['skip_processing' => true]]);
+						$value = call_user_func_array($method, [& $this->object, & $v2, & $value, & $v0]);
+					}
+					// process options
+					if (!empty($v2['options']['options_model'])) {
+						$value = $this->object->renderListContainerDefaultOptions($v2['options'], $value, $v0);
+					}
+					// urls
+					if (!empty($v2['options']['url_edit']) && isset($this->object->misc_settings['subforms']['url_edit'])) {
+						if (!empty($this->object->misc_settings['subforms']['url_edit'])) {
+							$params = $this->renderURLEditHref($v0, ['json' => true]);
+							$temp_collection_link = $this->object->options['collection_link'] ?? '';
+							$temp_collection_screen_link = $this->object->options['collection_screen_link'] ?? '';
+							$value = \HTML::a(['href' => 'javascript:void(0);', 'onclick' => "Numbers.Form.openSubformWindow('{$temp_collection_link}', '{$temp_collection_screen_link}', '{$this->object->form_link}', '{$this->object->misc_settings['subforms']['url_edit']['subform_link']}', {$params});", 'value' => $value]);
+						}
+					} else if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
+						// if single record and we need to auto open
+						if (!empty($this->object->options['open_edit_if_single']) && count($data['rows']) == 1) {
+							$this->object->redirect($this->renderURLEditHref($v0, ['skip_form_filter' => true]));
+						}
+						$link_target = [];
+						if (!empty($this->object->options['open_in_new_tab']) || \Can::userFeatureExists('SM::OPEN_RECORD_IN_NEW_TAB')) {
+							$link_target['target'] = '_blank';
+						}
+						$value = \HTML::a(['href' => $this->renderURLEditHref($v0), 'value' => $value] + $link_target);
+					}
+					// full text search replaces
+					if (!empty($full_text_search)) {
+						$this->markTextInStr($value, $full_text_search);
+					}
+					$nowrap = [];
+					if (!empty($v2['options']['nowrap'])) {
+						$nowrap['nowrap'] = 'nowrap';
+					}
+					$table['options'][$row_number_final . '_' . $k][$columns_counter] = ['value' => $value] + $nowrap;
+					$columns_counter++;
+				}
 				$row_number_final++;
 			}
 		}
@@ -761,6 +872,7 @@ TTT;
 	 * @param array $values
 	 * @param array $options
 	 *	boolean json - return json object
+	 *	boolean skip_form_filter
 	 * @return string
 	 */
 	public function renderURLEditHref($values, $options = []) {
@@ -778,6 +890,10 @@ TTT;
 		// we need to pass module #
 		if ($model->module ?? false) {
 			$pk['__module_id'] = $values[$model->module_column];
+		}
+		// __form_filter_id
+		if (!empty($this->object->misc_settings['list']['__form_filter_id']) && empty($options['skip_form_filter'])) {
+			$pk['__form_filter_id'] = $this->object->misc_settings['list']['__form_filter_id'];
 		}
 		if (!empty($options['json'])) {
 			// bypass variables
@@ -1591,6 +1707,8 @@ render_table:
 						if (!$hidden) {
 							$v3['options']['tabindex'] = $this->object->tabindex;
 							$this->object->tabindex++;
+						} else if ($hidden && \HTML::getMode()) { // we do not render hidden fields in email
+							continue;
 						}
 						// processing value and neighbouring_values
 						if (!empty($v3['options']['detail_11'])) {
@@ -2259,7 +2377,7 @@ render_element:
 			$value.= $html_suffix;
 		}
 		if (!empty($html_table_description)) {
-			$value = '<table><tr><td>' . $value . '</td><td><span class="numbers_frontend_form_html_table_description">' . $html_table_description . '</span></td></tr></table>';
+			$value = '<table width="100%"><tr><td>' . $value . '</td><td><span class="numbers_frontend_form_html_table_description">' . $html_table_description . '</span></td></tr></table>';
 		}
 		// if we need to display settings
 		if (\Application::get('flag.numbers.frontend.html.form.show_field_settings')) {

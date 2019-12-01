@@ -92,7 +92,11 @@ Numbers.Menu = {
 				dataType: 'json',
 				success: function (data) {
 					if (data && data.success) {
-						$('#menu_item_id_' + data.item).html(data.data);
+						if (data.skip_href) {
+							$('#menu_item_id_' + data.item).parent('li').html(data.data);
+						} else {
+							$('#menu_item_id_' + data.item).html(data.data);
+						}
 					}
 				}
 			});

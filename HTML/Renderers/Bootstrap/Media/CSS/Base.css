@@ -414,3 +414,17 @@ html[dir="rtl"] .list_pagination_navigation {
 .callout-bdc h4 {
 	color: #29527a;
 }
+
+/* quick menu */
+.numbers_menu_quick_search input {
+	font-size: 0.75em;
+}
+
+/* wrap in links */
+.numbers_word_wrap {
+	white-space: pre-wrap;
+	white-space: -moz-pre-wrap;
+	white-space: -pre-wrap;
+	white-space: -o-pre-wrap;
+	word-wrap: break-word;
+}

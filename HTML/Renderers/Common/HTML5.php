@@ -143,9 +143,9 @@ class HTML5 {
 		'source' => ['src', 'type', 'media'],
 		'style' => ['media', 'type', 'scoped'],
 		'table' => ['width', 'cellpadding', 'cellspacing', 'border', 'height'],
-		'td' => ['colspan', 'rowspan', 'headers', 'width', 'align'],
+		'td' => ['colspan', 'rowspan', 'headers', 'width', 'align', 'nowrap'],
 		'textarea' => ['autocomplete', 'autofocus', 'cols', 'dirname', 'disabled', 'form', 'inputmode', 'maxlength', 'name', 'placeholder', 'readonly', 'required', 'rows', 'wrap', 'tabindex'],
-		'th' => ['colspan', 'rowspan', 'headers', 'scope', 'abbr', 'width', 'align'],
+		'th' => ['colspan', 'rowspan', 'headers', 'scope', 'abbr', 'width', 'align', 'nowrap'],
 		'time' => ['datetime', 'pubdate'],
 		'track' => ['default', 'kind', 'label', 'src', 'srclang'],
 		'video' => ['src', 'crossorigin', 'poster', 'preload', 'autoplay', 'mediagroup', 'loop', 'muted', 'controls', 'width', 'height']

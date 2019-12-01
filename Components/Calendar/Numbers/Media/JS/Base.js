@@ -156,6 +156,14 @@ var Numbers_Calendar = function (options) {
 			result.date_max_year = result.date_max.getFullYear();
 		} else {
 			result.date_max_year = result.date_current.getFullYear() + 5;
+			if (result.elem.value) {
+				var date_temp = Numbers.Format.readDate(result.elem.value, result.type);
+				if (date_temp !== false) {
+					if (result.date_max_year < date_temp.getFullYear()) {
+						result.date_max_year = date_temp.getFullYear() + 5;
+					}
+				}
+			}
 			result.flag_date_year_up = true;
 		}
 	}
