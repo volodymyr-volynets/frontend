@@ -424,6 +424,29 @@ TTT;
 		if (!empty($this->object->form_parent->subforms)) {
 			$result.= \HTML::div(['id' => "form_{$this->object->form_link}_form_subform_holder", 'value' => '']);
 		}
+		// page title on main form only
+		if (in_array($this->object->initiator_class, ['form']) && empty(\Layout::$title_override)) {
+			if (!empty($this->object->options['__main_form_in_collection']) || empty($this->object->options['__parent_options'])) {
+				\Layout::$title_override = i18n(null, \Application::$controller->title);
+				// grab name
+				if (!empty($this->object->collection_object->primary_model) && !empty($this->object->values[$this->object->collection_object->primary_model->column_prefix . 'name'])) {
+					\Layout::$title_override.= ' - ' . $this->object->values[$this->object->collection_object->primary_model->column_prefix . 'name'];
+				}
+				// primary key
+				if (!empty($this->object->values_loaded)) {
+					$pk_params = $this->object->pk;
+					if (!empty($this->object->collection_object->primary_model->tenant)) {
+						unset($pk_params[$this->object->collection_object->primary_model->tenant_column]);
+					}
+					if (!empty($this->object->collection_object->primary_model->module)) {
+						unset($pk_params[$this->object->collection_object->primary_model->module_column]);
+					}
+					\Layout::$title_override.= ' (' . implode(', ', $pk_params) . ')';
+				} else {
+					\Layout::$title_override.= ' (' . i18n(null, \Object\Content\Messages::NEW) . ')';
+				}
+			}
+		}
 		return $result;
 	}
 
