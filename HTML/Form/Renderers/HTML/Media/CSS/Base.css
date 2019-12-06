@@ -79,3 +79,9 @@
 	margin-right: -5px;
 	margin-left: -5px;
 }
+
+/* widgets */
+#form_wg_comments_form_wrapper table.numbers_frontend_form_list_header_inner td.numbers_word_wrap p {
+	margin: 0 !important;
+	padding: 0 !important;
+}
