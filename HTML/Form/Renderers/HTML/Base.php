@@ -691,6 +691,10 @@ TTT;
 						// format
 						if (!empty($v2['options']['format']) && empty($v2['options']['options_model'])) {
 							$method = \Factory::method($v2['options']['format'], 'Format');
+							if (!empty($v2['options']['format_depends'])) {
+								$this->object->processParamsAndDepends($v2['options']['format_depends'], $v0, $v2['options'], true);
+								$v2['options']['format_options'] = array_merge_hard($v2['options']['format_options'] ?? [], $v2['options']['format_depends']);
+							}
 							$value = call_user_func_array([$method[0], $method[1]], [$value, $v2['options']['format_options'] ?? []]);
 						}
 						// custom renderer
@@ -763,6 +767,10 @@ TTT;
 						// format
 						if (!empty($v2['options']['format']) && empty($v2['options']['options_model'])) {
 							$method = \Factory::method($v2['options']['format'], 'Format');
+							if (!empty($v2['options']['format_depends'])) {
+								$this->object->processParamsAndDepends($v2['options']['format_depends'], $v0, $v2['options'], true);
+								$v2['options']['format_options'] = array_merge_hard($v2['options']['format_options'] ?? [], $v2['options']['format_depends']);
+							}
 							$value = call_user_func_array([$method[0], $method[1]], [$value, $v2['options']['format_options'] ?? []]);
 						}
 						// custom renderer
