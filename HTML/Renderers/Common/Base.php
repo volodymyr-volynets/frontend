@@ -977,4 +977,11 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 	public static function highlight($options = []) {
 		return '<pre><code>' . $options['value'] . '</code></pre>';
 	}
+
+	/**
+	 * see \HTML::clear();
+	 */
+	public static function clear() {
+		return '<br clear="all">';
+	}
 }
