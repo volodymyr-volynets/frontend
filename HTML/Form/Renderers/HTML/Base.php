@@ -1160,7 +1160,7 @@ render_custom_renderer:
 									$id = "form_{$this->object->form_link}_subdetails_{$id01}_{$options['__parent_row_number']}_{$id02}_{$row_number}_{$k3}";
 									$error_name = "{$options['details_parent_key']}[{$options['__parent_key']}][{$options['details_key']}][{$k0}][{$k3}]";
 									$values_key = [$options['details_parent_key'], $options['__parent_key'], $options['details_key'], $k0, $k3];
-									$field_values_key = [$options['details_parent_key'], $options['__parent_row_number'], $options['details_key'], $k0, $k3];
+									$field_values_key = [$options['details_parent_key'], $options['__parent_row_number'], $options['details_key'], $row_number, $k3];
 								}
 							}
 							// hidden row
@@ -1394,6 +1394,33 @@ render_custom_renderer:
 			} else {
 				$k0 = $row_number;
 				$v0 = [];
+				// details_unique_select_field
+				if (!empty($options['details_unique_select_field'])) {
+					$column = $rows[$options['details_unique_select_field'][0]]['elements'][$options['details_unique_select_field'][1]];
+					// options depends & params
+					$column['options']['options_depends'] = $column['options']['options_depends'] ?? [];
+					$column['options']['options_params'] = $column['options']['options_params'] ?? [];
+					$this->object->processParamsAndDepends($column['options']['options_depends'], $v0, $column['options'], true);
+					$this->object->processParamsAndDepends($column['options']['options_params'], $v0, $column['options'], false);
+					$column['options']['options_params'] = array_merge_hard($column['options']['options_params'], $column['options']['options_depends']);
+					$skip_values = [];
+					if (!empty($column['options']['details_key'])) {
+						if (!empty($column['options']['details_parent_key'])) {
+							$temp_key = $column['options']['details_parent_key'] . '::' . $column['options']['details_key'];
+							if (!empty($this->object->misc_settings['details_unique_select'][$temp_key][$column['options']['details_field_name']][$options['__parent_row_number']])) {
+								$skip_values = array_keys($this->object->misc_settings['details_unique_select'][$temp_key][$column['options']['details_field_name']][$options['__parent_row_number']]);
+							}
+						} else {
+							if (!empty($this->object->misc_settings['details_unique_select'][$column['options']['details_key']][$column['options']['details_field_name']])) {
+								$skip_values = array_keys($this->object->misc_settings['details_unique_select'][$column['options']['details_key']][$column['options']['details_field_name']]);
+							}
+						}
+					}
+					$options_array_processed = \Object\Data\Common::processOptions($column['options']['options_model'], $this->object, $column['options']['options_params'], null, $skip_values, $column['options']['options_options'] ?? []);
+					if (empty($options_array_processed)) {
+						break;
+					}
+				}
 			}
 			// we need to preset default values
 			if (!empty($options['details_parent_key'])) {
@@ -1424,6 +1451,18 @@ render_custom_renderer:
 					$row_details_key = str_replace('\\', '_', $options['details_key']);
 					$row_id = "form_{$this->object->form_link}_subdetails_{$row_details_parent_key}_{$options['__parent_row_number']}_{$row_details_key}_{$row_number}_row";
 				}
+				// run override
+				foreach ($v['elements'] as $k45 => $v45) {
+					if (!empty($this->object->wrapper_methods['overrideDetailValue']['main'])) {
+						$temp_value = null;
+						// field name and values_key
+						$v45['options']['field_name'] = $v45['options']['details_field_name'] ?? $v45['options']['name'];
+						$v45['options']['data-field_values_key'] = implode('[::]', $v45['options']['field_values_key'] ?? [$v45['options']['field_name']]);
+						call_user_func_array($this->object->wrapper_methods['overrideDetailValue']['main'], [& $this->object, & $v45, & $temp_value, & $v0]);
+						$v['elements'][$k45] = $v45;
+					}
+				}
+				// sort
 				array_key_sort($v['elements'], ['order' => SORT_ASC]);
 				// group by
 				$groupped = [];
@@ -1476,7 +1515,7 @@ render_custom_renderer:
 									$id = "form_{$this->object->form_link}_subdetails_{$id01}_{$options['__parent_row_number']}_{$id02}_{$row_number}_{$k3}";
 									$error_name = "{$options['details_parent_key']}[{$options['__parent_key']}][{$options['details_key']}][{$k0}][{$k3}]";
 									$values_key = [$options['details_parent_key'], $options['__parent_key'], $options['details_key'], $k0, $k3];
-									$field_values_key = [$options['details_parent_key'], $options['__parent_row_number'], $options['details_key'], $k0, $k3];
+									$field_values_key = [$options['details_parent_key'], $options['__parent_row_number'], $options['details_key'], $row_number, $k3];
 								}
 							}
 							// error
