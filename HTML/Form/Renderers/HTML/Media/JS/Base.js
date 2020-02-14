@@ -150,7 +150,15 @@ Numbers.Form = {
 					// release the lock
 					numbers_frontend_form_execution_lock[form_id] = false;
 					// echo error on the screen
-					print_r2(jqXHR.responseText);
+					//print_r2(jqXHR.responseText);
+					$('#' + mask_id).unmask();
+					$(window).trigger('resize');
+					that.error(form, 'reset', '');
+					if (!empty(jqXHR.responseText)) {
+						that.error(form, 'danger', jqXHR.responseText);
+					} else {
+						that.error(form, 'danger', 'Error occured, please retry again!');
+					}
 				}
 			});
 			// reset initiator variable
@@ -162,6 +170,7 @@ Numbers.Form = {
 			numbers_timeout_canceled = true;
 			$('#' + mask_id).unmask();
 			$(window).trigger('resize');
+			that.error(form, 'reset', '');
 			that.error(form, 'danger', 'Request time out, please retry again!');
 		}, 2 * 60 * 1000);
 		return false;
@@ -276,6 +285,10 @@ Numbers.Form = {
 			}
 		} else {
 			var message_continer = $(form).find('.form_message_container');
+			if (type == 'reset') {
+				message_continer.find('ul li').remove();
+				return;
+			}
 			if (message_continer.find('.alert-' + type).length === 0) {
 				message_continer.append('<div role="alert" class="alert alert-' + type + '"><ul class="ul-alert-' + type + '"></ul></div>');
 			}

@@ -698,14 +698,25 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 		$type = isset($options['type']) ? $options['type'] : 'ul';
 		unset($options['options'], $options['type']);
 		$temp = [];
-		foreach ($value as $v) {
+		foreach ($value as $k => $v) {
 			if (is_array($v)) {
 				$temp3 = !empty($v['value']) ? $v['value'] : '';
 				unset($v['value']);
+				if (!empty($options['include_hash'])) {
+					$v['data-field_value_hash'] = $k;
+				}
 				$temp[]= '<li ' . self::generateAttributes($v, 'li') . '>' . nl2br($temp3) . '</li>';
 			} else {
-				$temp[]= '<li>' . nl2br(str_replace("\t", '&nbsp;&nbsp;&nbsp;', $v)) . '</li>';
+				$new = [];
+				if (!empty($options['include_hash'])) {
+					$new['data-field_value_hash'] = $k;
+				}
+				$temp[]= '<li ' . self::generateAttributes($new, 'li') . '>' . nl2br(str_replace("\t", '&nbsp;&nbsp;&nbsp;', $v)) . '</li>';
 			}
+		}
+		// hash
+		if (!empty($options['include_hash'])) {
+			$options['class'] = ($options['class'] ?? '') . ' ul-alert-' . $options['alert_type'];
 		}
 		return '<' . $type . ' ' . self::generateAttributes($options, $type) . '>' . implode('', $temp) . '</' . $type . '>';
 	}

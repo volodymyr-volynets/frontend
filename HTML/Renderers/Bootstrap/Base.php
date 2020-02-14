@@ -558,7 +558,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 		if (!is_array($value)) {
 			$value = [$value];
 		}
-		return '<div role="alert" ' . self::generateAttributes($options) . '>' . self::ul(['options' => $value, 'type' => 'ul']) . '</div>';
+		return '<div role="alert" ' . self::generateAttributes($options) . '>' . self::ul(['options' => $value, 'type' => 'ul', 'include_hash' => true, 'alert_type' => $type]) . '</div>';
 	}
 
 	/**

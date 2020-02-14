@@ -87,7 +87,7 @@ previewLabel:
 			}
 			$navigation2 = i18n(null, 'Page') . ': ';
 			$previous = (($current_page - 1) * $options['limit']);
-			$navigation2.= '<div style="width: 100px; display: inline-block;">' . \HTML::select(['id' => $options['form_link'] . '_pages_' . $type, 'options' => $temp, 'value' => $options['offset'], 'no_choose' => true, 'onchange' => "Numbers.Form.setValue(this.form, '__offset', this.value); Numbers.Form.triggerSubmit(this.form, '__submit_button');"]) . '</div>';
+			$navigation2.= '<div style="width: 100px; display: inline-block; vertical-align: middle;">' . \HTML::select(['id' => $options['form_link'] . '_pages_' . $type, 'options' => $temp, 'value' => $options['offset'], 'no_choose' => true, 'onchange' => "Numbers.Form.setValue(this.form, '__offset', this.value); Numbers.Form.triggerSubmit(this.form, '__submit_button');"]) . '</div>';
 			$navigation[] = $navigation2;
 			// checking for next and last pages
 			$flag_next_row_exists = ($pages - $current_page - 2 > 0) ? true : false;

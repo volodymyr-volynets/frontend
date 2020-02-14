@@ -324,6 +324,20 @@ TTT;
 			unset($_SESSION['numbers']['tokens']['email_token']['data']['onclick']);
 		}
 		\Layout::onLoad($js);
+		// onkeypress
+		if ($this->object->initiator_class == 'list' || $this->object->initiator_class == 'report') {
+			\Layout::onLoad(<<<TTT
+				$("#form_{$this->object->form_link}_form input").keypress(function(e) {
+					if ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13)) {
+						$("[name='__submit_button']").click();
+						return false;
+					} else {
+						return true;
+					}
+				});
+TTT
+);
+		}
 		// bypass values
 		if (!empty($this->object->options['bypass_hidden_values'])) {
 			foreach ($this->object->options['bypass_hidden_values'] as $k => $v) {
@@ -634,6 +648,7 @@ TTT;
 	 */
 	private function renderListContainerDefault(& $data, & $options) {
 		$result = '';
+		$global_class = '';
 		// if we have no rows we display a messsage
 		if ($data['num_rows'] == 0) {
 			return \HTML::message(['type' => 'warning', 'options' => [i18n(null, \Object\Content\Messages::NO_ROWS_FOUND)]]);
@@ -717,7 +732,9 @@ TTT;
 						} else if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
 							// if single record and we need to auto open
 							if (!empty($this->object->options['open_edit_if_single']) && count($data['rows']) == 1) {
-								$this->object->redirect($this->renderURLEditHref($v0, ['skip_form_filter' => true]));
+								if (empty($this->object->values['__list_report_filter_skip_one_record_redirect'])) {
+									$this->object->redirect($this->renderURLEditHref($v0, ['skip_form_filter' => true]));
+								}
 							}
 							$link_target = [];
 							if (!empty($this->object->options['open_in_new_tab']) || \Can::userFeatureExists('SM::OPEN_RECORD_IN_NEW_TAB')) {
@@ -793,7 +810,9 @@ TTT;
 						} else if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
 							// if single record and we need to auto open
 							if (!empty($this->object->options['open_edit_if_single']) && count($data['rows']) == 1) {
-								$this->object->redirect($this->renderURLEditHref($v0, ['skip_form_filter' => true]));
+								if (empty($this->object->values['__list_report_filter_skip_one_record_redirect'])) {
+									$this->object->redirect($this->renderURLEditHref($v0, ['skip_form_filter' => true]));
+								}
 							}
 							$link_target = [];
 							if (!empty($this->object->options['open_in_new_tab']) || \Can::userFeatureExists('SM::OPEN_RECORD_IN_NEW_TAB')) {
@@ -814,7 +833,8 @@ TTT;
 				$table['options'][$row_number_final . '_' . $k][2] = ['value' => $temp_inner, 'nowrap' => true, 'width' => '99%'];
 				$row_number_final++;
 			}
-		} else if ($data['preview'] == 2) {
+		} else if ($data['preview'] == 2) { // single line grid
+			$global_class = 'numbers_frontend_form_list_table_wrapper_single_line';
 			// generate rows
 			$row_number_final = $data['offset'] + 1;
 			$cached_options = [];
@@ -857,7 +877,9 @@ TTT;
 					} else if (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
 						// if single record and we need to auto open
 						if (!empty($this->object->options['open_edit_if_single']) && count($data['rows']) == 1) {
-							$this->object->redirect($this->renderURLEditHref($v0, ['skip_form_filter' => true]));
+							if (empty($this->object->values['__list_report_filter_skip_one_record_redirect'])) {
+								$this->object->redirect($this->renderURLEditHref($v0, ['skip_form_filter' => true]));
+							}
 						}
 						$link_target = [];
 						if (!empty($this->object->options['open_in_new_tab']) || \Can::userFeatureExists('SM::OPEN_RECORD_IN_NEW_TAB')) {
@@ -879,7 +901,7 @@ TTT;
 				$row_number_final++;
 			}
 		}
-		return '<div class="numbers_frontend_form_list_table_wrapper_outer"><div class="numbers_frontend_form_list_table_wrapper_inner">' . \HTML::table($table) . '</div></div>';
+		return '<div class="numbers_frontend_form_list_table_wrapper_outer ' . $global_class . '"><div class="numbers_frontend_form_list_table_wrapper_inner">' . \HTML::table($table) . '</div></div>';
 	}
 
 	/**
@@ -2408,7 +2430,7 @@ render_element:
 			$value.= $html_suffix;
 		}
 		if (!empty($html_table_description)) {
-			$value = '<table width="100%"><tr><td>' . $value . '</td><td><span class="numbers_frontend_form_html_table_description">' . $html_table_description . '</span></td></tr></table>';
+			$value = '<table width="100%"><tr><td width="99%">' . $value . '</td><td width="1%"><span class="numbers_frontend_form_html_table_description">' . $html_table_description . '</span></td></tr></table>';
 		}
 		// if we need to display settings
 		if (\Application::get('flag.numbers.frontend.html.form.show_field_settings')) {
