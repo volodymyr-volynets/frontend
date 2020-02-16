@@ -455,7 +455,9 @@ TTT
 					if (!empty($this->object->collection_object->primary_model->module)) {
 						unset($pk_params[$this->object->collection_object->primary_model->module_column]);
 					}
-					\Layout::$title_override.= ' (' . implode(', ', $pk_params) . ')';
+					if (!empty($pk_params)) {
+						\Layout::$title_override.= ' (' . implode(', ', $pk_params) . ')';
+					}
 				} else {
 					\Layout::$title_override.= ' (' . i18n(null, \Object\Content\Messages::NEW) . ')';
 				}
