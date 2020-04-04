@@ -613,6 +613,22 @@ Numbers.Form = {
 	 */
 	scrollToElement : function(id){
 		$('html,body').animate({scrollTop: $('#' + id).offset().top - 75}, 'slow');
+	},
+
+	/**
+	 * Open form in new tab
+	 *
+	 * @param object form
+	 */
+	openFormInNewTab: function(form) {
+		var no_ajax = $(form).attr('no_ajax');
+		$(form).attr('no_ajax', 1);
+		$(form).attr('target', '_blank');
+		// revert settings back
+		setTimeout(function() {
+			$(form).attr('no_ajax', no_ajax);
+			$(form).attr('target', '');
+		}, 500);
 	}
 }
 

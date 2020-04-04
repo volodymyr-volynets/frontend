@@ -1639,7 +1639,7 @@ render_custom_renderer:
 					$tab_values[$tab_k10] = '';
 					// handling overrideTabs method
 					if (!empty($this->object->wrapper_methods['overrideTabs']['main'])) {
-						$tab_options[$tab_k10] = call_user_func_array($this->object->wrapper_methods['overrideTabs']['main'], [& $this, & $v10, & $k10, & $v0]);
+						$tab_options[$tab_k10] = call_user_func_array($this->object->wrapper_methods['overrideTabs']['main'], [& $this->object, & $v10, & $k10, & $v0]);
 						if (empty($tab_options[$tab_k10]['hidden'])) {
 							$have_tabs = true;
 						}
@@ -2286,7 +2286,7 @@ render_table:
 						$result_options['value'] = '';
 					}
 					// we need to empty zero integers and sequences, before format
-					if (($result_options['php_type'] ?? '') == 'integer' && ($result_options['type'] ?? '') != 'boolean' && ($result_options['domain'] ?? '') != 'counter' && ($result_options['domain'] ?? '') != 'bigcounter' && empty($result_options['value']) && ($result_options['method'] ?? null) != 'hidden') {
+					if (($result_options['php_type'] ?? '') == 'integer' && !empty($result_options['null']) && ($result_options['type'] ?? '') != 'boolean' && ($result_options['domain'] ?? '') != 'counter' && ($result_options['domain'] ?? '') != 'bigcounter' && empty($result_options['value']) && ($result_options['method'] ?? null) != 'hidden') {
 						$result_options['value'] = '';
 					}
 					// format, not for selects/autocompletes/presets
