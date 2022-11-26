@@ -169,7 +169,7 @@ class Base {
 		// assembling everything into result variable
 		$result = [];
 		// order containers based on order column
-		array_key_sort($this->object->data, ['order' => SORT_ASC]);
+		array_key_sort($this->object->data, ['order' => SORT_ASC], ['order' => SORT_NUMERIC]);
 		foreach ($this->object->data as $k => $v) {
 			if (!$v['flag_child']) {
 				if ($v['type'] == 'fields' || $v['type'] == 'details' || $v['type'] == 'trees') {
@@ -518,7 +518,7 @@ TTT
 					$tab_values[$k2].= $pannel_result[$k3]['html'];
 				} else { // other containers
 					$temp = $this->renderContainer($v3['options']['container']);
-					if ($temp['success']) {
+					if (!empty($temp['success'])) {
 						$tab_values[$k2].= $temp['data']['html'];
 					}
 				}
@@ -750,7 +750,7 @@ TTT
 							$this->markTextInStr($value, $full_text_search);
 						}
 						if (!is_html($value)) {
-							$value = nl2br($value);
+							$value = nl2br($value . '');
 						}
 						$inner_table['options'][$k][$k2] = ['value' => $value, 'nowrap' => false, 'width' => $width, 'align' => $v2['options']['align'] ?? 'left', 'class' => 'numbers_word_wrap'];
 					}

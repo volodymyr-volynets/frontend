@@ -134,7 +134,7 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 			// validate HTML 5 attribute
 			if (!\Numbers\Frontend\HTML\Renderers\Common\HTML5::isValidHTML5Attribute($k, $tag)) continue;
 			if (in_array($k, \Numbers\Frontend\HTML\Renderers\Common\HTML5::$strip_tags)) {
-				$v = strip_tags($v);
+				$v = strip_tags($v . '');
 			}
 			if (is_array($v)) {
 				if (array_values($v) !== $v) {
@@ -145,7 +145,7 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 			if ($k == 'src') {
 				$result[] = $k . '="' . $v . '"';
 			} else {
-				$result[] = $k . '="' . htmlentities($v) . '"';
+				$result[] = $k . '="' . htmlentities($v . '') . '"';
 			}
 		}
 		return implode(' ', $result);
@@ -186,7 +186,7 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 			}
 			foreach($v as $k2 => $v2) {
 				if (!is_array($v2) && $k2 != 'name') {
-					$temp.= ' ' . $k2 . '="' . htmlentities($v2) . '"';
+					$temp.= ' ' . $k2 . '="' . htmlentities($v2 . '') . '"';
 				}
 			}
 			$result.= '<option value="' . htmlentities($k) . '"'. $selected . $temp . '>' . $text . '</option>';

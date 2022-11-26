@@ -597,7 +597,7 @@ Numbers.Form = {
 	 * @param string collection_link
 	 */
 	refreshCollectionForms : function(collection_link) {
-		if (this.misc_settings[collection_link]) {
+		if (this.misc_settings && this.misc_settings[collection_link]) {
 			for (var i in this.misc_settings[collection_link]) {
 				if ($('#form_' + i + '_form').attr('data-no_ajax_form_reload') != '1') {
 					$('#form_' + i + '_form').submit();
