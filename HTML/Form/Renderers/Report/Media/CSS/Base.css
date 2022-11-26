@@ -1,5 +1,6 @@
 .numbers_frontend_form_report_screen_wrapper_outer {
 	overflow-x: scroll;
+	font-size: 0.7em;
 }
 .numbers_frontend_form_report_screen_wrapper_inner {
 	min-width: 1000px;

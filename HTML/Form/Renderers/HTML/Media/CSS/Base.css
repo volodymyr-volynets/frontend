@@ -89,6 +89,9 @@ table.numbers_frontend_form_table_renderer_field_table {
 	margin-right: -5px;
 	margin-left: -5px;
 }
+.numbers_frontend_form_list_comment p {
+	margin: 0 !important;
+}
 
 /* widgets */
 #form_wg_comments_form_wrapper table.numbers_frontend_form_list_header_inner td.numbers_word_wrap p {

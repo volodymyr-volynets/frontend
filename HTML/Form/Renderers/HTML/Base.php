@@ -2252,7 +2252,7 @@ render_table:
 						$flag_translated = true;
 					}
 					if (!empty($result_options['nl2br']) && !is_html($result_options['value'])) {
-						$result_options['value'] = br2nl($result_options['value'], true);
+						$result_options['value'] = nl2br($result_options['value'], true);
 					}
 				} else { // editable fields
 					// inputs should not be date type, use input_type to override
@@ -2434,6 +2434,7 @@ render_element:
 			// building navigation
 			if (!empty($result_options['navigation'])) {
 				$name = 'navigation[' . $result_options['name'] . ']';
+				$refresh_id = 'navigation_' . $result_options['id'] . '_refresh';
 				$temp = '<table width="100%" dir="ltr">'; // always left to right
 					$temp.= '<tr>';
 						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[first]', 'value' => \HTML::icon(['type' => 'fas fa-step-backward']), 'onclick' => '$(this.form).attr(\'no_ajax\', 1); Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'First')]) . '</td>';
@@ -2442,7 +2443,7 @@ render_element:
 						$temp.= '<td width="1%">&nbsp;</td>';
 						$temp.= '<td width="90%">' . $value . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
-						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[refresh]', 'value' => \HTML::icon(['type' => 'fas fa-sync']), 'onclick' => '$(this.form).attr(\'no_ajax\', 1); Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Refresh')]) . '</td>';
+						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[refresh]', 'id' => $refresh_id, 'value' => \HTML::icon(['type' => 'fas fa-sync']), 'onclick' => '$(this.form).attr(\'no_ajax\', 1); Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Refresh')]) . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
 						$temp.= '<td width="1%">' . \HTML::button2(['name' => $name . '[next]', 'value' => \HTML::icon(['type' => 'fas fa-caret-right']), 'onclick' => '$(this.form).attr(\'no_ajax\', 1); Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Next')]) . '</td>';
 						$temp.= '<td width="1%">&nbsp;</td>';
@@ -2450,6 +2451,17 @@ render_element:
 					$temp.= '</tr>';
 				$temp.= '</table>';
 				$value = $temp;
+				\Layout::onLoad(<<<TTT
+					$("#{$result_options['id']}").keypress(function(e) {
+						if ((e.which && e.which == 13) || (e.keyCode && e.keyCode == 13)) {
+							$("#{$refresh_id}").click();
+							return false;
+						} else {
+							return true;
+						}
+					});
+TTT
+);
 			}
 			// if we need to load values on change
 			if (!empty($options['options']['refetch_values_on_change'])) {
