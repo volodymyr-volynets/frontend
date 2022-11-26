@@ -466,6 +466,7 @@ var NumbersSelect = function (options) {
 				// optional
 				level: 0,
 				title: '',
+				text_extension: '',
 				icon_class: '',
 				flag_class: '',
 				photo_id: '',
@@ -488,6 +489,7 @@ var NumbersSelect = function (options) {
 				// optional
 				level: level,
 				title: this.elem.options[i].getAttribute('title'),
+				text_extension: this.elem.options[i].getAttribute('text_extension'),
 				icon_class: this.elem.options[i].getAttribute('icon_class'),
 				flag_class: this.elem.options[i].getAttribute('flag_class'),
 				photo_id: this.elem.options[i].getAttribute('photo_id'),
@@ -706,6 +708,9 @@ var NumbersSelect = function (options) {
 							cell = '<table class="numbers_select_option_table_data"><tr><td>' + this.data[i].text.split(this.semicolon + ' ').join('</td><td>' + this.semicolon + '&nbsp;</td><td>') + '</td></tr></table>';
 						} else {
 							cell = this.data[i].text;
+						}
+						if (this.data[i].text_extension) {
+							cell+= '<br/><span style="font-size: 0.70em;">' + this.data[i].text_extension + '</span>';
 						}
 						html+= cell;
 					html+= '</td>';
