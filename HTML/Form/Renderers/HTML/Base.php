@@ -191,7 +191,7 @@ class Base {
 						}
 					} else { // regular containers
 						$temp = $this->renderContainer($k);
-						if ($temp['success']) {
+						if (!empty($temp['success'])) {
 							$result[$k] = $temp['data'];
 						}
 					}
