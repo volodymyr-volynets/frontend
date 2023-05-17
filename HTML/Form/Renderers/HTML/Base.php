@@ -2252,7 +2252,7 @@ render_table:
 						$flag_translated = true;
 					}
 					if (!empty($result_options['nl2br']) && !is_html($result_options['value'])) {
-						$result_options['value'] = nl2br($result_options['value'], true);
+						$result_options['value'] = nl2br($result_options['value'] . '', true);
 					}
 				} else { // editable fields
 					// inputs should not be date type, use input_type to override
