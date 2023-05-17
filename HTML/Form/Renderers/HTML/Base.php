@@ -555,7 +555,7 @@ TTT
 			$temp_panels = '';
 			foreach ($v2['elements'] as $k3 => $v3) {
 				$temp = $this->renderContainer($v3['options']['container']);
-				if ($temp['success']) {
+				if (!empty($temp['success'])) {
 					$temp_panels.= $temp['data']['html'];
 				}
 			}
@@ -1398,6 +1398,7 @@ render_custom_renderer:
 			$processing_values = !empty($values);
 		}
 		do {
+			$__readonly = null;
 			// we exit if there's no rows and if we have no values
 			if ($row_number > $max_rows) break;
 			// maximum number of rows
@@ -1583,7 +1584,13 @@ render_custom_renderer:
 								$label = $this->renderElementName($first);
 							}
 							// we need to pass proper options
+							if (isset($__readonly)) {
+								$value_options['options']['readonly'] = $__readonly;
+							}
 							$rendered_value = $this->renderElementValue($value_options, $v0[$k3] ?? null, $v0);
+							if (isset($value_options['options']['__readonly'])) {
+								$__readonly = $value_options['options']['__readonly'];
+							}
 							// add element to grid
 							if (($value_options['options']['percent'] ?? 0) !== -1) {
 								$value_options['options']['style'] = $v3['style'] ?? null;
@@ -1681,7 +1688,9 @@ render_custom_renderer:
 				];
 			}
 			// delete link
-			if (empty($options['details_cannot_delete']) && empty($this->object->misc_settings['global']['readonly']) && empty($this->object->misc_settings['acl_subresource_locks'][$options['container_link']]['no_delete'])) {
+			if ($__readonly) {
+				$link = '';
+			} else if (empty($options['details_cannot_delete']) && empty($this->object->misc_settings['global']['readonly']) && empty($this->object->misc_settings['acl_subresource_locks'][$options['container_link']]['no_delete'])) {
 				$link = \HTML::a(['href' => 'javascript:void(0);', 'value' => '<i class="far fa-trash-alt"></i>', 'onclick' => "if (confirm('" . strip_tags(i18n(null, \Object\Content\Messages::CONFIRM_DELETE)) . "')) { Numbers.Form.detailsDeleteRow('form_{$this->object->form_link}_form', '{$row_id}'); } return false;"]);
 			} else {
 				$link = '';
@@ -2149,6 +2158,16 @@ render_table:
 				}
 			}
 		}
+
+		// find selected element.
+		if (!empty($result_options['options'])) {
+			$selected_element = array_walk_recursive_find_by_key($result_options['options'], $value);
+			if (!empty($selected_element['__readonly'])) {
+				$options['options']['__readonly'] = true;
+				$result_options['readonly'] = true;
+			}
+		}
+
 		// by default all selects are searchable if not specified otherwise
 		if ($flag_select_or_autocomplete) {
 			$result_options['searchable'] = $result_options['searchable'] ?? false;
@@ -2252,7 +2271,7 @@ render_table:
 						$flag_translated = true;
 					}
 					if (!empty($result_options['nl2br']) && !is_html($result_options['value'])) {
-						$result_options['value'] = nl2br($result_options['value'], true);
+						$result_options['value'] = nl2br($result_options['value'] . '', true);
 					}
 				} else { // editable fields
 					// inputs should not be date type, use input_type to override
