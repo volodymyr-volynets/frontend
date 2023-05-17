@@ -182,7 +182,8 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 			if (empty($v['readonly'])) {
 				unset($v['readonly']);
 			} else {
-				$v['disabled'] = 'disabled';
+				$v['readonly'] = 'readonly';
+				unset($v['disabled']);
 			}
 			foreach($v as $k2 => $v2) {
 				if (!is_array($v2) && $k2 != 'name') {
