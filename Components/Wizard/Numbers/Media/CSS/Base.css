@@ -4,6 +4,9 @@
 .numbers_frontend_components_wizard_numbers_base_header {
 	text-align: center;
 }
+.numbers_frontend_components_wizard_numbers_base_header.primary {
+	font-weight: bold;
+}
 .numbers_frontend_components_wizard_numbers_base_holder {
 	position: relative;
 	height: 50px;
@@ -34,7 +37,7 @@
 	left: 50%;
 }
 .numbers_frontend_components_wizard_numbers_base_active {
-	/*background: #337ab7;*/
+	background: #377dff;
 }
 .numbers_frontend_components_wizard_numbers_base_inactive {
 	background: lightgrey;

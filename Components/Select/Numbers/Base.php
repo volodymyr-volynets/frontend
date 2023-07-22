@@ -23,6 +23,18 @@ class Base implements \Numbers\Frontend\Components\Select\Interface2\Base {
 				'class' => $options['class'] ?? ''
 			]) . ');');
 		}
+		// process primary
+		if (!empty($options['set_primary']) && empty($options['value']) && isset($options['options'])) {
+			$primary = null;
+			foreach ($options['options'] as $k => $v) {
+				if (!empty($v['primary'])) {
+					$primary = $k;
+				}
+			}
+			if (isset($primary)) {
+				$options['value'] = $primary;
+			}
+		}
 		// must gain proper class from previous submodule
 		$options['flag_call_previous_parent'] = true;
 		return \HTML::select($options);

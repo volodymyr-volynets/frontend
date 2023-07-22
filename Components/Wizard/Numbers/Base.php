@@ -52,7 +52,8 @@ class Base implements \Numbers\Frontend\Components\Wizard\Interface2\Base {
 							}
 						$row2.= '</div>';
 					$row2.= '</td>';
-					$row3.= '<td class="numbers_frontend_components_wizard_numbers_base_description">' . ($v['description'] ?? '') . '</td>';
+					$description_class = $v['description_class'] ?? 'numbers_frontend_components_wizard_numbers_base_description';
+					$row3.= '<td class="' . $description_class . '">' . (isset($v['description']) ? i18n(null, $v['description']) : '') . '</td>';
 					if (!empty($v['description'])) {
 						$flag_description_found = true;
 					}

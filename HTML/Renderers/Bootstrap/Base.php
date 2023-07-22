@@ -4,6 +4,14 @@ namespace Numbers\Frontend\HTML\Renderers\Bootstrap;
 class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 
 	/**
+	 * @see \HTML::init()
+	 */
+	public static function init() : void {
+		\Layout::addCss('/numbers/media_submodules/Numbers_Frontend_HTML_Renderers_Bootstrap_Media_CSS_Base.css', -31600);
+		\Layout::addJs('/numbers/media_submodules/Numbers_Frontend_HTML_Renderers_Bootstrap_Media_JS_Base.js', -31500);
+	}
+
+	/**
 	 * @see \HTML::segment()
 	 */
 	public static function segment(array $options = []) : string {
@@ -24,8 +32,9 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 			if (is_array($header)) {
 				$icon = !empty($header['icon']) ? (\HTML::icon($header['icon']) . ' ') : null;
 				$result.= \HTML::div([
-					'class' => 'card-header ' . $bg_class,
+					'class' => 'card-header ' . $bg_class . ' ' . ($header['class'] ?? ''),
 					'value' => $icon . $header['title'] ?? '',
+					'style' => ($header['style'] ?? '')
 				]);
 			} else {
 				$result.= \HTML::div([
@@ -35,7 +44,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 			}
 		}
 		$result.= \HTML::div([
-			'class' => 'card-body',
+			'class' => 'card-body ' . ($options['body_class'] ?? ''),
 			'value' => \HTML::div([
 				'class' => 'card-text',
 				'value' => $value,
@@ -53,8 +62,9 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 			if (is_array($footer)) {
 				$icon = !empty($footer['icon']) ? (\HTML::icon($footer['icon']) . ' ') : null;
 				$result.= \HTML::div([
-					'class' => 'card-footer',
+					'class' => 'card-footer ' . ($footer['class'] ?? ''),
 					'value' => $icon . $footer['title'],
+					'style' => ($footer['style'] ?? '')
 				]);
 			} else {
 				$result.= \HTML::div([
@@ -63,11 +73,14 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 				]);
 			}
 		}
-		return \HTML::div([
+		if (!empty($options['main_element_properties']['draggable'])) {
+			$result.= \HTML::div(['value' => '&nbsp;', 'id' => $options['main_element_properties']['id'] . '_overlay', 'style' => 'display: none;', 'class' => $options['class'] . '_overlay']);
+		}
+		return \HTML::div(array_merge([
 			'class' => 'card ' . ($options['class'] ?? ''),
 			'value' => $result,
 			'style' => $options['style'] ?? null,
-		]);
+		], $options['main_element_properties'] ?? []));
 	}
 
 	/**
@@ -373,7 +386,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 			}
 			// if we are sorting by order field
 			if (!empty($item['child_ordered'])) {
-				array_key_sort($item['options'], ['order' => SORT_ASC], ['name' => SORT_NUMERIC]);
+				array_key_sort($item['options'], ['order' => SORT_ASC], ['order' => SORT_NUMERIC]);
 			} else {
 				array_key_sort($item['options'], ['name' => SORT_ASC], ['name' => SORT_NATURAL]);
 			}
@@ -755,5 +768,40 @@ TTT;
 			$result.= $options['value'] ?? '';
 		$result.= '</div>';
 		return $result;
+	}
+
+	/**
+	 * @see \HTML::callout();
+	 */
+	public static function progressbar(array $options = []) : string {
+		$value = round((float )$options['value']);
+		$progressbar_max = $options['progressbar_max'] ?? 100;
+		$progressbar_min = $options['progressbar_min'] ?? 0;
+		$style = '';
+		if (isset($options['progressbar_style'])) {
+			$style.= $options['progressbar_style'];
+		}
+		if (!empty($options['bg_color'])) {
+			$style.= 'background-color: ' . $options['bg_color'] . ';';
+		}
+		$result = '<div id="' . ($options['id'] ?? '') . '" class="progress ' . ($options['class'] ?? '') . '" role="progressbar" aria-label="' . ($options['label_name'] ?? '') . '" aria-valuenow="' . $value . '" aria-valuemin="' . $progressbar_min . '" aria-valuemax="' . $progressbar_max . '" style="' . $style . '">';
+			$style_inner = 'width: ' . $value . '%;';
+			$style_inner.= $options['progressbar_inner_style'] ?? '';
+			$result.= '<div class="progress-bar" style="' . $style_inner . '">' . \Format::id($value) . '%</div>';
+		$result.= '</div>';
+		// we need to add hidden field
+		if (empty($options['skip_hidden'])) {
+			$result.= \HTML::hidden(['name' => $options['name'], 'value' => $options['value']]);
+		}
+		return $result;
+	}
+
+	/**
+	 * @see \HTML::canvas();
+	 */
+	public static function canvas(array $options = []) : string {
+		$options['class'] = array_add_token($options['class'] ?? [], [$options['type']], ' ');
+		$value = isset($options['value']) ? $options['value'] : 'Your browser does not support the HTML canvas tag.';
+		return '<canvas ' . self::generateAttributes($options, 'canvas') . '>' . htmlspecialchars($value) . '</canvas>';
 	}
 }

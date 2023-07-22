@@ -98,3 +98,27 @@ table.numbers_frontend_form_table_renderer_field_table {
 	margin: 0 !important;
 	padding: 0 !important;
 }
+
+/* modals */
+.numbers_frontend_form_modal_level_1 {
+	z-index: 1040 !important;
+}
+.numbers_frontend_form_modal_level_2 {
+	z-index: 1050 !important;
+}
+.numbers_frontend_form_modal_level_3 {
+	z-index: 1060 !important;
+}
+.numbers_frontend_form_modal_level_4 {
+	z-index: 1070 !important;
+}
+.numbers_frontend_form_modal_level_5 {
+	z-index: 1080 !important;
+}
+.modal-backdrop {
+    display: none;
+}
+.modal-dialog {
+	border: 2px solid #000000;
+	border-radius: 1em;
+}

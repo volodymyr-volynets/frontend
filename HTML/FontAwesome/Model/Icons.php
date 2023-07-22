@@ -15,6 +15,7 @@ class Icons extends \Object\Data {
 	public $orderby = [
 		'name' => SORT_ASC
 	];
+	public const selectOptions = '\Numbers\Frontend\HTML\FontAwesome\Model\Icons::options';
 	public $options_skip_i18n = true;
 	public $data = [
 		'fab fa-500px' => ['name' => 'fab fa-500px'],
