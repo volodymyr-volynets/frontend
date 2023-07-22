@@ -21,7 +21,7 @@ class Base {
 		$this->object = $object;
 		// ajax requests from another form
 		if ($this->object->flag_another_ajax_call) {
-			return null;
+			return '';
 		}
 		$this->object->tabindex = 1;
 		// css & js
@@ -65,7 +65,7 @@ class Base {
 			if ($this->object->collection_object->primary_model->module ?? false) {
 				$params['__module_id'] = $params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
 			}
-			$this->object->actions['form_new'] = ['value' => 'New', 'sort' => -31000, 'icon' => 'far fa-file', 'href' => $mvc['controller'] . '/_Edit?' . http_build_query($params), 'onclick' => $onclick, 'internal_action' => true];
+			$this->object->actions['form_new'] = ['value' => 'New', 'sort' => -31000, 'icon' => 'far fa-file', 'href' => \Request::buildFromCurrentController('Edit') . '?' . http_build_query($params), 'onclick' => $onclick, 'internal_action' => true];
 			// override
 			if (is_array($this->object->options['actions']['new'])) {
 				$this->object->actions['form_new'] = array_merge($this->object->actions['form_new'], $this->object->options['actions']['new']);
@@ -80,7 +80,7 @@ class Base {
 			if ($this->object->collection_object->primary_model->module ?? false) {
 				$params['__module_id'] = $params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
 			}
-			$this->object->actions['form_import'] = ['value' => 'Import', 'sort' => -30900, 'icon' => 'fas fa-upload', 'href' => $mvc['controller'] . '/_Import?' . http_build_query($params), 'onclick' => $onclick, 'internal_action' => true];
+			$this->object->actions['form_import'] = ['value' => 'Import', 'sort' => -30900, 'icon' => 'fas fa-upload', 'href' => \Request::buildFromCurrentController('Import') . '?' . http_build_query($params), 'onclick' => $onclick, 'internal_action' => true];
 			// override
 			if (is_array($this->object->options['actions']['import'])) {
 				$this->object->actions['form_import'] = array_merge($this->object->actions['form_import'], $this->object->options['actions']['import']);
@@ -89,7 +89,7 @@ class Base {
 		// activate
 		if (!empty($this->object->options['actions']['activate']) && \Application::$controller->can('Activate_Data', 'Activate')) {
 			$onclick = '';
-			$this->object->actions['form_activate'] = ['value' => 'Activate', 'sort' => -30900, 'icon' => 'fas fa-link', 'href' => $mvc['controller'] . '/_Activate', 'onclick' => $onclick, 'internal_action' => true];
+			$this->object->actions['form_activate'] = ['value' => 'Activate', 'sort' => -30900, 'icon' => 'fas fa-link', 'href' => \Request::buildFromCurrentController('Activate'), 'onclick' => $onclick, 'internal_action' => true];
 			// override
 			if (is_array($this->object->options['actions']['activate'])) {
 				$this->object->actions['form_activate'] = array_merge($this->object->actions['form_activate'], $this->object->options['actions']['activate']);
@@ -106,7 +106,7 @@ class Base {
 			if (!empty($this->object->values['__form_filter_id'])) {
 				$params['__form_filter_id'] = $this->object->values['__form_filter_id'];
 			}
-			$this->object->actions['form_back'] = ['value' => 'Back', 'sort' => -32000, 'icon' => 'fas fa-arrow-left', 'href' => $mvc['controller'] . '/_Index?' . http_build_query($params), 'internal_action' => true];
+			$this->object->actions['form_back'] = ['value' => 'Back', 'sort' => -32000, 'icon' => 'fas fa-arrow-left', 'href' => \Request::buildFromCurrentController('Index') . '?' . http_build_query($params), 'internal_action' => true];
 			// override
 			if (is_array($this->object->options['actions']['back'])) {
 				$this->object->actions['form_back'] = array_merge($this->object->actions['form_back'], $this->object->options['actions']['back']);
@@ -143,6 +143,7 @@ class Base {
 		}
 		$refresh_params['__refresh'] = rand(1000, 9999) . '_' . rand(1000, 9999) . '_' . rand(1000, 9999);
 		$refresh_href = $mvc['full'] . '?' . http_build_query2($refresh_params) . "#" . $anchor;
+		$refresh_href = \Request::fixUrl($refresh_href, $mvc['controller_template']);
 		if (!empty($this->object->options['actions']['refresh'])) {
 			$url = $mvc['full'];
 			$this->object->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => 32000, 'icon' => 'fas fa-sync', 'href' => $refresh_href, 'internal_action' => true];
@@ -207,6 +208,7 @@ class Base {
 					if ($temp['success']) {
 						$result[$k]['html'] = \HTML::modal([
 							'id' => $v['options']['modal_id'],
+							'modal_class' => $this->object->options['modal_class'] ?? 'numbers_frontend_form_modal_level_1',
 							'class' => '',
 							'title' => isset($v['label_name']) ? i18n(null, $v['label_name']) : '',
 							'body' => $temp['data']['html'],
@@ -260,6 +262,7 @@ class Base {
 		// couple hidden fields
 		$result.= \HTML::hidden(['name' => '__collection_link', 'value' => $this->object->options['collection_link'] ?? '']);
 		$result.= \HTML::hidden(['name' => '__collection_screen_link', 'value' => $this->object->options['collection_screen_link'] ?? '']);
+		$result.= \HTML::hidden(['name' => '__collection_refresh', 'value' => '']);
 		// if we came from the parent
 		if (!empty($this->object->options['parent_form_link'])) {
 			$result.= \HTML::hidden(['name' => '__form_link', 'value' => $this->object->options['parent_form_link']]);
@@ -303,7 +306,7 @@ class Base {
 			if (!empty($this->object->options['on_success_refresh_collection']) && $submitted && !$this->object->refresh && !$this->object->blank) {
 				$js.= "Numbers.Modal.hide('form_subform_{$this->object->form_link}_form');\n";
 				if (!empty($this->object->options['collection_link'])) {
-					$js.= "Numbers.Form.refreshCollectionForms('{$this->object->options['collection_link']}')\n";
+					$js.= "Numbers.Form.refreshCollectionForms('{$this->object->options['collection_link']}');\n";
 				} else {
 					$js.= "$('#form_{$this->object->options['parent_form_link']}_form').submit();\n";
 				}
@@ -357,9 +360,8 @@ TTT
 		}
 		// if we have form
 		if (empty($this->object->options['skip_form'])) {
-			$mvc = \Application::get('mvc');
 			$result = \HTML::form([
-				'action' => $mvc['full'] . "#" . $anchor,
+				'action' => \Request::buildFromCurrentController() . "#" . $anchor,
 				'name' => "form_{$this->object->form_link}_form",
 				'id' => "form_{$this->object->form_link}_form",
 				'class' => 'numbers_frontend_form_class',
@@ -561,12 +563,16 @@ TTT
 			}
 			// add all containers
 			if (!empty($temp_panels)) {
+				$header =  null;
+				if (empty($v2['options']['skip_header'])) {
+					$header = [
+						'title' => i18n(null, $v2['options']['label_name']),
+						'icon' => $v2['options']['panel_icon'] ?? null,
+					];
+				}
 				$grid['options'][$k][$k2][$k2] = [
 					'value' => \HTML::segment([
-						'header' => [
-							'title' => i18n(null, $v2['options']['label_name']),
-							'icon' => $v2['options']['panel_icon'] ?? null,
-						],
+						'header' => $header,
 						'type' => $v2['options']['panel_type'] ?? 'default',
 						'value' => $temp_panels,
 						'class' => 'numbers_frontend_form_pannel_segment',
@@ -597,7 +603,11 @@ TTT
 			$onclick = !empty($v['onclick']) ? $v['onclick'] : '';
 			$value = !empty($v['value']) ? i18n(null, $v['value']) : '';
 			$href = $v['href'] ?? 'javascript:void(0);';
-			$temp[] = \HTML::a(array('value' => $icon . $value, 'href' => $href, 'onclick' => $onclick));
+			$id = [];
+			if (isset($v['id'])) {
+				$id['id'] = $v['id'];
+			}
+			$temp[] = \HTML::a(['value' => $icon . $value, 'href' => $href, 'onclick' => $onclick] + $id);
 		}
 		return implode(' ', $temp);
 	}
@@ -959,7 +969,7 @@ TTT
 			}
 			return json_encode($pk);
 		} else {
-			return \Application::get('mvc.controller') . '/_Edit?' . http_build_query2($pk);
+			return \Request::fixUrl(\Application::get('mvc.controller'), \Application::get('mvc.controller_template')) . '/_Edit?' . http_build_query2($pk);
 		}
 	}
 
@@ -1214,8 +1224,34 @@ render_custom_renderer:
 			}
 			$row_number++;
 		}
+		// number of records
+		if (count($new_data) > 0) {
+			$this->object->errorInTabs(['records' => count($new_data)]);
+		}
+		// if we have additional headers
+		$zero_header = null;
+		if (!empty($options['details_tree_zero_columns_renderer'])) {
+			$method = \Factory::method($options['details_tree_zero_columns_renderer'], $this->object->form_parent, false, [['skip_processing' => true]]);
+			// important to use $this if its the same class
+			if ($method[0] == $this->object->form_class) {
+				$method[0] = & $this->object->form_parent;
+			} else if (!is_object($method[0])) {
+				$method[0] = \Factory::model($method[0], true, [['skip_processing' => true]]);
+			}
+			$zero_header = call_user_func_array($method, [& $this->object, & $new_data, $options['details_tree_header'] ?? []]);
+		}
+		// conver to tree
 		$new_data = \Helper\Tree::convertByParent($new_data, '__parent');
-		$result.= \HTML::tree(['options' => $new_data, 'i18n' => $options['details_tree_i18n'] ?? true]);
+		$result.= \HTML::tree([
+			'options' => $new_data,
+			'i18n' => $options['details_tree_i18n'] ?? true,
+			'numerate' => $options['details_tree_numerate'] ?? false,
+			'orderby' => $options['details_tree_order_key'] ?? null,
+			'header' => $options['details_tree_header'] ?? null,
+			'class' => $options['details_tree_class'] ?? null,
+			'holder_class' => $options['details_tree_holder_class'] ?? null,
+			'zero_header' => $zero_header,
+		]);
 		return $result;
 	}
 
@@ -1351,6 +1387,9 @@ render_custom_renderer:
 						// hidden row
 						if ($k === $this->object::HIDDEN && !\Application::get('flag.numbers.frontend.html.form.show_field_settings')) {
 							$v3['options']['row_class'] = ($v3['options']['row_class'] ?? '') . ' grid_row_hidden';
+						}
+						if (!empty($v3['options']['hide_header_row'])) {
+							$v3['options']['row_class'] = 'grid_row_hidden';
 						}
 						$data['options'][$k][$k2][$k3] = [
 							'label' => $this->renderElementName($first),
@@ -2275,6 +2314,7 @@ render_table:
 					}
 				} else { // editable fields
 					// inputs should not be date type, use input_type to override
+					$element_type = $result_options['type'] ?? '';
 					if ($element_method == '\HTML::input' && empty($options['options']['static'])) {
 						$result_options['type'] = 'text';
 					}
@@ -2298,6 +2338,11 @@ render_table:
 						$result_options['value'].= '</table>';
 						$element_method = '\HTML::div';
 						goto render_element;
+					}
+					if ($element_type === 'json' && isset($value)) {
+						$value = json_encode(json_decode($value, true));
+						$value = trim($value, "'");
+						$value = trim($value, '"');
 					}
 					$result_options['value'] = $value;
 					// if we need to empty value, mostly for password fields

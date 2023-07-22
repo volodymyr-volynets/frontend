@@ -11,6 +11,7 @@ class Base {
 	 */
 	public function render(& $options) {
 		$type = $options['pagination_type'] ?? 'top';
+		$form_submit = $options['form_submit'] ?? '__submit_button';
 		// fetched
 		if (!empty($options['total'])) {
 			$fetched = i18n(null, 'Fetched [num_rows] of [total]', [
@@ -38,6 +39,12 @@ class Base {
 				$sort.= implode(', ', $temp);
 			$sort.= '</td></tr></table>';
 		}
+		// sorting select
+		if (!empty($options['sort_options'])) {
+			$sort.= '<table width="100%" style="min-height: 40px;"><tr><td valign="middle">' . i18n(null, 'Sort') . ': ' .'</td><td valign="middle">';
+				$sort.= \HTML::select(['id' => $options['form_link'] . '_sort_select_' . $type, 'options' => $options['sort_options'], 'value' => $options['sort_value'], 'no_choose' => true, 'onchange' => "Numbers.Form.setValue(this.form, '__sort', this.value); Numbers.Form.triggerSubmit(this.form, '{$form_submit}');"]);
+			$sort.= '</td></tr></table>';
+		}
 		// displaying
 		$displaying = '<table>';
 			$displaying.= '<tr>';
@@ -61,9 +68,9 @@ previewLabel:
 					$preview_value = 1;
 					$preview_title = i18n(null, 'Preview');
 				}
-				$displaying.= '<td>' . \HTML::button2(['type' => 'default', 'title' => $preview_title, 'value' => \HTML::icon(['type' => $preview_icon]), 'onclick' => "Numbers.Form.setValue(this.form, '__preview', {$preview_value}); Numbers.Form.triggerSubmit(this.form, '__submit_button');"]) . '</td>';
+				$displaying.= '<td>' . \HTML::button2(['type' => 'default', 'title' => $preview_title, 'value' => \HTML::icon(['type' => $preview_icon]), 'onclick' => "Numbers.Form.setValue(this.form, '__preview', {$preview_value}); Numbers.Form.triggerSubmit(this.form, '{$form_submit}'); return false;"]) . '</td>';
 				$displaying.= '<td>&nbsp;</td>';
-				$displaying.= '<td><div style="width: 80px;">' . \HTML::select(['id' => $options['form_link'] . '_page_sizes_' . $type, 'title' => i18n(null, 'Displaying rows'), 'options' => \Factory::model('\Numbers\Framework\Object\Form\Model\PageSizes', true)->options(['i18n' => 'skip_sorting']), 'value' => $options['limit'], 'no_choose' => true, 'onchange' => "Numbers.Form.setValue(this.form, '__offset', 0); Numbers.Form.setValue(this.form, '__limit', this.value); Numbers.Form.triggerSubmit(this.form, '__submit_button');"]) . '</div></td>';
+				$displaying.= '<td><div style="width: 80px;">' . \HTML::select(['id' => $options['form_link'] . '_page_sizes_' . $type, 'title' => i18n(null, 'Displaying rows'), 'options' => \Factory::model('\Numbers\Framework\Object\Form\Model\PageSizes', true)->options(['i18n' => 'skip_sorting']), 'value' => $options['limit'], 'no_choose' => true, 'onchange' => "Numbers.Form.setValue(this.form, '__offset', 0); Numbers.Form.setValue(this.form, '__limit', this.value); Numbers.Form.triggerSubmit(this.form, '{$form_submit}');"]) . '</div></td>';
 			$displaying.= '</tr>';
 		$displaying.= '</table>';
 		// navigation
@@ -72,11 +79,11 @@ previewLabel:
 		$flag_last_row_exists = false;
 		$current_page = intval($options['offset'] / $options['limit']);
 		if ($current_page >= 1) {
-			$navigation[]= \HTML::button2(['value' => i18n(null, 'First'), 'onclick' => "Numbers.Form.setValue(this.form, '__offset', 0); Numbers.Form.triggerSubmit(this.form, '__submit_button');"]);
+			$navigation[]= \HTML::button2(['value' => i18n(null, 'First'), 'onclick' => "Numbers.Form.setValue(this.form, '__offset', 0); Numbers.Form.triggerSubmit(this.form, '{$form_submit}'); return false;"]);
 		}
 		if ($current_page >= 2) {
 			$previous = (($current_page - 1) * $options['limit']);
-			$navigation[]= \HTML::button2(['value' => i18n(null, 'Previous'), 'onclick' => "Numbers.Form.setValue(this.form, '__offset', {$previous}); Numbers.Form.triggerSubmit(this.form, '__submit_button');"]);
+			$navigation[]= \HTML::button2(['value' => i18n(null, 'Previous'), 'onclick' => "Numbers.Form.setValue(this.form, '__offset', {$previous}); Numbers.Form.triggerSubmit(this.form, '{$form_submit}'); return false;"]);
 		}
 		// select with number of pages
 		$pages = ceil($options['total'] / $options['limit']);
@@ -87,7 +94,7 @@ previewLabel:
 			}
 			$navigation2 = i18n(null, 'Page') . ': ';
 			$previous = (($current_page - 1) * $options['limit']);
-			$navigation2.= '<div style="width: 100px; display: inline-block; vertical-align: middle;">' . \HTML::select(['id' => $options['form_link'] . '_pages_' . $type, 'options' => $temp, 'value' => $options['offset'], 'no_choose' => true, 'onchange' => "Numbers.Form.setValue(this.form, '__offset', this.value); Numbers.Form.triggerSubmit(this.form, '__submit_button');"]) . '</div>';
+			$navigation2.= '<div style="width: 100px; display: inline-block; vertical-align: middle;">' . \HTML::select(['id' => $options['form_link'] . '_pages_' . $type, 'options' => $temp, 'value' => $options['offset'], 'no_choose' => true, 'onchange' => "Numbers.Form.setValue(this.form, '__offset', this.value); Numbers.Form.triggerSubmit(this.form, '{$form_submit}');"]) . '</div>';
 			$navigation[] = $navigation2;
 			// checking for next and last pages
 			$flag_next_row_exists = ($pages - $current_page - 2 > 0) ? true : false;
@@ -97,11 +104,11 @@ previewLabel:
 		}
 		if ($flag_next_row_exists) {
 			$next = (($current_page + 1) * $options['limit']);
-			$navigation[]= \HTML::button2(['value' => i18n(null, 'Next'), 'onclick' => "Numbers.Form.setValue(this.form, '__offset', {$next}); Numbers.Form.triggerSubmit(this.form, '__submit_button');"]);
+			$navigation[]= \HTML::button2(['value' => i18n(null, 'Next'), 'onclick' => "Numbers.Form.setValue(this.form, '__offset', {$next}); Numbers.Form.triggerSubmit(this.form, '{$form_submit}'); return false;"]);
 		}
 		if ($flag_last_row_exists) {
 			$last = (($pages - 1) * $options['limit']);
-			$navigation[]= \HTML::button2(['value' => i18n(null, 'Last'), 'onclick' => "Numbers.Form.setValue(this.form, '__offset', {$last}); Numbers.Form.triggerSubmit(this.form, '__submit_button');"]);
+			$navigation[]= \HTML::button2(['value' => i18n(null, 'Last'), 'onclick' => "Numbers.Form.setValue(this.form, '__offset', {$last}); Numbers.Form.triggerSubmit(this.form, '{$form_submit}'); return false;"]);
 		}
 		// generating grid
 		$grid = [

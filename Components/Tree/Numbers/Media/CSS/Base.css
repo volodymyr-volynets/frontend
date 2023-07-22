@@ -2,7 +2,7 @@
 	line-height: 1em;
 }
 .numbers_tree_option_table td {
-	padding: 0;
+	padding: 2px;
 	border: none;
 	vertical-align: middle;
 }
@@ -26,6 +26,7 @@ html[dir="rtl"] .numbers_tree_option_table_td {
 	width: 2em;
 	min-height: 1em;
 	height: 100%;
+	vertical-align: top !important;
 }
 .numbers_tree_option_table_level_nextchild {
 	width: 1em;
@@ -99,4 +100,26 @@ tr.numbers_tree_option_table_tr_hover:hover {
 td.numbers_tree_mini_toolbar {
 	font-size: 0.75em;
 	padding-left: 2em;
+}
+td.numbers_tree_numerate_td {
+	padding-right: 1em;
+}
+/* sticky columns - horizontal */
+.numbers_table_sticky .numbers_tree_sticky_numerate {
+	position: sticky;
+	position: -webkit-sticky;
+	left: 0;
+	background-color: #ffffff;
+}
+.numbers_table_sticky .numbers_tree_sticky_column_name {
+	position: sticky;
+	position: -webkit-sticky;
+	left: 2em;
+	background-color: #ffffff;
+}
+.numbers_tree_option_table_header th {
+	text-align: center;
+}
+.numbers_tree_option_table_name_column_groupped td {
+	padding: 0 !important;
 }

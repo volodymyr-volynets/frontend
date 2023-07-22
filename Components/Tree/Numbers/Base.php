@@ -11,7 +11,8 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base {
 		\Layout::addJs('/numbers/media_submodules/Numbers_Frontend_Components_Tree_Numbers_Media_JS_Base.js', -10001);
 		\Layout::addCss('/numbers/media_submodules/Numbers_Frontend_Components_Tree_Numbers_Media_CSS_Base.css', -10001);
 		$options['id'] = ($options['id'] ?? 'numbers_tree_id_' . rand(1000, 9999));
-		$options['class'] = ($options['class'] ?? '') . ' numbers_tree_holder';
+		$table_class = $options['class'] ?? '';
+		$options['class'] = ($options['holder_class'] ?? '') . ' numbers_tree_holder';
 		// process items
 		$items = $options['options'] ?? [];
 		unset($options['options']);
@@ -21,6 +22,7 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base {
 		$options['prepend_parent_keys'] = true;
 		\Helper\Tree::convertTreeToOptionsMulti($items, 0, $options, $temp);
 		$data_max_level = 0;
+		$data_max_header = 0;
 		$counter = 0;
 		foreach ($temp as $k => $v) {
 			if ($v['level'] > $data_max_level) {
@@ -34,8 +36,44 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base {
 		// render
 		$hash = $hash2 = [];
 		$items_count = count($result);
-		$html = '<table id="' . $options['id'] .  '_tree_table" class="numbers_tree_option_table" width="100%" cellpadding="0" cellspacing="0" border="0">';
+		$html = '<table id="' . $options['id'] .  '_tree_table" class="numbers_tree_option_table ' . $table_class . '" width="100%" cellpadding="0" cellspacing="0" border="0">';
+			// header
+			if (!empty($options['header'])) {
+				$temp_header = $options['header'];
+				unset($temp_header['name']);
+				$html.= '<tr class="numbers_tree_option_table_header">';
+					if (!empty($options['numerate'])) {
+						$html.= '<th class="numbers_tree_sticky_numerate">&nbsp;</th>';
+						$data_max_header++;
+					}
+					foreach ($options['header'] as $k => $v) {
+						$width = '';
+						if (isset($v['width'])) {
+							$width = 'width="' . $v['width'] . '"';
+						}
+						if ($k === 'name') {
+							$colspan = 1; // ($data_max_level + 1)
+							$html.= '<th class="numbers_tree_sticky_column" colspan="' . $colspan . '" ' . $width .  ' nowrap>' . i18n(null, $v['name']) . '</th>';
+							$data_max_header+= $data_max_level + 1;
+						} else {
+							$html.= '<th ' . $width .  ' nowrap>' . i18n(null, $v['name']) . '</th>';
+							$data_max_header++;
+						}
+					}
+				$html.= '</tr>';
+			}
+			// other headers
+			if (!empty($options['zero_header'])) {
+				if (!is_array($options['zero_header'])) {
+					$options['zero_header'] = [$options['zero_header']];
+				}
+				foreach ($options['zero_header'] as $v_header) {
+					$html.= '<tr class="numbers_tree_option_table_header">' . $v_header . '</tr>';
+				}
+			}
+			// render rows
 			$i = 0;
+			$index = 1;
 			foreach ($result as $i => $v) {
 				// inactive
 				$inactive_class = '';
@@ -55,9 +93,14 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base {
 				} else {
 					$html.= '<tr class="numbers_tree_option_table_tr' . $selected_class . $inactive_class . ' numbers_tree_option_table_tr_hover" search-id="' . $i . '" title="' . $title . '">';
 				}
+					// numerate
+					if (!empty($options['numerate'])) {
+						$html.= '<td class="numbers_tree_numerate_td numbers_tree_sticky_numerate" width="1%">' . $index . '.</td>';
+					}
 					if ($v['level'] == 0) {
 						$hash2 = [];
 					}
+					$inner_html = '';
 					if ($v['level'] > 0) {
 						for ($j = 0; $j < $v['level']; $j++) {
 							// reset hash
@@ -148,35 +191,40 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base {
 							}
 							switch ($status) {
 								case 'next':
-									$html.= '<td class="numbers_tree_option_table_level"><table class="numbers_tree_option_table_level_nextchild" cellpadding="0" cellspacing="0"><tr><td>&nbsp;</td></tr><tr><td>&nbsp;</td></tr></table></td>';
+									$inner_html.= '<td class="numbers_tree_option_table_level"><table class="numbers_tree_option_table_level_nextchild" cellpadding="0" cellspacing="0"><tr><td>&nbsp;</td></tr><tr><td>&nbsp;</td></tr></table></td>';
 									break;
 								case 'last':
-									$html.= '<td class="numbers_tree_option_table_level"><table class="numbers_tree_option_table_level_last" cellpadding="0" cellspacing="0"><tr><td class="numbers_tree_option_table_level_last_left">&nbsp;</td></tr><tr><td class="numbers_tree_option_table_level_last_sep">&nbsp;</td></tr></table></td>';
+									$inner_html.= '<td class="numbers_tree_option_table_level"><table class="numbers_tree_option_table_level_last" cellpadding="0" cellspacing="0"><tr><td class="numbers_tree_option_table_level_last_left">&nbsp;</td></tr><tr><td class="numbers_tree_option_table_level_last_sep">&nbsp;</td></tr></table></td>';
 									break;
 								case 'nextchild':
-									$html.= '<td class="numbers_tree_option_table_level"><table class="numbers_tree_option_table_level_nextchild" cellpadding="0" cellspacing="0"><tr><td>&nbsp;</td></tr><tr><td class="numbers_tree_option_table_level_nextchild_sep">&nbsp;</td></tr></table></td>';
+									$inner_html.= '<td class="numbers_tree_option_table_level"><table class="numbers_tree_option_table_level_nextchild" cellpadding="0" cellspacing="0"><tr><td>&nbsp;</td></tr><tr><td class="numbers_tree_option_table_level_nextchild_sep">&nbsp;</td></tr></table></td>';
 									break;
 								case 'blank':
-									$html.= '<td class="numbers_tree_option_table_level"></td>';
+									$inner_html.= '<td class="numbers_tree_option_table_level"></td>';
 									break;
 								default:
-									$html.= '<td class="numbers_tree_option_table_level">1</td>';
+									$inner_html.= '<td class="numbers_tree_option_table_level">&nbsp;</td>';
 							}
 						}
 					}
 					$colspan = $data_max_level - $v['level'] + 1;
-					$html.= '<td colspan="' . $colspan . '" valign="middle" class="numbers_tree_option_table_td">';
+					$colspan = 1;
+					$html.= '<td colspan="' . $colspan . '" valign="middle" class="numbers_tree_option_table_td numbers_tree_sticky_column_name" nowrap>';
 						// if we have toolbar
 						if (!empty($v['toolbar'])) {
 							$icon = '';
 							if (!empty($result[$i][$icon_key])) {
 								$icon = '<i class="numbers_tree_option_table_icon ' . $result[$i][$icon_key] . '"></i> ';
 							}
-							$html.= '<table width="100%" border="0">';
-								$html.= '<tr><td>&nbsp;</td></tr>';
-								$html.= '<tr><td>' . $icon . $v['name'] . '</td></tr>';
-								$html.= '<tr><td class="numbers_tree_mini_toolbar">' . implode(' | ', $v['toolbar']) . '</td></tr>';
-							$html.= '</table>';
+							$temp_html = '<table width="100%" border="0">';
+								$temp_html.= '<tr><td>&nbsp;</td></tr>';
+								$temp_html.= '<tr><td>' . $icon . $v['name'] . '</td></tr>';
+								$temp_html.= '<tr><td class="numbers_tree_mini_toolbar">' . implode(' | ', $v['toolbar']) . '</td></tr>';
+								if (!empty($v['description'])) {
+									$temp_html.= '<tr><td>' . $v['description'] . '</td></tr>';
+								}
+							$temp_html.= '</table>';
+							$html.= '<table class="numbers_tree_option_table_name_column_groupped"><tr>' . $inner_html . '<td>' . $temp_html . '</td></tr></table>';
 						} else {
 							$name = '';
 							if (!empty($result[$i][$icon_key])) {
@@ -193,18 +241,26 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base {
 								} else {
 									$temp_url = $result[$i]['url'];
 								}
-								$name = \HTML::a(['href' => $temp_url, 'value' => $name]);
+								$name = \HTML::a(['href' => \Request::fixUrl($temp_url, $result[$i]['template']), 'value' => $name]);
 							}
-							$html.= $name;
+							$html.= '<table class="numbers_tree_option_table_name_column_groupped"><tr>' . $inner_html . '<td>' . $name . '</td></tr></table>';
 						}
 					$html.= '</td>';
 					//$html.= '<td width="1%">&nbsp;</td>';
+					if (!empty($temp_header)) {
+						foreach ($temp_header as $k2 => $v2) {
+							$html.= '<td align="' . ($v2['align'] ?? 'left') . '" class="' . ($v2['class'] ?? '') . '" nowrap>';
+								$html.= $result[$i]['columns'][$k2] ?? '&nbsp;';
+							$html.= '</td>';
+						}
+					}
 				$html.= '</tr>';
+				$index++;
 			}
 			// no rows found
 			if ($items_count == 0) {
 				$html.= '<tr>';
-					$html.= '<td class="numbers_tree_option_table_tr" colspan="' . $data_max_level . '">';
+					$html.= '<td class="numbers_tree_option_table_tr" colspan="' . ($data_max_header) . '">';
 						$html.= \HTML::message(['type' => 'warning', 'options' => [i18n(null, \Object\Content\Messages::NO_ROWS_FOUND)]]);
 					$html.= '</td>';
 				$html.= '</tr>';

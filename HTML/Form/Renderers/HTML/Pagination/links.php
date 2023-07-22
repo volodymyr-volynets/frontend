@@ -1,23 +1,25 @@
 <?php
 
-class numbers_frontend_html_list_pagination_links implements numbers_frontend_html_list_pagination_interface {
+namespace Numbers\Frontend\HTML\Form\Renderers\HTML\Pagination;
+class Links {
 
 	/**
-	 * Render pagination
+	 * Render pagination (links)
 	 *
-	 * @param object $object
+	 * @param array $options
 	 * @return string
 	 */
-	public function render($object, $type) {
+	public function render(& $options) {
+		$form_submit = $options['form_submit'] ?? '__submit_button';
 		// fetched
-		$fetched = i18n(null, 'Fetched') . ': ' . $object->num_rows . ($object->total > 0 ? (' ' . i18n(null, 'of') . ' ' . $object->total) : '');
-		$displaying = i18n(null, 'Displaying') . ': ' . $object->limit;
+		$fetched = i18n(null, 'Fetched') . ': ' . $options['num_rows'] . ($options['total'] > 0 ? (' ' . i18n(null, 'of') . ' ' . $options['total']) : '');
+		$displaying = i18n(null, 'Displaying') . ': ' . $options['limit'];
 		$links = [];
-		$pages = ceil($object->total / $object->limit);
-		$current_page = intval($object->offset / $object->limit);
-		$total_pages = ceil($object->total / $object->limit);
+		$pages = ceil($options['total'] / $options['limit']);
+		$current_page = intval($options['offset'] / $options['limit']);
+		$total_pages = ceil($options['total'] / $options['limit']);
 		// numer of links to the right and left
-		$right = intval($object->max_pages / 2);
+		$right = intval($options['max_pages'] / 2);
 		$start = 0;
 		if ($current_page - $right > 0) {
 			$start = $current_page - $right;
@@ -34,7 +36,7 @@ class numbers_frontend_html_list_pagination_links implements numbers_frontend_ht
 		for ($i = $current_page; $i < $total_pages; $i++) {
 			$links[$counter] = $i;
 			$counter++;
-			if ($counter > $object->max_pages) {
+			if ($counter > $options['max_pages']) {
 				break;
 			}
 		}
@@ -58,7 +60,8 @@ class numbers_frontend_html_list_pagination_links implements numbers_frontend_ht
 					$value = '<b>' . $value . '</b>';
 					$no_url = true;
 				}
-				$result[] = $left2 . ($no_url ? $value : \HTML::a(['value' => $value, 'href' => 'javascript:void(0);', 'onclick' => $object->url . '(' . ($v * $object->limit) . ')'])) . $right2;
+				$next = $v * $options['limit'];
+				$result[] = $left2 . ($no_url ? $value : \HTML::a(['value' => $value, 'href' => 'javascript:void(0);', 'onclick' => "Numbers.Form.setValue(this, '__offset', {$next}); Numbers.Form.triggerSubmit(this, '{$form_submit}');", /*$object->url . '(' . ($v * $options['limit']) . ')'*/])) . $right2;
 			}
 		}
 		// generating grid
@@ -79,8 +82,8 @@ class numbers_frontend_html_list_pagination_links implements numbers_frontend_ht
 						'Fetched' => [
 							'value' => $fetched,
 							'options' => [
-								'field_size' => 'col-xs-6 col-sm-6 col-lg-2',
-								'percent' => 15,
+								'field_size' => 'col-xs-6 col-sm-6 col-lg-3',
+								'percent' => 35,
 								'style' => 'height: 40px; line-height: 40px;',
 							]
 						]
@@ -90,7 +93,7 @@ class numbers_frontend_html_list_pagination_links implements numbers_frontend_ht
 							'class' => '',
 							'value' => implode(' ', $result),
 							'options' => [
-								'field_size' => 'col-xs-12 col-sm-12 col-lg-5',
+								'field_size' => 'col-xs-12 col-sm-12 col-lg-7',
 								'percent' => 50,
 								'style' => 'height: 40px; line-height: 40px;',
 							]

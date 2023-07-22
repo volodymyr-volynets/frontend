@@ -195,12 +195,12 @@ Numbers.Form = {
 		if (!button) {
 			button = '__submit_refresh';
 		}
-		// if refresh we need to clead no ajax
+		// if refresh we need to clear no ajax
 		$(form).attr('no_ajax', '');
 		$("[name='__format']", "#" + $(form).attr('id')).val('text/html').change();
 		// click refresh button
 		numbers_frontend_form_submit_hidden_initiator = button;
-		$("[name='" + button + "']", "#" + $(form).attr('id')).click();
+		$("[name='" + button + "']", $("#" + $(form).attr('id'))).click();
 	},
 
 	/**
@@ -402,11 +402,17 @@ Numbers.Form = {
 	/**
 	 * Set value
 	 *
-	 * @param mixed form
+	 * @param mixed form_or_element
 	 * @param mixed path
 	 * @param mixed value
 	 */
-	setValue: function(form, path, value) {
+	setValue: function(form_or_element, path, value) {
+		form_or_element = $(form_or_element);
+		if (form_or_element.is('form')) {
+			var form = form_or_element;
+		} else {
+			var form = form_or_element.closest('form');
+		}
 		if (path instanceof Array) {
 			var name = path.shift();
 			for (var i in path) {
@@ -539,7 +545,7 @@ Numbers.Form = {
 		params['__collection_link'] = collection_link;
 		$.ajax({
 			url: Numbers.controller_full,
-			method: 'get',
+			method: 'post',
 			data: params,
 			dataType: 'json',
 			cache: false,
@@ -592,7 +598,7 @@ Numbers.Form = {
 	},
 
 	/**
-	 * Refresh collection form
+	 * Refresh collection forms
 	 *
 	 * @param string collection_link
 	 */
@@ -600,6 +606,7 @@ Numbers.Form = {
 		if (this.misc_settings && this.misc_settings[collection_link]) {
 			for (var i in this.misc_settings[collection_link]) {
 				if ($('#form_' + i + '_form').attr('data-no_ajax_form_reload') != '1') {
+					$("[name='__collection_refresh']", $('#form_' + i + '_form')).val(1);
 					$('#form_' + i + '_form').submit();
 				}
 			}
