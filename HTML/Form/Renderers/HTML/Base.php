@@ -1437,7 +1437,7 @@ render_custom_renderer:
 			$processing_values = !empty($values);
 		}
 		do {
-			$__readonly = null;
+			$__readonly = $__required = null;
 			// we exit if there's no rows and if we have no values
 			if ($row_number > $max_rows) break;
 			// maximum number of rows
@@ -1630,6 +1630,9 @@ render_custom_renderer:
 							if (isset($value_options['options']['__readonly'])) {
 								$__readonly = $value_options['options']['__readonly'];
 							}
+							if (isset($value_options['options']['__required'])) {
+								$__required = $value_options['options']['__required'];
+							}
 							// add element to grid
 							if (($value_options['options']['percent'] ?? 0) !== -1) {
 								$value_options['options']['style'] = $v3['style'] ?? null;
@@ -1727,7 +1730,7 @@ render_custom_renderer:
 				];
 			}
 			// delete link
-			if ($__readonly) {
+			if ($__readonly || $__required) {
 				$link = '';
 			} else if (empty($options['details_cannot_delete']) && empty($this->object->misc_settings['global']['readonly']) && empty($this->object->misc_settings['acl_subresource_locks'][$options['container_link']]['no_delete'])) {
 				$link = \HTML::a(['href' => 'javascript:void(0);', 'value' => '<i class="far fa-trash-alt"></i>', 'onclick' => "if (confirm('" . strip_tags(i18n(null, \Object\Content\Messages::CONFIRM_DELETE)) . "')) { Numbers.Form.detailsDeleteRow('form_{$this->object->form_link}_form', '{$row_id}'); } return false;"]);
@@ -2204,6 +2207,9 @@ render_table:
 			if (!empty($selected_element['__readonly'])) {
 				$options['options']['__readonly'] = true;
 				$result_options['readonly'] = true;
+			}
+			if (!empty($selected_element['__required'])) {
+				$options['options']['__required'] = true;
 			}
 		}
 
