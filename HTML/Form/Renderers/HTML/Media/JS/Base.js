@@ -397,6 +397,57 @@ Numbers.Form = {
 	},
 
 	/**
+	 * Set all form values
+	 *
+	 * @param mixed form
+	 * @param object values
+	 */
+	setAllValues: function(form, values) {
+		// get all elements
+		$.each(values, function(index, value) {
+			index = index + '';
+			if (index.indexOf('__') === 0) {
+				return;
+			}
+			// if details we process differently
+			if (index.match(/\\/)) {
+				var row_number = 1;
+				$.each(values[index], function(index2, value2) {
+					$.each(values[index][index2], function(index3, value3) {
+						index3 = index3 + '';
+						if (index3.indexOf('__') === 0) {
+							return;
+						}
+						// subdetails
+						if (index3.match(/\\/)) {
+							var subrow_number = 1;
+							$.each(values[index][index2][index3], function(index4, value4) {
+								$.each(values[index][index2][index3][index4], function(index5, value5) {
+									index5 = index5 + '';
+									if (index5.indexOf('__') === 0) {
+										return;
+									}
+									let field_name = $.escapeSelector(index + '[' + row_number + '][' + index3 + '][' + subrow_number + '][' + index5 + ']');
+									let field_name2 = $.escapeSelector(index + '[' + row_number + '][' + index3 + '][' + index4 + '][' + index5 + ']');
+									$('[name="' + field_name + '"]', $(form)).val(value5);
+									$('[name="' + field_name2 + '"]', $(form)).val(value5);
+								});
+							});
+							subrow_number++;
+							return;
+						}
+						let field_name = $.escapeSelector(index + '[' + row_number + '][' + index3 + ']');
+						$('[name="' + field_name + '"]', $(form)).val(value3);
+					});
+					row_number++;
+				});
+				return;
+			}
+			$('[name="' + $.escapeSelector(index) + '"]', $(form)).val(value);
+		});
+	},
+
+	/**
 	 * Get path
 	 *
 	 * @param object element
@@ -487,6 +538,82 @@ Numbers.Form = {
 			var name = path;
 		}
 		$('[name="' + $.escapeSelector(name) + '"]', $(form)).val(value).change();
+	},
+
+	/**
+	 * Loop through details.
+	 *
+	 * @param mixed form_or_element
+	 * @param object values
+	 * @param string detail
+	 * @param callback callback
+	 */
+	loopDetails: function(form_or_element, values, detail, callback) {
+		let form = this.getForm(form_or_element);
+		if (!values) {
+			values = this.getAllValues(form);
+		}
+		if (!values[detail]) {
+			return;
+		}
+		$.each(values[detail], callback);
+	},
+
+	/**
+	 * Custom calculate total.
+	 *
+	 * @param object form
+	 * @param string func
+	 * @param object params
+	 * @param function successCallback
+	 * @param function errorCallback
+	 * @param object options
+	 */
+	customCalculateTotal: function(form, func, params, callback, options) {
+		// initialize form data
+		let form_id = $(form).attr('id');
+		let form_data = new FormData(document.getElementById(form_id));
+		form_data.append('__ajax', 1);
+		let active_element = $(document.activeElement).attr('id');
+		if (typeof active_element === 'undefined') {
+			active_element = '';
+		}
+		form_data.append('__ajax_form_active_element_id', active_element);
+		form_data.append('__ajax_form_id', form_id);
+		form_data.append('__ajax_custom_calculate_total', 1);
+		form_data.append('__ajax_custom_calculate_function', func);
+		form_data.append('__ajax_custom_calculate_params', JSON.stringify(params));
+		// make ajax call
+		let that = this;
+		$.ajax({
+			url: Numbers.controller_full,
+			method: 'post',
+			data: form_data,
+			dataType: 'json',
+			cache: false,
+			contentType: false,
+			processData: false,
+			success: function (data) {
+				if (callback) {
+					callback(data);
+				} else {
+					if (data.success) {
+						that.setAllValues(form, data.data);
+					} else {
+						console.log(data.error)
+					}
+				}
+			},
+			error: function (jqXHR, textStatus, errorThrown) {
+				$(window).trigger('resize');
+				that.error(form, 'reset', '');
+				if (!empty(jqXHR.responseText)) {
+					that.error(form, 'danger', jqXHR.responseText);
+				} else {
+					that.error(form, 'danger', 'Error occured, please retry again!');
+				}
+			}
+		});
 	},
 
 	/**

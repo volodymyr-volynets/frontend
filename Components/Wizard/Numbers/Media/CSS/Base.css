@@ -39,6 +39,18 @@
 .numbers_frontend_components_wizard_numbers_base_active {
 	background: #377dff;
 }
+.numbers_frontend_components_wizard_numbers_base_center.numbers_frontend_components_wizard_numbers_base_active.badge-secondary,
+.numbers_frontend_components_wizard_numbers_base_end.numbers_frontend_components_wizard_numbers_base_active.badge-secondary,
+.numbers_frontend_components_wizard_numbers_base_start.numbers_frontend_components_wizard_numbers_base_active.badge-secondary {
+	--bs-bg-opacity: 1;
+	background-color: rgba(var(--bs-secondary-rgb), var(--bs-bg-opacity)) !important;
+}
+.numbers_frontend_components_wizard_numbers_base_center.numbers_frontend_components_wizard_numbers_base_active.badge-success,
+.numbers_frontend_components_wizard_numbers_base_end.numbers_frontend_components_wizard_numbers_base_active.badge-success,
+.numbers_frontend_components_wizard_numbers_base_start.numbers_frontend_components_wizard_numbers_base_active.badge-success {
+	--bs-bg-opacity: 1;
+	background-color: rgba(var(--bs-success-rgb),var(--bs-bg-opacity))!important;
+}
 .numbers_frontend_components_wizard_numbers_base_inactive {
 	background: lightgrey;
 }

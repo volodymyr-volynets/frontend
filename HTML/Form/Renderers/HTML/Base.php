@@ -1430,7 +1430,7 @@ render_custom_renderer:
 			}
 			// add a row to a table
 			$table['options']['__header'] = [
-				'row_number' => ['value' => '&nbsp;', 'width' => '1%'],
+				'row_number' => ['value' => '&nbsp;', 'width' => '1%', 'row_class' => $options['details_rendering_header_class'] ?? ''],
 				'row_data' => ['value' => \HTML::grid($data), 'width' => (!empty($options['details_11']) ? '100%' : '98%')],
 				'row_delete' => ['value' => '&nbsp;', 'width' => '1%'],
 			];

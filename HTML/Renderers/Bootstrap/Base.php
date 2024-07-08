@@ -90,7 +90,41 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 		if (!in_array($options['type'] ?? 'text', ['button', 'submit']) && empty($options['skip_form_control'])) {
 			$options['class'] = array_add_token($options['class'] ?? [], 'form-control', ' ');
 		}
+		if (!empty($options['input_group_type'])) {
+			return self::inputGroup([
+				'left' => $options['input_group_left'],
+				'value' => parent::input($options),
+				'right' => $options['input_group_right'],
+			]);
+		}
 		return parent::input($options);
+	}
+
+	/**
+	 * @see \HTML::accordion()
+	 */
+	public static function accordion(array $options = []) : string {
+		$options['id'] = $options['id'] ?? ('html_accordition_' . random_int(1000, 9999));
+		$result = '<div class="accordion" id="' . $options['id'] . '">';
+			$index = 1;
+			foreach ($options['options'] as $k => $v) {
+				$link = $options['id'] . '_' . $index;
+				$result.= '<div class="accordion-item">';
+					$result.= '<h2 class="accordion-header">';
+						$result.= '<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#' . $link . '" aria-expanded="true" aria-controls="' . $link . '">';
+							$result.= $v['title'];
+						$result.= '</button>';
+					$result.= '</h2>';
+					$result.= '<div id="' . $link . '" class="accordion-collapse collapse show" data-bs-parent="#' . $options['id'] . '">';
+						$result.= '<div class="accordion-body">';
+							$result.= $v['content'];
+						$result.= '</div>';
+					$result.= '</div>';
+				$result.= '</div>';
+				$index++;
+			}
+		$result.= '</div>';
+		return $result;
 	}
 
 	/**
@@ -116,7 +150,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 					}
 					$temp2 = [];
 					foreach ($options[$k0] as $k => $v) {
-						$temp2[] = \HTML::span(['value' => $v, 'class' => 'input-group-text']);
+						$temp2[] = \HTML::span(['value' => $v, 'class' => 'input-group-text numbers_input_group_text']);
 					}
 					$temp[] = \HTML::div(['value' => implode('', $temp2), 'class' => 'input-group-' . str_replace(['left', 'right'], ['prepend', 'append'], $k0)]);
 				}
@@ -744,6 +778,9 @@ TTT;
 	 * @see \HTML::popover();
 	 */
 	public static function popover(array $options = []) : string {
+		if (empty($options['value']) && !empty($options['title'])) {
+			$options['value'] = $options['title'];
+		}
 		$options['title'] = $options['title'] ?? '';
 		// if we do not have tags we wrap it
 		if (strpos($options['value'], '<a') === false) {
