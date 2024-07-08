@@ -20,7 +20,8 @@ class Base implements \Numbers\Frontend\Components\Select\Interface2\Base {
 			}
 			\Layout::onload('NumbersSelect(' . json_encode([
 				'id' => $options['id'],
-				'class' => $options['class'] ?? ''
+				'class' => $options['class'] ?? '',
+				'link' => $options['select_link'] ?? $options['link'] ?? null,
 			]) . ');');
 		}
 		// process primary

@@ -71,6 +71,14 @@ table.numbers_frontend_form_table_renderer_field_table {
 .numbers_frontend_form_html_table_description {
 	padding-left: 1em;
 }
+.numbers_frontend_form_loading_text {
+	margin-top: 3em !important;
+	color: rgb(235, 79, 79) !important;
+	font-weight: bold;
+}
+.numbers_frontend_red {
+	color: lightcoral !important;
+}
 /* form pannels */
 .numbers_frontend_form_table_row_container {
 	width: 100%;

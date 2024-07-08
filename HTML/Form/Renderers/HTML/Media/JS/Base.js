@@ -59,7 +59,7 @@ Numbers.Form = {
 		var form_id = $(form).attr('id');
 		var wrapper_id = form_id + '_wrapper';
 		var mask_id = form_id + '_mask';
-		$('#' + mask_id).mask({overlayOpacity: 0.25, delay: 0});
+		$('#' + mask_id).mask({overlayOpacity: 0.25, delay: 0, label: '<div class="numbers_frontend_form_loading_text">Loading...</div>'});
 		var that = this;
 		// wrap everything into timer function to get focused id
 		setTimeout(function () {
@@ -87,6 +87,34 @@ Numbers.Form = {
 				}
 			});
 			*/
+			// activate progress tracker
+			var form_progress_interval;
+			let form_progress_element = $("input[name='__form_progress']", $('#' + form_id));
+			if (form_progress_element.length > 0) {
+				let form_progress_id = parseInt(form_progress_element.val());
+				if (form_progress_id > 0) {
+					form_progress_interval = setInterval(function () {
+						$.ajax({
+							url: '/Numbers/Backend/System/Modules/Controller/TaskProgress/_Index?__form_progress=' + form_progress_id,
+							method: 'get',
+							dataType: 'json',
+							cache: false,
+							contentType: false,
+							processData: false,
+							success: function (data) {
+								if (data.success) {
+									$('.numbers_frontend_form_loading_text').html(data.message);
+								} else {
+									clearInterval(form_progress_interval);
+								}
+							},
+							error: function (jqXHR, textStatus, errorThrown) {
+								clearInterval(form_progress_interval);
+							}
+						});
+					}, 1000);
+				}
+			}
 			// send data to the server
 			numbers_frontend_form_execution_lock[form_id] = true;
 			$.ajax({
@@ -98,6 +126,9 @@ Numbers.Form = {
 				contentType: false,
 				processData: false,
 				success: function (data) {
+					if (form_progress_interval) {
+						clearInterval(form_progress_interval);
+					}
 					numbers_timeout_not_fired = true;
 					if (numbers_timeout_canceled) {
 						numbers_timeout_canceled = false;
@@ -147,6 +178,9 @@ Numbers.Form = {
 					}
 				},
 				error: function (jqXHR, textStatus, errorThrown) {
+					if (form_progress_interval) {
+						clearInterval(form_progress_interval);
+					}
 					// release the lock
 					numbers_frontend_form_execution_lock[form_id] = false;
 					// echo error on the screen
@@ -224,6 +258,37 @@ Numbers.Form = {
 			tr.remove();
 			that.triggerSubmit(form)
 		});
+	},
+
+	/**
+	 * Details: toggle checkboxes
+	 *
+	 * @param string form_id
+	 */
+	detailsToggleCheckboxes: function(form_id, element) {
+		let form = $('#' + form_id);
+		$('.numbers_frontend_list_checkbox_individual', form).prop('checked', $(element).prop('checked'));
+		this.detailsCheckboxShowHideProcessor(form_id);
+	},
+
+	/**
+	 * Details: show batch processor
+	 *
+	 * @param string form_id
+	 */
+	detailsCheckboxShowHideProcessor: function(form_id) {
+		let form = $('#' + form_id);
+		let checked = false;
+		$('.numbers_frontend_list_checkbox_individual', form).each(function() {
+			if ($(this).prop('checked')) {
+				checked = true;
+			}
+		});
+		if (checked) {
+			$('.numbers_frontend_list_checkbox_batch_processing', form).show();
+		} else {
+			$('.numbers_frontend_list_checkbox_batch_processing', form).hide();
+		}
 	},
 
 	/**

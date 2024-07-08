@@ -12,6 +12,7 @@ var NumbersSelect = function (options) {
 	var result = new Object();
 	result.id = options.id;
 	result.class = options.class ? options.class : '';
+	result.link = options.link ? options.link : null;
 	result.elem = document.getElementById(options.id);
 	if (!result.elem) return;
 	result.searchable = options.searchable ? options.searchable : (result.elem.getAttribute('data-searchable') == 'searchable' ? true : false);
@@ -263,6 +264,10 @@ var NumbersSelect = function (options) {
 	 * @param string id
 	 */
 	result.unchoose = function (id) {
+		let table = document.getElementById(this.table_id);
+		if (!table) {
+			this.show(false);
+		}
 		var tr = document.getElementById(this.table_id).querySelector('tr[search-id=\'' + id + '\']');
 		this.chosen(id, tr);
 	};
@@ -330,6 +335,9 @@ var NumbersSelect = function (options) {
 					} else {
 						html+= this.data[i].text;
 					}
+					if (this.link) {
+						html+= ' <a href="javascript: void(0);" class="numbers_select_option_multiple_item_link" onclick="window.open(\'' + this.link.replace('[id]', this.data[i].value) + '\', \'select_link_id_' + this.data[i].value + '\', \'popup\');"><i class="fas fa-link"></i></a> ';
+					}
 					html+= ' <a href="javascript: void(0);" class="numbers_select_option_multiple_item_close" onclick="window[\'' + this.var_id + '\'].unchoose(' + i + ');"><i class="fa fa-times"></i></a> ';
 					span.innerHTML = html;
 					span.className = 'numbers_select_multiple_item numbers_select_noneditable_item';
@@ -364,6 +372,9 @@ var NumbersSelect = function (options) {
 				html+= __selected_name;
 			} else {
 				html+= this.elem.options[this.elem.selectedIndex].text;
+			}
+			if (this.link && this.elem.options[this.elem.selectedIndex].value != '') {
+				html+= ' <a href="javascript: void(0);" class="numbers_select_option_multiple_item_link" onclick="window.open(\'' + this.link.replace('[id]', this.elem.options[this.elem.selectedIndex].value) + '\', \'select_link_id_' + this.elem.options[this.elem.selectedIndex].value + '\', \'popup\');"><i class="fas fa-link"></i></a> ';
 			}
 			this.replacement_div_elem.innerHTML = html;
 		}
@@ -402,7 +413,9 @@ var NumbersSelect = function (options) {
 			this.flag_skeleton_rendered = true;
 		}
 		// hide/show
-		if (this.div_elem.style.display != 'none' && !only_show) {
+		if (only_show == 'force_hide') {
+			this.close();
+		} else if (this.div_elem.style.display != 'none' && !only_show) {
 			this.close();
 		} else {
 			this.replacement_div_elem.focus();

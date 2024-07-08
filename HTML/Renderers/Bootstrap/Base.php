@@ -191,8 +191,12 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
 		if (!isset($options['class'])) {
 			$options['class'] = array_add_token($options['class'] ?? [], 'table table-striped', ' ');
 		}
-		//'<div class="table-responsive">' . parent::table($options) . '</div>';
-		return parent::table($options);
+		if (!empty($options['reponsive'])) {
+			unset($options['reponsive']);
+			return '<div class="table-responsive">' . parent::table($options) . '</div>';
+		} else {
+			return parent::table($options);
+		}
 	}
 
 	/**
