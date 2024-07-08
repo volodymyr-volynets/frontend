@@ -401,6 +401,17 @@ TTT
 				'anchor' => $anchor,
 				'values_changed' => $this->object->values_saved || $this->object->values_deleted || $this->object->values_inserted || $this->object->values_updated
 			];
+			// logging
+			\Log::add([
+				'type' => ucfirst($this->object->initiator_class),
+				'only_chanel' => 'default',
+				'message' => ucfirst($this->object->initiator_class) . ' AJAX: ' . $this->object->title,
+				'affected_rows' => 1,
+				'error_rows' => $this->object->errors['flag_num_errors'],
+				'trace' => $this->object->hasErrors() ? \Object\Error\Base::debugBacktraceString(null, ['skip_params' => true]) : null,
+				'form_statistics' => $this->object->apiResult(),
+				'ajax' => 1,
+			]);
 			\Layout::renderAs($result, 'application/json');
 		} else {
 			if (!empty($this->object->misc_settings['redirect'])) {
@@ -463,6 +474,11 @@ TTT
 				}
 			}
 		}
+		\Log::add([
+			'type' => ucfirst($this->object->initiator_class),
+			'only_chanel' => 'default',
+			'message' => ucfirst($this->object->initiator_class) . ' rendered: ' . $this->object->title,
+		]);
 		return $result;
 	}
 
@@ -597,7 +613,7 @@ TTT
 			$onclick = !empty($v['onclick']) ? $v['onclick'] : '';
 			$value = !empty($v['value']) ? i18n(null, $v['value']) : '';
 			$href = $v['href'] ?? 'javascript:void(0);';
-			$temp[] = \HTML::a(array('value' => $icon . $value, 'href' => $href, 'onclick' => $onclick));
+			$temp[] = \HTML::a(array('value' => $icon . $value, 'href' => $href, 'class' => $v['class'] ?? null, 'style' => $v['style'] ?? null, 'onclick' => $onclick));
 		}
 		return implode(' ', $temp);
 	}
@@ -661,8 +677,9 @@ TTT
 		];
 		// prepare text search strings
 		$full_text_search = false;
-		if (!empty($data['full_text_search'])) {
-			$data['full_text_search'] = preg_replace('/\s\s+/', ' ', trim($data['full_text_search']));
+		if (!empty($data['full_text_search']) || !empty($data['full_text_search2']) || !empty($data['full_text_search3'])) {
+			$temp = ($data['full_text_search'] ?? '') . ' ' . ($data['full_text_search2'] ?? '') . ' ' . ($data['full_text_search3'] ?? '');
+			$data['full_text_search'] = preg_replace('/\s\s+/', ' ', trim($temp));
 			$full_text_search = explode(' ', $data['full_text_search']);
 			usort($full_text_search, function($a, $b) {
 				return strlen($b) <=> strlen($a);
@@ -845,7 +862,11 @@ TTT
 			$table['header'][$columns_counter] = ['value' => '&nbsp;', 'nowrap' => true, 'width' => '1%'];
 			$columns_counter++;
 			foreach ($data['columns']['row1']['elements'] as $k2 => $v2) {
-				$table['header'][$columns_counter] = ['value' => i18n(null, $v2['options']['label_name']), 'nowrap' => 'nowrap'];
+				if (isset($v2['options']['checkbox'])) {
+					$table['header'][$columns_counter] = ['value' => \Numbers\Frontend\HTML\Renderers\Common\Base::input(['type' => 'checkbox', 'name' => $k2 . '[]', 'class' => 'numbers_frontend_list_checkbox_all', 'value' => '__all__', 'onclick' => "Numbers.Form.detailsToggleCheckboxes('form_{$this->object->form_link}_form', this);"]), 'nowrap' => 'nowrap'];
+				} else {
+					$table['header'][$columns_counter] = ['value' => i18n(null, $v2['options']['label_name']), 'nowrap' => 'nowrap'];
+				}
 				$columns_counter++;
 			}
 			foreach ($data['rows'] as $k0 => $v0) {
@@ -890,12 +911,20 @@ TTT
 						$value = \HTML::a(['href' => $this->renderURLEditHref($v0), 'value' => $value] + $link_target);
 					}
 					// full text search replaces
-					if (!empty($full_text_search)) {
+					if (!empty($full_text_search) && empty($v2['options']['checkbox'])) {
 						$this->markTextInStr($value, $full_text_search);
 					}
 					$nowrap = [];
 					if (!empty($v2['options']['nowrap'])) {
 						$nowrap['nowrap'] = 'nowrap';
+					}
+					// checkboxes
+					if (isset($v2['options']['checkbox'])) {
+						$all_values = [];
+						foreach ($v2['options']['checkbox'] as $tmp) {
+							$all_values[] = $v0[$tmp];
+						}
+						$value = \Numbers\Frontend\HTML\Renderers\Common\Base::input(['type' => 'checkbox', 'name' => $k2 . '[]', 'class' => 'numbers_frontend_list_checkbox_individual', 'value' => implode('::', $all_values), 'onclick' => "Numbers.Form.detailsCheckboxShowHideProcessor('form_{$this->object->form_link}_form');"]);
 					}
 					$table['options'][$row_number_final . '_' . $k][$columns_counter] = ['value' => $value] + $nowrap;
 					$columns_counter++;
@@ -2423,7 +2452,7 @@ render_table:
 						} else {
 							$hidden_fields[] = \HTML::hidden(['name' => $result_options['name'], 'value' => $result_options['value']]);
 							if (($result_options['value'] ?? '') != '') {
-								$result_options['value'] = $options_array_processed[$result_options['value']]['name'];
+								$result_options['value'] = $options_array_processed[$result_options['value']]['name'] ?? '';
 							}
 						}
 					} else {
