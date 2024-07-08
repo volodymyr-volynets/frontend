@@ -544,7 +544,14 @@ class Base implements \Numbers\Frontend\HTML\Renderers\Common\Interface2\Base {
 		// header first
 		if (!empty($header) && empty($options['skip_header'])) {
 			$temp2 = '<thead>';
-				$temp2.= '<tr>';
+				// we need to extract row attributes from first column
+				$row_options = [];
+				foreach ($header as $k2 => $v2) {
+					if (is_array($v2)) {
+						$row_options = array_merge_hard($row_options, array_key_extract_by_prefix($v2, 'row_'));
+					}
+				}
+				$temp2 = '<tr ' . self::generateAttributes($row_options, 'tr') . '>';
 					foreach ($header as $k => $v) {
 						// determine first column
 						if ($first_column === null) {
