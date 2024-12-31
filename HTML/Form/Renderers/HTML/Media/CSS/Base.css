@@ -79,6 +79,10 @@ table.numbers_frontend_form_table_renderer_field_table {
 .numbers_frontend_red {
 	color: lightcoral !important;
 }
+.numbers_frontend_form_navigation_button {
+	padding-left: 0.25em;
+	padding-right: 0.25em;
+}
 /* form pannels */
 .numbers_frontend_form_table_row_container {
 	width: 100%;
