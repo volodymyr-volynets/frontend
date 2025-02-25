@@ -160,6 +160,10 @@ class Base
                 $refresh_params[$v] = $this->object->values[$v] ?? null;
             }
         }
+        // if we have a token
+        if (!empty($this->object->values['token'])) {
+            $refresh_params['token'] = $this->object->values['token'];
+        }
         $refresh_params['__refresh'] = rand(1000, 9999) . '_' . rand(1000, 9999) . '_' . rand(1000, 9999);
         $refresh_href = ($mvc['full'] ?? '') . '?' . http_build_query2($refresh_params) . "#" . $anchor;
         $refresh_href = \Request::fixUrl($refresh_href, $mvc['controller_template'] ?? 'default');
@@ -381,8 +385,13 @@ TTT
         }
         // if we have form
         if (empty($this->object->options['skip_form'])) {
+            $form_action_params = [];
+            // if we have a token
+            if (!empty($this->object->values['token'])) {
+                $form_action_params['token'] = $this->object->values['token'];
+            }
             $result = \HTML::form([
-                'action' => \Request::buildFromCurrentController() . "#" . $anchor,
+                'action' => \Request::buildFromCurrentController() . '?' . http_build_query2($form_action_params) . "#" . $anchor,
                 'name' => "form_{$this->object->form_link}_form",
                 'id' => "form_{$this->object->form_link}_form",
                 'class' => 'numbers_frontend_form_class',
@@ -427,7 +436,7 @@ TTT
             // logging
             \Log::add([
                 'type' => ucfirst($this->object->initiator_class),
-                'only_chanel' => 'default',
+                'only_channel' => 'default',
                 'message' => ucfirst($this->object->initiator_class) . ' AJAX!',
                 'other' => 'Title: ' . $this->object->title,
                 'affected_rows' => 1,
@@ -509,7 +518,7 @@ TTT
         }
         \Log::add([
             'type' => ucfirst($this->object->initiator_class),
-            'only_chanel' => 'default',
+            'only_channel' => 'default',
             'message' => ucfirst($this->object->initiator_class) . ' rendered!',
             'other' => 'Title: ' . $this->object->title,
         ]);
@@ -1929,6 +1938,15 @@ TTT
                         'separator' => true
                     ];
                 } else {
+                    // for lists and reports we add range
+                    if (in_array($this->object->initiator_class, ['list', 'report']) && count($v2) == 2) {
+                        $first['field_range'] = true;
+                        $temp_index = 1;
+                        foreach ($v2 as $k3 => $v3) {
+                            $v2[$k3]['options']['field_range'] = $temp_index;
+                            $temp_index++;
+                        }
+                    }
                     $first['prepend_to_field'] = ':';
                     foreach ($v2 as $k3 => $v3) {
                         // handling errors
@@ -2201,6 +2219,10 @@ TTT
                 ]);
             } else {
                 $value .= $prepend;
+            }
+            // range
+            if (!empty($options['field_range'])) {
+                $value .= ' (' . loc('NF.Form.Range', 'Range') . ')';
             }
             $label_options['value'] = $value;
             $label_options['class'] = 'control-label';
@@ -2589,6 +2611,10 @@ TTT
                         // skip timestamp
                         if ($result_options['placeholder'] == 'Format::getDatePlaceholder' && strpos($result_options['method'] ?? '', 'calendar') === false) {
                             $result_options['placeholder'] = \Format::getDatePlaceholder(\Format::getDateFormat($result_options['type']));
+                        } elseif (!empty($result_options['field_range'])) {
+                            $loc_key = \String2::createStatic($result_options['placeholder'])->englishOnly(true)->toString();
+                            $result_options['placeholder'] = loc('NF.Form.' . $loc_key, $result_options['placeholder']);
+                            $result_options['placeholder'] = loc('NF.Form.Range' . $result_options['field_range'] . 'What', '', ['what' => $result_options['placeholder']]);
                         } else {
                             $result_options['placeholder'] = strip_tags(i18n(null, $result_options['placeholder']));
                         }
