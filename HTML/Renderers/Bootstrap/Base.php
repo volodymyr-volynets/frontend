@@ -42,10 +42,12 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
                 $bg_class = $type ? ('bg-' . $type) : '';
             }
             if (is_array($header)) {
-                $icon = !empty($header['icon']) ? (\HTML::icon($header['icon']) . ' ') : null;
+                $icon_left = !empty($header['icon']) ? (\HTML::icon($header['icon']) . ' ') : null;
+                $title_left = $icon_left . ($header['title'] ?? '');
+                $right_side = $header['right_side'] ?? '';
                 $result .= \HTML::div([
                     'class' => 'card-header ' . $bg_class . ' ' . ($header['class'] ?? ''),
-                    'value' => $icon . $header['title'] ?? '',
+                    'value' => '<table width="100%"><tr><td width="50%">' . $title_left . '</td><td width="50%" align="right">' . $right_side . '</td></tr></table>',
                     'style' => ($header['style'] ?? '')
                 ]);
             } else {
@@ -168,7 +170,8 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
                     foreach ($options[$k0] as $k => $v) {
                         $temp2[] = \HTML::span(['value' => $v, 'class' => 'input-group-text numbers_input_group_text']);
                     }
-                    $temp[] = \HTML::div(['value' => implode('', $temp2), 'class' => 'input-group-' . str_replace(['left', 'right'], ['prepend', 'append'], $k0)]);
+                    $temp[] = implode('', $temp2);
+                    //\HTML::div(['value' => implode('', $temp2), 'class' => 'input-group-' . str_replace(['left', 'right'], ['prepend', 'append'], $k0)]);
                 }
             }
         }
@@ -219,7 +222,30 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
             $type = 'secondary';
         }
         $options['class'] = array_add_token($options['class'] ?? [], 'btn btn-' . $type, ' ');
-        return parent::button2($options);
+        if (!empty($options['options_menu_up']) || !empty($options['options_menu_down'])) {
+            $options_menu_all = $options['options_menu_up'] ?? $options['options_menu_down'];
+            $temp = '<div class="btn-group ' . (!empty($options['options_menu_up']) ? 'dropup' : '') . '">';
+            $labelledby = 'dropdown_' . sha1(serialize($options)) . '_id';
+            $options['class'][] = 'dropdown-toggle';
+            $options['data-bs-toggle'] = 'dropdown';
+            $options['aria-haspopup'] = 'true';
+            $options['aria-expanded'] = 'false';
+            $options['role'] = 'button';
+            $options['id'] = $options['name'] = $labelledby;
+            unset($options['onclick']);
+            $result = parent::a($options);
+            $temp .= $result;
+            $temp .= '<div class="dropdown-menu" aria-labelledby="' . $labelledby . '">';
+            foreach ($options_menu_all as $k => $v) {
+                $temp .= '<a class="dropdown-item" href="javascript:void(0);" onclick="$(\'button[name=' . $k . ']\').click();">' . $v['value'] . '</a>';
+            }
+            $temp .= '</div>';
+            $temp .= '</div>';
+            $result = $temp;
+        } else {
+            $result = parent::button2($options);
+        }
+        return $result;
     }
 
     /**
@@ -405,7 +431,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
         $options = array_values($options);
         $last = count($options) - 1;
         foreach ($options as $k => $v) {
-            $result .= '<li' . ($k == $last ? ' class="last"' : '') . '>' . i18n(null, $v) . '</li>';
+            $result .= '<li' . ($k == $last ? ' class="last"' : '') . '>' . $v . '</li>';
             if ($k != $last) {
                 $result .= '<li> \ </li>';
             }
@@ -519,7 +545,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
         }
         $result .= '</div>';
         $result .= '<div class="collapse navbar-collapse" id="navbarSupportedContent">';
-        $result .= '<ul class="navbar-nav mr-auto">';
+        $result .= '<ul class="navbar-nav me-auto">';
         $index = 1;
         array_key_sort($items, ['order' => SORT_ASC], ['name' => SORT_NUMERIC]);
         foreach ($items as $k => $v) {
@@ -555,7 +581,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
         // right menu
         if (!empty($items_right)) {
             array_key_sort($items_right, ['order' => SORT_ASC], ['name' => SORT_NUMERIC]);
-            $result .= '<ul class="navbar-nav ml-auto">';
+            $result .= '<ul class="navbar-nav ms-auto">';
             foreach ($items_right as $k => $v) {
                 $class = !empty($v['options']) ? 'nav-item dropdown' : 'nav-item';
                 if (!empty($v['class'])) {
@@ -600,8 +626,8 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
     {
         $options['id'] = $options['id'] ?? 'menu_mini';
         $result = '<nav class="navbar-mini-holder navbar navbar-expand-lg">';
-        $result .= '<div class="collapse navbar-collapse" id="' . $options['id'] . '">';
-        $result .= '<ul class="navbar-nav ' . (($options['align'] ?? 'left') == 'right' ? 'ml-auto' : 'mr-auto') . '">';
+        $result .= '<div class="collapse navbar-collapse" id="' . $options['id'] . '" style="display: block !important;">';
+        $result .= '<ul class="navbar-nav" style="float: ' . ($options['align'] ?? 'left') . ';">';
         $index = 1;
         foreach ($options['options'] as $k => $v) {
             if (empty($v['options'])) {
@@ -611,7 +637,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
                 $result .= '</li>';
             } else {
                 $result .= '<li class="nav-item dropdown">';
-                $result .= '<a class="nav-link dropdown-toggle" href="' . $v['href'] . '" id="' . $options['id'] . '_' . $index . '" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' . $v['value'] . '</a>';
+                $result .= '<a class="nav-link dropdown-toggle" href="' . $v['href'] . '" id="' . $options['id'] . '_' . $index . '" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' . $v['value'] . '</a>';
                 $result .= '<div class="navbar-mini-dropdown dropdown-menu" aria-labelledby="' . $options['id'] . '_' . $index . '">';
                 foreach ($v['options'] as $k2 => $v2) {
                     if (empty($v2['separator'])) {
@@ -668,7 +694,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
         $result .= '<div class="modal-header">';
         $result .= '<h4 class="modal-title">' . ($options['title'] ?? '') . '</h4>';
         if (empty($options['no_header_close'])) {
-            $result .= '<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>';
+            $result .= '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>';
         }
         $result .= '</div>';
         $result .= '<div class="modal-body">';
@@ -702,7 +728,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
     public static function label2(array $options = []): string
     {
         $options['tag'] = $options['tag'] ?? 'span';
-        $options['type'] = 'badge badge-' . ($options['type'] ?? 'primary');
+        $options['type'] = 'badge text-bg-' . ($options['type'] ?? 'primary');
         $options['class'] = array_add_token($options['class'] ?? [], [$options['type'], 'label'], ' ');
         return \HTML::tag($options);
     }
@@ -718,7 +744,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
         $id = $options['id'] ?? 'tabs_default';
         // determine active tab
         $active_id = $id . '_active_hidden';
-        $active_tab = $options['active_tab'] ?? \Request::input($active_id);
+        $active_tab = $options['active_tab'] ?? \Request::input($active_id) ?? '';
         if (!empty($options['tab_options'][$active_tab]['hidden'])) {
             $active_tab = null;
         }
@@ -829,19 +855,27 @@ TTT;
         if (strpos($options['value'], '<a') === false) {
             $options['value'] = '<a href="javascript:void(0);" id="' . $options['id'] . '" title="' . $options['title'] . '">' . $options['value'] . '</a>';
         }
+        $hidden_div = \HTML::div(['id' => $options['id'] . '_hidden', 'value' => $options['content'], 'style' => 'display: none;']);
+        $content = json_encode(['content' => $options['content']]);
         $js = <<<TTT
 			$('#{$options['id']}').popover({
 				trigger : 'click',
 				placement : 'top',
 				html: true,
+                sanitize: false,
 				content: function () {
-					return '{$options['content']}';
+					return $('#{$options['id']}_hidden').html();
 				},
 				template: '<div class="popover" role="tooltip"><div class="arrow"></div><h3 class="popover-header"></h3><div class="popover-body"></div></div>'
 			});
 TTT;
-        \Layout::onLoad($js);
-        return $options['value'];
+        if (empty($options['return_js'])) {
+            \Layout::onLoad($js);
+            $js = '';
+        } else {
+            $js = \HTML::script(['value' => $js]);
+        }
+        return $options['value'] . $hidden_div . '' . $js;
     }
 
     /**

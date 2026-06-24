@@ -176,6 +176,37 @@ class HTML5
     public static $numbers = ['placeholder', 'title'];
 
     /**
+     * Boolean attributes
+     *
+     * @var array
+     */
+    public static $boolean_attributes = ['autofocus'];
+
+    /**
+     * Self closing tags
+     *
+     * @var array
+     */
+    public static $self_closing_tags = [
+        'area',
+        'base',
+        'br',
+        'col',
+        'embed',
+        'hr',
+        'img',
+        'input',
+        'keygen',
+        'link',
+        'menuitem',
+        'meta',
+        'param',
+        'source',
+        'track',
+        'wbr',
+    ];
+
+    /**
      * Check if its valid HTML 5 attribute
      *
      * @param string $attribute

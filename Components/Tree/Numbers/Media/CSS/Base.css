@@ -1,10 +1,15 @@
 .numbers_tree_option_table {
 	line-height: 1em;
+	height: 1em;
 }
 .numbers_tree_option_table td {
-	padding: 2px;
+	/*padding: 2px;*/
 	border: none;
 	vertical-align: middle;
+}
+.numbers_tree_option_table tr.numbers_tree_option_parent_none td {
+	padding-top: 0.25em;
+	padding-bottom: 0.25em;
 }
 .numbers_tree_option_table tr, .numbers_tree_option_multiple_item_close, .numbers_tree_icons {
 	cursor: pointer;
@@ -94,6 +99,10 @@ html[dir="rtl"] .numbers_tree_option_table_level_last_left {
 .numbers_tree_option_table tbody tr:nth-of-type(odd) {
 	background: transparent;
 }
+.numbers_tree_option_parent_none {
+	height: 1.5em !important;
+	line-height: 1.5em !important;
+}
 tr.numbers_tree_option_table_tr_hover:hover {
 	background-color: #fafafa !important;
 }
@@ -120,6 +129,12 @@ td.numbers_tree_numerate_td {
 .numbers_tree_option_table_header th {
 	text-align: center;
 }
-.numbers_tree_option_table_name_column_groupped td {
+.numbers_tree_option_table_name_column_grouped td {
 	padding: 0 !important;
+}
+.numbers_tree_plus_minus {
+	color: black !important;
+}
+.numbers_cursor {
+	background-color: #d3d3d3 !important;
 }

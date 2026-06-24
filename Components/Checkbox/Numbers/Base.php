@@ -27,6 +27,12 @@ class Base implements \Numbers\Frontend\Components\Checkbox\Interface2\Base
         }
         \Layout::onload('NumbersCheckbox(' . json_encode(['id' => $options['id']]) . ');');
         // certain keys
+        if (!isset($options['label_on'])) {
+            $options['label_on'] = loc('NF.Form.Yes', 'Yes');
+        }
+        if (!isset($options['label_off'])) {
+            $options['label_off'] = loc('NF.Form.No', 'No');
+        }
         foreach (['label_on', 'label_off', 'oposite_checkbox'] as $v) {
             if (isset($options[$v])) {
                 $options['data-' . $v] = $options[$v];

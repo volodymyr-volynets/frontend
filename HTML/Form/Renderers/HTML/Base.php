@@ -16,6 +16,7 @@ use Numbers\Frontend\HTML\Renderers\Common\HTML5;
 use Object\Content\Messages;
 use Object\Data\Common;
 use Object\Table\Options;
+use Object\Form\Parent2;
 
 class Base
 {
@@ -41,6 +42,8 @@ class Base
             return '';
         }
         $this->object->tabindex = 1;
+        // action prefix
+        $action_prefix = 'form_' . $this->object->form_link . '_actions_';
         // css & js
         \Library::add('jsSHA');
         \Library::add('BCMath');
@@ -62,6 +65,23 @@ class Base
         }
         // acl on actions
         $this->object->options['actions'] = $this->object->options['actions'] ?? [];
+        // stripped version of a form
+        $__subform_stripped_version = $this->object->options['input']['__subform_stripped_version'] ?? false;
+        if ($__subform_stripped_version) {
+            unset($this->object->options['actions']['new']);
+            unset($this->object->options['actions']['back']);
+            unset($this->object->options['actions']['import']);
+            $this->object->options['segment'] = null;
+            $this->object->options['__skip_all_navigation'] = true;
+        }
+        // workflows
+        if ($this->object->workflow_activated) {
+            $this->object->options['__skip_all_navigation'] = true;
+            if ($this->object->workflow_step == $this->object::WORKFLOW_REVIEW_CONTAINER) {
+                $this->object->options['all_static'] = true;
+            }
+        }
+        // process actions
         foreach ($this->object->options['actions'] as $k => $v) {
             if (!is_array($v)) {
                 continue;
@@ -84,11 +104,15 @@ class Base
             if ($this->object->collection_object->primary_model->module ?? false) {
                 $params['__module_id'] = $params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
             }
-            $this->object->actions['form_new'] = ['value' => 'New', 'sort' => -31000, 'icon' => 'far fa-file', 'href' => \Request::buildFromCurrentController('Edit') . '?' . http_build_query($params), 'onclick' => $onclick, 'internal_action' => true];
+            $this->object->actions['form_new'] = ['value' => 'New', 'sort' => -31000, 'icon' => 'fa-regular fa-file', 'href' => \Request::buildFromCurrentController('Edit') . '?' . http_build_query($params), 'onclick' => $onclick, 'internal_action' => true];
             // override
             if (is_array($this->object->options['actions']['new'])) {
                 $this->object->actions['form_new'] = array_merge($this->object->actions['form_new'], $this->object->options['actions']['new']);
             }
+        }
+        // for list we auto add import
+        if (!isset($this->object->options['actions']['import']) && $this->object->initiator_class == 'list') {
+            $this->object->options['actions']['import'] = true;
         }
         // import action
         if (!empty($this->object->options['actions']['import']) && \Application::$controller->can('Import_Records', 'Import')) {
@@ -99,7 +123,7 @@ class Base
             if ($this->object->collection_object->primary_model->module ?? false) {
                 $params['__module_id'] = $params[$this->object->collection_object->primary_model->module_column] = $this->object->values[$this->object->collection_object->primary_model->module_column];
             }
-            $this->object->actions['form_import'] = ['value' => 'Import', 'sort' => -30900, 'icon' => 'fas fa-upload', 'href' => \Request::buildFromCurrentController('Import') . '?' . http_build_query($params), 'onclick' => $onclick, 'internal_action' => true];
+            $this->object->actions['form_import'] = ['value' => 'Import', 'sort' => -30900, 'icon' => 'fa-solid fa-upload', 'href' => \Request::buildFromCurrentController('Import') . '?' . http_build_query($params), 'onclick' => $onclick, 'internal_action' => true];
             // override
             if (is_array($this->object->options['actions']['import'])) {
                 $this->object->actions['form_import'] = array_merge($this->object->actions['form_import'], $this->object->options['actions']['import']);
@@ -108,7 +132,7 @@ class Base
         // activate
         if (!empty($this->object->options['actions']['activate']) && \Application::$controller->can('Activate_Data', 'Activate')) {
             $onclick = '';
-            $this->object->actions['form_activate'] = ['value' => 'Activate', 'sort' => -30900, 'icon' => 'fas fa-link', 'href' => \Request::buildFromCurrentController('Activate'), 'onclick' => $onclick, 'internal_action' => true];
+            $this->object->actions['form_activate'] = ['value' => 'Activate', 'sort' => -30900, 'icon' => 'fa-solid fa-link', 'href' => \Request::buildFromCurrentController('Activate'), 'onclick' => $onclick, 'internal_action' => true];
             // override
             if (is_array($this->object->options['actions']['activate'])) {
                 $this->object->actions['form_activate'] = array_merge($this->object->actions['form_activate'], $this->object->options['actions']['activate']);
@@ -125,7 +149,7 @@ class Base
             if (!empty($this->object->values['__form_filter_id'])) {
                 $params['__form_filter_id'] = $this->object->values['__form_filter_id'];
             }
-            $this->object->actions['form_back'] = ['value' => 'Back', 'sort' => -32000, 'icon' => 'fas fa-arrow-left', 'href' => \Request::buildFromCurrentController('Index') . '?' . http_build_query($params), 'internal_action' => true];
+            $this->object->actions['form_back'] = ['value' => 'Back', 'sort' => -32000, 'icon' => 'fa-solid fa-arrow-left', 'href' => \Request::buildFromCurrentController('Index') . '?' . http_build_query($params), 'internal_action' => true];
             // override
             if (is_array($this->object->options['actions']['back'])) {
                 $this->object->actions['form_back'] = array_merge($this->object->actions['form_back'], $this->object->options['actions']['back']);
@@ -136,7 +160,7 @@ class Base
         // refresh action
         $refresh_params = [];
         $pdf_params = [];
-        if ($this->object->values_loaded) {
+        if ($this->object->values_loaded || $this->object->hasErrors()) {
             $refresh_params = $this->object->pk;
             // remove tenant
             if (!empty($this->object->collection_object->primary_model->tenant)) {
@@ -168,17 +192,27 @@ class Base
         $refresh_href = ($mvc['full'] ?? '') . '?' . http_build_query2($refresh_params) . "#" . $anchor;
         $refresh_href = \Request::fixUrl($refresh_href, $mvc['controller_template'] ?? 'default');
         if (!empty($this->object->options['actions']['refresh'])) {
-            $this->object->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => 32000, 'icon' => 'fas fa-sync', 'href' => $refresh_href, 'internal_action' => true];
+            $this->object->actions['form_refresh'] = ['value' => 'Refresh', 'sort' => 32000, 'icon' => 'fa-solid fa-sync', 'href' => $refresh_href, 'internal_action' => true, 'id' => $action_prefix . 'link_refresh'];
             // override
             if (is_array($this->object->options['actions']['refresh'])) {
                 $this->object->actions['form_refresh'] = array_merge($this->object->actions['form_refresh'], $this->object->options['actions']['refresh']);
+            }
+            // sub-forms
+            if (!empty($this->object->options['parent_form_link'])) {
+                $this->object->actions['form_refresh']['href'] = 'javascript:void(0);';
+                $this->object->actions['form_refresh']['onclick'] = "$('#form_{$this->object->form_link}_form').submit();";
+            }
+            // workflow we simple resubmit the form
+            if ($this->object->workflow_activated) {
+                $this->object->actions['form_refresh']['href'] = 'javascript:void(0);';
+                $this->object->actions['form_refresh']['onclick'] = "$('#form_{$this->object->form_link}_form').submit();";
             }
         }
         // pdf
         if (!empty($this->object->options['actions']['pdf']) && !empty($pdf_params) && \Application::$controller->can('Record_View', 'Edit')) {
             $onclick = '';
             $crypt = new \Crypt();
-            $this->object->actions['form_pdf'] = ['value' => 'Print to PDF', 'sort' => -30900, 'icon' => 'far fa-file-pdf', 'href' => $mvc['controller'] . '/_PDF?token=' . $crypt->tokenCreate(0, 'view.pdf', $pdf_params), 'onclick' => $onclick, 'internal_action' => true];
+            $this->object->actions['form_pdf'] = ['value' => 'Print to PDF', 'sort' => -30900, 'icon' => 'fa-regular fa-file-pdf', 'href' => $mvc['controller'] . '/_PDF?token=' . $crypt->tokenCreate(0, 'view.pdf', $pdf_params), 'onclick' => $onclick, 'internal_action' => true];
             // override
             if (is_array($this->object->options['actions']['pdf'])) {
                 $this->object->actions['form_pdf'] = array_merge($this->object->actions['form_pdf'], $this->object->options['actions']['pdf']);
@@ -191,10 +225,31 @@ class Base
             }
             $this->object->actions['form_custom_' . $k] = $v;
         }
+        // action groups
+        $actions_group_by = [];
+        foreach ($this->object->actions as $k => $v) {
+            if (empty($v['group_by_name'])) {
+                continue;
+            }
+            $actions_group_by[$v['group_by_name']] ??= [
+                'value' => $v['group_by_name'],
+                'sort' => $v['sort'],
+                'icon' => $v['group_by_icon'],
+                'groups' => [],
+            ];
+            $actions_group_by[$v['group_by_name']]['groups'][$k] = $v;
+            unset($this->object->actions[$k]);
+        }
+        if (!empty($actions_group_by)) {
+            foreach ($actions_group_by as $k => $v) {
+                $this->object->actions['form_action_group_' . $k] = $v;
+            }
+        }
         // assembling everything into result variable
         $result = [];
         // order containers based on order column
         array_key_sort($this->object->data, ['order' => SORT_ASC], ['order' => SORT_NUMERIC]);
+        // render containers
         foreach ($this->object->data as $k => $v) {
             if (!$v['flag_child']) {
                 if ($v['type'] == 'fields' || $v['type'] == 'details' || $v['type'] == 'trees') {
@@ -262,10 +317,34 @@ class Base
             }
         }
         // rendering actions
-        if (!empty($this->object->actions)) {
-            $value = '<div style="text-align: right;">' . $this->renderActions() . '</div>';
-            $value .= '<hr class="simple" />';
-            $result = $value . $result;
+        if (empty($this->object->options['skip_action_line'])) {
+            $actions = '<table width="100%" class="form_actions">';
+            $actions .= '<tr>';
+            $actions .= '<td width="50%" id="' . $action_prefix . 'updates' . '"></td>';
+            $actions .= '<td width="50%" id="' . $action_prefix . 'links' . '" align="right">';
+            if (!empty($this->object->actions)) {
+                $actions .= $this->renderActions();
+            }
+            $actions .= '</td>';
+            $actions .= '</tr>';
+            $actions .= '</table>';
+            // put form links for further processing
+            $actions .= \HTML::hidden([
+                'name' => '__form_update_hidden',
+                'class' => $action_prefix . 'update_data nf_form_update_hidden',
+                'data-form-actions' => json_encode([
+                    'form_link' => $this->object->form_link,
+                    'parent_form_link' => $this->object->options['parent_form_link'] ?? null,
+                    'collection_link' => $this->object->options['collection_link'] ?? null,
+                    'collection_screen_link' => $this->object->options['collection_screen_link'] ?? null,
+                    'initiator_class' => $this->object->initiator_class,
+                    'flag_subform' => $this->object->options['flag_subform'] ?? false,
+                    'websockets_rooms' => $this->object->webSocketGenerateRooms(), // $this->object->options['websockets_rooms'] ?? []
+                ]),
+                'value' => '1',
+            ]);
+            $actions .= '<hr class="simple" style="padding-bottom: 1em;" />';
+            $result = $actions . $result;
         }
         // postponed messages
         if (!empty($_SESSION['numbers']['forms'][$this->object->form_link]['messages']) && empty($this->object->misc_settings['form_postponed_messages'])) {
@@ -284,6 +363,7 @@ class Base
             $result = '<div class="form_message_container">' . '</div>' . $result;
         }
         // couple hidden fields
+        $result .= \HTML::hidden(['name' => '__form_model_frontend', 'value' => $this->object->options['input']['__form_model_frontend'] ?? '']);
         $result .= \HTML::hidden(['name' => '__collection_link', 'value' => $this->object->options['collection_link'] ?? '']);
         $result .= \HTML::hidden(['name' => '__collection_screen_link', 'value' => $this->object->options['collection_screen_link'] ?? '']);
         $result .= \HTML::hidden(['name' => '__collection_refresh', 'value' => '']);
@@ -297,6 +377,39 @@ class Base
         }
         $result .= \HTML::hidden(['name' => '__form_values_loaded', 'value' => $this->object->values_loaded]);
         $result .= \HTML::hidden(['name' => '__form_onchange_field_values_key', 'value' => '']);
+        $result .= \HTML::hidden(['name' => '__form_filter_sort_opened', 'value' => '']);
+        // workflow
+        $result .= \HTML::hidden(['name' => '__form_workflow_activated', 'value' => $this->object->workflow_activated ? 1 : '']);
+        if (!empty($this->object->workflow_activated) && !empty($this->object->options['__new_workflow_step'])) {
+            $js_new_workflow_step = <<<TTT
+                $("[name='__form_workflow_step_code']", $('#form_{$this->object->form_link}_form')).val('{$this->object->options['__new_workflow_step']}');
+                $('#form_{$this->object->form_link}_form').submit();
+TTT;
+            \Layout::onLoad($js_new_workflow_step);
+        }
+        if (!empty($this->object->workflow_activated) && !empty($this->object->options['__submit_workflow_step'])) {
+            $js_new_workflow_step = <<<TTT
+                $("[name='__form_workflow_activated']", $('#form_{$this->object->form_link}_form')).val('');
+                $("[name='__form_workflow_step_code']", $('#form_{$this->object->form_link}_form')).val('');
+                $("[name='__submit_save']", $('#form_{$this->object->form_link}_form')).click();
+TTT;
+            \Layout::onLoad($js_new_workflow_step);
+        }
+        $result .= \HTML::hidden(['name' => '__form_workflow_step_code', 'value' => $this->object->workflow_step]);
+        // subform
+        $result .= \HTML::hidden(['name' => '__subform_setting_form', 'value' => $this->object->options['input']['__subform_setting_form'] ?? '']);
+        $result .= \HTML::hidden(['name' => '__subform_setting_icon', 'value' => $this->object->options['input']['__subform_setting_icon'] ?? '']);
+        $result .= \HTML::hidden(['name' => '__subform_setting_label_name', 'value' => $this->object->options['input']['__subform_setting_label_name'] ?? '']);
+        $result .= \HTML::hidden(['name' => '__subform_stripped_version', 'value' => $this->object->options['input']['__subform_stripped_version'] ?? '']);
+        // deep link
+        if (!empty($this->object->options['input']['__deep_link']) && isset($this->object->form_parent->subforms[$this->object->options['input']['__deep_link']['__subform_link']])) {
+            $params = $this->renderURLEditHref($this->object->options['input']['__deep_link'], ['json' => true]);
+            $temp_collection_link = $this->object->options['collection_link'] ?? '';
+            $temp_collection_screen_link = $this->object->options['collection_screen_link'] ?? '';
+            $temp_form_subform_link = $this->object->options['input']['__deep_link']['__subform_link'];
+            $__deep_link_js = "Numbers.Form.openSubformWindow('{$temp_collection_link}', '{$temp_collection_screen_link}', '{$this->object->form_link}', '{$temp_form_subform_link}', {$params});";
+            \Layout::onLoad($__deep_link_js);
+        }
         // form is within tabs
         if (!empty($this->object->options['collection_current_tab_id'])) {
             $result .= \HTML::hidden(['name' => $this->object->options['collection_current_tab_id'], 'value' => $this->object->form_link]);
@@ -318,7 +431,18 @@ class Base
         ];
         $js = "Numbers.Form.data['form_{$this->object->form_link}_form'] = " . json_encode($js_data) . ";\n";
         if (!$this->object->hasErrors()) {
-            if ($this->object->initiator_class == 'list') {
+            if (!empty($this->object->options['auto_refresh'])) {
+                // for auto refresh forms we preserve opened filter/sort
+                $shown = 'false';
+                if (!empty($this->object->options['input']['__form_filter_sort_opened'])) {
+                    $shown = 'true';
+                }
+                // if we pressed the submit button we do not show the filter form
+                if ($this->object->submitted) {
+                    $shown = 'false';
+                }
+                $js .= "Numbers.Form.listFilterSortToggle('#form_{$this->object->form_link}_form', true, {$shown});\n";
+            } elseif ($this->object->initiator_class == 'list') {
                 $js .= "Numbers.Form.listFilterSortToggle('#form_{$this->object->form_link}_form', true, false);\n";
             } elseif ($this->object->initiator_class == 'report' && $this->object->submitted) {
                 $js .= "Numbers.Form.listFilterSortToggle('#form_{$this->object->form_link}_form', true, false);\n";
@@ -380,7 +504,7 @@ TTT
         // js to update counters in tabs
         if (!empty($this->object->errors['tabs'])) {
             foreach ($this->object->errors['tabs'] as $k => $v) {
-                \Layout::onload("$('#{$k}').html($v); $('#{$k}').show();");
+                \Layout::onload("$('#{$k}').html('$v'); $('#{$k}').show();");
             }
         }
         // if we have form
@@ -390,14 +514,19 @@ TTT
             if (!empty($this->object->values['token'])) {
                 $form_action_params['token'] = $this->object->values['token'];
             }
+            $onsubmit = empty($this->object->options['no_ajax_form_reload']) ? 'return Numbers.Form.onFormSubmit(this);' : null;
+            if (!empty($this->object->options['input']['__form_model_frontend'])) {
+                $onsubmit = null;
+            }
             $result = \HTML::form([
                 'action' => \Request::buildFromCurrentController() . '?' . http_build_query2($form_action_params) . "#" . $anchor,
                 'name' => "form_{$this->object->form_link}_form",
                 'id' => "form_{$this->object->form_link}_form",
                 'class' => 'numbers_frontend_form_class',
                 'value' => $result,
-                'onsubmit' => empty($this->object->options['no_ajax_form_reload']) ? 'return Numbers.Form.onFormSubmit(this);' : null,
+                'onsubmit' => $onsubmit,
                 'data-no_ajax_form_reload' => !empty($this->object->options['no_ajax_form_reload']) ? 1 : '',
+                'data-form_model_frontend' => !empty($this->object->options['input']['__form_model_frontend']) ? 1 : '',
             ]);
         }
         // active element
@@ -428,7 +557,7 @@ TTT
                 'html' => $result,
                 'js' => \Layout::$onload . $onload,
                 'js_first' => \Layout::$onload_first,
-                'media_js' => \Layout::renderJs(['return_list' => true]),
+                'media_js' => \Layout::renderJs(['return_extended_list' => true]),
                 'media_css' => \Layout::renderCss(['return_list' => true]),
                 'anchor' => $anchor,
                 'values_changed' => $this->object->values_saved || $this->object->values_deleted || $this->object->values_inserted || $this->object->values_updated
@@ -445,10 +574,15 @@ TTT
                 'form_statistics' => $this->object->apiResult(),
                 'ajax' => 1,
             ]);
+            // for forms called on frontend
+            if (!empty($this->object->options['input']['__form_model_frontend'])) {
+                return $result;
+            }
+            \Application::set('flag.global.__ajax_call_processed', 1);
             \Layout::renderAs($result, 'application/json');
         } else {
             if (!empty($this->object->misc_settings['redirect'])) {
-                if (empty($this->object->options['on_success_refresh_collection'])) {
+                if (empty($this->object->options['on_success_refresh_collection']) && empty($this->object->misc_settings['redirect_options']['force_onload'])) {
                     \Request::redirect($this->object->misc_settings['redirect']);
                 } else {
                     \Layout::$onload = '';
@@ -457,6 +591,29 @@ TTT
             }
         }
         $result = "<div id=\"form_{$this->object->form_link}_form_mask\"><div id=\"form_{$this->object->form_link}_form_wrapper\">" . $result . '</div></div>';
+        // for workflow we are changing segment
+        if (!empty($this->object->form_parent->workflow_steps)) {
+            if (isset($this->object->options['segment'])) {
+                if (!$this->object->workflow_activated) {
+                    $this->object->options['segment']['header']['right_side'] = \HTML::a([
+                        'href' => 'javascript:void(0);',
+                        'onclick' => "Numbers.Form.switchToWorkflowMode('form_{$this->object->form_link}_form', '1');",
+                        'value' => loc('NF.Form.SwitchToWorkflowMode', 'Switch to workflow mode'),
+                        'class' => 'numbers_frontend_segment_link',
+                    ]);
+                } else {
+                    $this->object->options['segment'] = Parent2::SEGMENT_WORKFLOWS;
+                    //$step_name = $this->object->form_parent->workflow_steps[$this->object->workflow_step]['label_name'];
+                    //$this->object->options['segment']['header']['title'] = loc('NF.Form.WorkflowWithStep', 'Workflow [step: {step}]', ['step' => $step_name]);
+                    $this->object->options['segment']['header']['right_side'] = \HTML::a([
+                        'href' => 'javascript:void(0);',
+                        'onclick' => "Numbers.Form.switchToWorkflowMode('form_{$this->object->form_link}_form', '');",
+                        'value' => loc('NF.Form.BackToRegularForm', 'Back to regular form'),
+                        'class' => 'numbers_frontend_segment_link',
+                    ]);
+                }
+            }
+        }
         // if we have segment
         if (isset($this->object->options['segment'])) {
             $temp = is_array($this->object->options['segment']) ? $this->object->options['segment'] : [];
@@ -485,7 +642,22 @@ TTT
             }
         }
         // anchor
-        $result = \HTML::a(['id' => $anchor, 'value' => null]) . $result;
+        $result = \HTML::a(['id' => $anchor, 'value' => '']) . $result;
+        $result .= <<<TTT
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    if (window.location.hash) {
+                        setTimeout(() => {
+                            document.querySelector(window.location.hash)?.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start',
+                                inline: 'nearest'
+                            });
+                        }, 1000);
+                    }
+                }, { once: true });
+            </script>
+        TTT;
         // if we have a subform we need to render place holder
         if (!empty($this->object->form_parent->subforms)) {
             $result .= \HTML::div(['id' => "form_{$this->object->form_link}_form_subform_holder", 'value' => '']);
@@ -496,8 +668,14 @@ TTT
                 $loc = 'NF.System.' . \String2::createStatic(\Application::$controller->title)->englishOnly(true)->toString();
                 \Layout::$title_override = loc($loc, \Application::$controller->title);
                 // grab name
+                $temp_name = '';
+                $has_context = false;
                 if (!empty($this->object->collection_object->primary_model) && !empty($this->object->values[$this->object->collection_object->primary_model->column_prefix . 'name'])) {
-                    \Layout::$title_override .= ' - ' . $this->object->values[$this->object->collection_object->primary_model->column_prefix . 'name'];
+                    $temp_name = $this->object->values[$this->object->collection_object->primary_model->column_prefix . 'name'];
+                    \Layout::$title_override .= ' - ' . $temp_name;
+                    if (!empty($this->object->collection_object->primary_model->batches['chat']['context'])) {
+                        $has_context = true;
+                    }
                 }
                 // primary key
                 if (!empty($this->object->values_loaded)) {
@@ -511,11 +689,41 @@ TTT
                     if (!empty($pk_params)) {
                         \Layout::$title_override .= ' (' . implode(', ', $pk_params) . ')';
                     }
+                    // chat context
+                    if ($has_context) {
+                        \Context::setChatStatic('main_model_model', '\\' . $this->object->collection_object->primary_model::class);
+                        \Context::setChatStatic('main_model_pk', $pk_params);
+                        $pk_names = [];
+                        $temp_context = [
+                            ' - ' . 'Model: ' . $this->object->collection_object->primary_model->title,
+                        ];
+                        $pk_keys = [];
+                        foreach ($pk_params as $k0 => $v0) {
+                            $pk_names[$k0] = $this->object->collection_object->primary_model->columns[$k0]['name'];
+                            $temp_context[] = ' - ' . $this->object->collection_object->primary_model->columns[$k0]['name'] . ': ' . $v0;
+                            $pk_keys[] = $k0 . '::' . $v0;
+                        }
+                        $temp_context[] = ' - ' . 'Name: ' . $temp_name;
+                        \Context::setChatStatic('main_model_pk_name', $pk_names);
+                        \Context::setChatStatic('main_model_pk_key_string', implode('_', $pk_keys));
+                        \Context::setChatStatic('main_model_name', $temp_name);
+                        \Context::setChatStatic('main_model_message', nl2br2(loc('NF.Message.AddToContextColon', 'Add to context:') . "\n" . implode("\n", $temp_context)));
+                    }
                 } elseif (!empty($this->object->collection_object->primary_model)) {
                     \Layout::$title_override .= ' (' . loc('NF.Form.New', 'New') . ')';
                 }
             }
         }
+        // auto refresh
+        if (isset($this->object->options['auto_refresh']['interval'])) {
+            $js .= <<<TTT
+                setInterval(function() {
+                    $('#form_{$this->object->form_link}_form').submit();
+                }, {$this->object->options['auto_refresh']['interval']});
+TTT;
+            \Layout::onLoad($js);
+        }
+        // log
         \Log::add([
             'type' => ucfirst($this->object->initiator_class),
             'only_channel' => 'default',
@@ -555,7 +763,8 @@ TTT
             foreach (['records', 'danger', 'warning', 'success', 'info'] as $v78) {
                 $labels .= \HTML::label2(['type' => ($v78 == 'records' ? 'primary' : $v78), 'style' => 'display: none;', 'value' => 0, 'id' => implode('__', $this->object->current_tab) . '__' . $v78]);
             }
-            $tab_header[$k2] = i18n(null, $v2['options']['label_name']) . $labels;
+            $labels .= \HTML::label2(['type' => 'primary', 'style' => 'display: none;', 'value' => '✓', 'id' => implode('__', $this->object->current_tab) . '__checkmark']);
+            $tab_header[$k2] = loc('NF.Form.' . \String2::createStatic($v2['options']['label_name'])->englishOnly(true)->toString(), $v2['options']['label_name']) . $labels;
             $tab_values[$k2] = '';
             // hidden tabs
             if (!empty($v2['options']['hidden'])) {
@@ -638,6 +847,7 @@ TTT
                         ];
                     }
                 }
+                $hidden_panel_style = ($v2['options']['panel_type'] ?? '') == 'hidden' ? 'display: none;' : '';
                 $grid['options'][$k][$k2][$k2] = [
                     'value' => \HTML::segment([
                         'header' => $header,
@@ -645,7 +855,7 @@ TTT
                         'value' => $temp_panels,
                         'class' => 'numbers_frontend_form_pannel_segment',
                         'pannel_skip_segment' => $v2['options']['pannel_skip_segment'] ?? false,
-                        'style' => 'height: 100%;',
+                        'style' => 'height: 100%;' . $hidden_panel_style,
                     ]),
                     'options' => [
                         'percent' => $v2['options']['percent'],
@@ -670,13 +880,35 @@ TTT
         foreach ($this->object->actions as $k => $v) {
             $icon = !empty($v['icon']) ? (\HTML::icon(['type' => $v['icon']]) . ' ') : '';
             $onclick = !empty($v['onclick']) ? $v['onclick'] : '';
-            $value = !empty($v['value']) ? i18n(null, $v['value']) : '';
+            $value = !empty($v['value']) ? loc('NF.Form.' . \String2::createStatic($v['value'])->englishOnly(true)->toString(), $v['value']) : '';
             $href = $v['href'] ?? 'javascript:void(0);';
             $id = [];
             if (isset($v['id'])) {
                 $id['id'] = $v['id'];
             }
-            $temp[] = \HTML::a(['value' => $icon . $value, 'href' => $href, 'class' => $v['class'] ?? null, 'style' => $v['style'] ?? null, 'onclick' => $onclick] + $id);
+            if (empty($v['groups'])) {
+                $temp[] = \HTML::a(['value' => $icon . $value, 'href' => $href, 'class' => $v['class'] ?? null, 'style' => $v['style'] ?? null, 'onclick' => $onclick] + $id);
+            } else {
+                $submenu = [];
+                foreach ($v['groups'] as $k2 => $v2) {
+                    $icon2 = !empty($v2['icon']) ? (\HTML::icon(['type' => $v2['icon']]) . ' ') : '';
+                    $onclick2 = !empty($v2['onclick']) ? $v2['onclick'] : '';
+                    $value2 = !empty($v2['value']) ? loc('NF.Form.' . \String2::createStatic($v2['value'])->englishOnly(true)->toString(), $v2['value']) : '';
+                    $href2 = $v2['href'] ?? 'javascript:void(0);';
+                    $id2 = [];
+                    if (isset($v2['id'])) {
+                        $id2['id'] = $v2['id'];
+                    }
+                    $submenu[] = \HTML::a(['value' => $icon2 . $value2, 'href' => $href2, 'class' => $v2['class'] ?? null, 'style' => $v2['style'] ?? null, 'onclick' => $onclick2] + $id2);
+                }
+                $badge = \HTML::badge(['type' => 'primary', 'value' => count($v['groups'])]);
+                $temp[] = \HTML::popover([
+                    'id' => 'form_action_group_' . $this->object->form_link . '_' . \String2::createStatic($k)->snakeCase()->toString(),
+                    'value' => \HTML::icon(['type' => $v['icon']]) . ' ' . $value . $badge . ' ',
+                    'content' => implode(\HTML::br(), $submenu),
+                    'style' => 'overflow-y: scroll;'
+                ]);
+            }
         }
         return implode(' ', $temp);
     }
@@ -684,7 +916,7 @@ TTT
     /**
      * Render container list
      *
-     * @param type $container_link
+     * @param string $container_link
      * @return array
      */
     public function renderListContainer(string $container_link): array
@@ -764,7 +996,8 @@ TTT
                 $inner_table = ['options' => [], 'width' => '100%', 'class' => 'numbers_frontend_form_list_header_inner'];
                 foreach ($v['elements'] as $k2 => $v2) {
                     $width = $v2['options']['width'] ?? ($v2['options']['percent'] . '%');
-                    $inner_table['options'][1][$k2] = ['value' => i18n(null, $v2['options']['label_name']), 'align' => $v2['options']['align'] ?? 'left', 'nowrap' => true, 'width' => $width, 'tag' => 'th'];
+                    $v2_loc_key = \String2::createStatic($v2['options']['label_name'])->englishOnly(true)->toString();
+                    $inner_table['options'][1][$k2] = ['value' => loc('NF.Form.' . $v2_loc_key, $v2['options']['label_name']), 'align' => $v2['options']['align'] ?? 'left', 'nowrap' => true, 'width' => $width, 'tag' => 'th'];
                 }
                 $temp_inner .= \HTML::table($inner_table);
             }
@@ -809,9 +1042,16 @@ TTT
                         if (!empty($v2['options']['url_edit']) && isset($this->object->misc_settings['subforms']['url_edit'])) {
                             if (!empty($this->object->misc_settings['subforms']['url_edit'])) {
                                 $params = $this->renderURLEditHref($v0, ['json' => true]);
+                                $temp_hashed_pk = $this->renderURLEditHref($v0, ['hashed' => true]);
                                 $temp_collection_link = $this->object->options['collection_link'] ?? '';
                                 $temp_collection_screen_link = $this->object->options['collection_screen_link'] ?? '';
-                                $value = \HTML::a(['href' => 'javascript:void(0);', 'onclick' => "Numbers.Form.openSubformWindow('{$temp_collection_link}', '{$temp_collection_screen_link}', '{$this->object->form_link}', '{$this->object->misc_settings['subforms']['url_edit']['subform_link']}', {$params});", 'value' => $value]);
+                                $subform_options = $this->object->misc_settings['subforms']['url_edit']['subform_options'];
+                                $value = \HTML::a([
+                                    'href' => 'javascript:void(0);',
+                                    'onclick' => "Numbers.Form.openSubformWindow('{$temp_collection_link}', '{$temp_collection_screen_link}', '{$this->object->form_link}', '{$this->object->misc_settings['subforms']['url_edit']['subform_link']}', {$params}, {$subform_options});",
+                                    'value' => $value,
+                                    'data-hashed-pk' => $temp_hashed_pk,
+                                ]);
                             }
                         } elseif (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
                             // if single record and we need to auto open
@@ -889,9 +1129,15 @@ TTT
                         if (!empty($v2['options']['url_edit']) && isset($this->object->misc_settings['subforms']['url_edit'])) {
                             if (!empty($this->object->misc_settings['subforms']['url_edit'])) {
                                 $params = $this->renderURLEditHref($v0, ['json' => true]);
+                                $temp_hashed_pk = $this->renderURLEditHref($v0, ['hashed' => true]);
                                 $temp_collection_link = $this->object->options['collection_link'] ?? '';
                                 $temp_collection_screen_link = $this->object->options['collection_screen_link'] ?? '';
-                                $value = \HTML::a(['href' => 'javascript:void(0);', 'onclick' => "Numbers.Form.openSubformWindow('{$temp_collection_link}', '{$temp_collection_screen_link}', '{$this->object->form_link}', '{$this->object->misc_settings['subforms']['url_edit']['subform_link']}', {$params});", 'value' => $value]);
+                                $value = \HTML::a([
+                                    'href' => 'javascript:void(0);',
+                                    'onclick' => "Numbers.Form.openSubformWindow('{$temp_collection_link}', '{$temp_collection_screen_link}', '{$this->object->form_link}', '{$this->object->misc_settings['subforms']['url_edit']['subform_link']}', {$params});",
+                                    'value' => $value,
+                                    'data-hashed-pk' => $temp_hashed_pk,
+                                ]);
                             }
                         } elseif (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
                             // if single record and we need to auto open
@@ -904,9 +1150,11 @@ TTT
                             if (!empty($this->object->options['open_in_new_tab']) || \Can::userFeatureExists('SM::OPEN_RECORD_IN_NEW_TAB')) {
                                 $link_target['target'] = '_blank';
                             }
+                            // todo: add data-hashed-pk
                             $value = \HTML::a(['href' => $this->renderURLEditHref($v0), 'value' => $value] + $link_target);
                         }
-                        $inner_table['options'][$k . '_' . $k2][1] = ['value' => '<b>' . $v2['options']['label_name'] . ':</b>', 'width' => '15%', 'align' => 'left'];
+                        $inner_nf_key = \String2::createStatic($v2['options']['label_name'])->englishOnly(true)->toString();
+                        $inner_table['options'][$k . '_' . $k2][1] = ['value' => '<b>' . loc('NF.Form.' . $inner_nf_key) . ':</b>', 'width' => '15%', 'align' => 'left'];
                         // full text search replaces
                         if (!empty($full_text_search)) {
                             $this->markTextInStr($value, $full_text_search);
@@ -1037,7 +1285,7 @@ TTT
         $pk = [];
         foreach ($model->pk as $v) {
             // skip tenant
-            if ($model->tenant && $v == $model->tenant_column) {
+            if (empty($options['hashed']) && $model->tenant && $v == $model->tenant_column) {
                 continue;
             }
             $pk[$v] = $values[$v];
@@ -1047,7 +1295,7 @@ TTT
             $pk['__module_id'] = $values[$model->module_column];
         }
         // __form_filter_id
-        if (!empty($this->object->misc_settings['list']['__form_filter_id']) && empty($options['skip_form_filter'])) {
+        if (empty($options['hashed']) && !empty($this->object->misc_settings['list']['__form_filter_id']) && empty($options['skip_form_filter'])) {
             $pk['__form_filter_id'] = $this->object->misc_settings['list']['__form_filter_id'];
         }
         if (!empty($options['json'])) {
@@ -1058,6 +1306,25 @@ TTT
                 }
             }
             return json_encode($pk);
+        } elseif (!empty($options['hashed'])) {
+            $temp_pk = [];
+            if (isset($this->object->options['model_table'])) {
+                $temp_model = new $this->object->options['model_table']();
+                foreach ($temp_model->pk as $v) {
+                    if (isset($this->object->options['input'][$v])) {
+                        $temp_pk[$v] = $this->object->options['input'][$v];
+                    } elseif (str_ends_with($v, 'tenant_id')) {
+                        $temp_pk[$v] = \Tenant::id();
+                    }
+                }
+            }
+            // bypass variables
+            if (!empty($this->object->options['bypass_hidden_from_input'])) {
+                foreach ($this->object->options['bypass_hidden_from_input'] as $v) {
+                    $pk[$v] = $this->object->options['input'][$v] ?? '';
+                }
+            }
+            return implode('_', array_values($temp_pk + $pk));
         } else {
             return \Request::fixUrl(\Application::get('mvc.controller'), \Application::get('mvc.controller_template')) . '/_Edit?' . http_build_query2($pk);
         }
@@ -1117,6 +1384,28 @@ TTT
         }
         // if its details we need to render it differently
         if (($this->object->data[$container_link]['type'] ?? '') == 'details') {
+            if (($this->object->data[$container_link]['options']['default_row_type'] ?? '') == 'table') {
+                $result = $this->renderContainerTypeDetails($container_link);
+                $inner_data = [
+                    'class' => 'numbers_frontend_form_table_renderer_field_table',
+                    'header' => ['name' => 'Name', 'value' => 'Value'],
+                    'options' => [],
+                    'skip_header' => true,
+                    'width' => '100%'
+                ];
+                $inner_data['options'][1]['name'] = [
+                    'value' => $this->object->data[$container_link]['options']['default_row_label_name'],
+                    'nowrap' => true,
+                    'width' => $this->object->data[$container_link]['options']['column_name_width_percent'] . '%'
+                ];
+                $inner_data['options'][1]['value'] = [
+                    'value' => $result['data']['html'],
+                    'nowrap' => true,
+                    'width' => (100 - $this->object->data[$container_link]['options']['column_name_width_percent']) . '%'
+                ];
+                $result['data']['html'] = \HTML::table($inner_data);
+                return $result;
+            }
             return $this->renderContainerTypeDetails($container_link);
         }
         // if its tree we need to render it differently
@@ -1333,10 +1622,11 @@ TTT
             }
             $zero_header = call_user_func_array($method, [& $this->object, & $new_data, $options['details_tree_header'] ?? []]);
         }
-        // conver to tree
+        // convert to tree
         $new_data = Tree::convertByParent($new_data, '__parent');
         $result .= \HTML::tree([
             'options' => $new_data,
+            'id_column' => 'id',
             'i18n' => $options['details_tree_i18n'] ?? true,
             'numerate' => $options['details_tree_numerate'] ?? false,
             'orderby' => $options['details_tree_order_key'] ?? null,
@@ -1344,6 +1634,9 @@ TTT
             'class' => $options['details_tree_class'] ?? null,
             'holder_class' => $options['details_tree_holder_class'] ?? null,
             'zero_header' => $zero_header,
+            'collapse' => $options['details_tree_collapse'] ?? false,
+            'id' => "form_{$this->object->form_link}_form_tree",
+            'form_id' => "form_{$this->object->form_link}_form",
         ]);
         return $result;
     }
@@ -1760,7 +2053,7 @@ TTT
                 $temp = str_replace('\\', '_', $options['details_key']);
                 $tab_id = "form_tabs_{$this->object->form_link}_subdetails_{$temp}_{$row_number}";
                 $tab_header = [
-                    'tabs_subdetails_none' => \HTML::icon(['type' => 'fas fa-toggle-on'])
+                    'tabs_subdetails_none' => \HTML::icon(['type' => 'fa-solid fa-toggle-on'])
                 ];
                 $tab_values = [
                     'tabs_subdetails_none' => ''
@@ -1892,7 +2185,11 @@ TTT
                     'right' => [],
                     'wide' => []
                 ];
+                $button_row_class = '';
                 foreach ($v['value']['elements'] as $k2 => $v2) {
+                    if (isset($v2['options']['row_class'])) {
+                        $button_row_class .= ' ' . $v2['options']['row_class'];
+                    }
                     $button_group = $v2['options']['button_group'] ?? 'left';
                     if ($v['key'] == $this->object::WIDE_BUTTONS) {
                         $button_group = 'wide';
@@ -1913,7 +2210,7 @@ TTT
                 // render button groups
                 foreach ($buttons as $k2 => $v2) {
                     $value = implode(' ', $v2);
-                    $value = '<div class="grid_button_' . $k2 . '">' . $value . '</div>';
+                    $value = '<div class="grid_button_' . $k2 . ' ' . $button_row_class . '">' . $value . '</div>';
                     $data['options'][$k][$v['key']][$k2] = [
                         'label' => null,
                         'value' => $value,
@@ -1984,9 +2281,15 @@ TTT
                             $neighbouring_values = & $this->object->values;
                         }
                         $value = array_key_get($this->object->values, $v3['options']['values_key']);
+                        //label_name
+                        if (\HTML::getMode() && trim($first['options']['label_name'] ?? '') == '') {
+                            $label = null;
+                        } else {
+                            $label = $this->renderElementName($first, $value, $neighbouring_values);
+                        }
                         $data['options'][$k][$k2][$k3] = [
                             'error' => $error,
-                            'label' => $this->renderElementName($first, $value, $neighbouring_values),
+                            'label' => $label,
                             'value' => $this->renderElementValue($v3, $value, $neighbouring_values),
                             'description' => $v3['options']['description'] ?? null,
                             'options' => $v3['options'],
@@ -1997,6 +2300,10 @@ TTT
                             if (!empty($value)) {
                                 $this->object->errorInTabs(['records' => 1]);
                             }
+                        }
+                        // counters
+                        if (!empty($v3['options']['set_tab_not_empty']) && !empty($value)) {
+                            $this->object->errorInTabs(['checkmark' => '✓']);
                         }
                     }
                 }
@@ -2077,7 +2384,7 @@ TTT
                     'width' => '100%'
                 ];
                 if ($first_key == $this->object::SEPARATOR_HORIZONTAL) {
-                    $data['options'][$k]['column'] = [
+                    $data['options'][$k . '_' . $first_key]['column'] = [
                         'value' => \HTML::separator(['value' => $first['options']['label_name'], 'icon' => $first['options']['icon'] ?? null]),
                         'separator' => true
                     ];
@@ -2167,7 +2474,7 @@ TTT
                         }
                     }
                 }
-                $data['options'][$k]['column'] = [
+                $data['options'][$k . '_' . $first_key]['column'] = [
                     'value' => \HTML::table($inner_data),
                     'nowrap' => true
                 ];
@@ -2194,8 +2501,10 @@ TTT
             }
             if (isset($options['options']['loc'])) {
                 $value = loc($options['options']['loc'], $options['options']['label_name'] ?? '');
+            } elseif (!empty($options['options']['label_name']) && $options['options']['label_name'] != ' ') {
+                $value = loc('NF.Form.' . \String2::createStatic($options['options']['label_name'])->englishOnly(true)->toString(), $options['options']['label_name']);
             } else {
-                $value = i18n($options['options']['label_i18n'] ?? null, $options['options']['label_name']);
+                $value = $options['options']['label_name'];
             }
             if (isset($options['options']['label_name']) && $options['options']['label_name'] == ' ') {
                 $prepend = '';
@@ -2220,9 +2529,17 @@ TTT
             } else {
                 $value .= $prepend;
             }
+            $in_brackets = [];
+            // computed
+            if (!empty($options['options']['computed'])) {
+                $in_brackets[] = loc('NF.Form.Computed', 'Computed');
+            }
             // range
             if (!empty($options['field_range'])) {
-                $value .= ' (' . loc('NF.Form.Range', 'Range') . ')';
+                $in_brackets[] = loc('NF.Form.Range', 'Range');
+            }
+            if (count($in_brackets) > 0) {
+                $value .= ' (' . implode(', ', $in_brackets) . ')';
             }
             $label_options['value'] = $value;
             $label_options['class'] = 'control-label';
@@ -2253,6 +2570,8 @@ TTT
                 return $temp;
             }
         }
+        // hide if set
+        $this->object->hideOneField($this->object, $options, $value, $neighbouring_values);
         // handling override_field_value method
         if (!empty($this->object->wrapper_methods['overrideFieldValue']['main'])) {
             call_user_func_array($this->object->wrapper_methods['overrideFieldValue']['main'], [& $this->object, & $options, & $value, & $neighbouring_values]);
@@ -2363,6 +2682,10 @@ TTT
                 $result_options['form_id'] = "form_{$this->object->form_link}_form";
             }
         } elseif (!empty($result_options['options'])) {
+            // loc
+            foreach ($result_options['options'] as $k2 => $v2) {
+                $result_options['options'][$k2]['name'] = loc('NF.Form.' . \String2::createStatic($v2['name'])->englishOnly(true)->toString(), $v2['name']);
+            }
             // we need to uset unique options
             if (!empty($options['options']['details_key']) && !empty($this->object->misc_settings['details_unique_select'][$options['options']['details_key']][$options['options']['details_field_name']])) {
                 $skip_values = array_keys($this->object->misc_settings['details_unique_select'][$options['options']['details_key']][$options['options']['details_field_name']]);
@@ -2447,8 +2770,8 @@ TTT
                     if (isset($result_options['loc'])) {
                         $result_options['value'] = loc($options['options']['loc'], $result_options['value'] ?? '');
                         $flag_translated = true;
-                    } elseif (empty($result_options['skip_i18n'])) {
-                        $result_options['value'] = i18n($result_options['i18n'] ?? null, $result_options['value'] ?? null, ['skip_i_symbol' => true]);
+                    } elseif (empty($result_options['skip_i18n']) && isset($result_options['value'])) {
+                        $result_options['value'] = loc('NF.Form.' . \String2::createStatic($result_options['value'])->englishOnly(true)->toString(), $result_options['value'] ?? '');
                         $flag_translated = true;
                     }
                     // process confirm_message
@@ -2601,11 +2924,13 @@ TTT
                                 $v8 = $v8[1];
                             }
                             if (!empty($this->object->fields[$v8]['options']['label_name'])) {
-                                $temp_placeholder[] = i18n(null, $this->object->fields[$v8]['options']['label_name']);
+                                $temp_placeholder[] = loc('NF.Form.' . \String2::createStatic($this->object->fields[$v8]['options']['label_name'])->englishOnly(true)->toString(), $this->object->fields[$v8]['options']['label_name']);
                             }
                         }
                         if (!empty($temp_placeholder)) {
-                            $result_options['placeholder'] = i18n(null, 'Search in [columns]', ['replace' => ['[columns]' => implode(', ', $temp_placeholder)]]);
+                            $result_options['placeholder'] = loc('NF.Form.SearchInColumns', 'Search in {columns}', [
+                                'columns' => implode(', ', $temp_placeholder),
+                            ]);
                         }
                     } elseif (!empty($result_options['placeholder'])) {
                         // skip timestamp
@@ -2616,7 +2941,8 @@ TTT
                             $result_options['placeholder'] = loc('NF.Form.' . $loc_key, $result_options['placeholder']);
                             $result_options['placeholder'] = loc('NF.Form.Range' . $result_options['field_range'] . 'What', '', ['what' => $result_options['placeholder']]);
                         } else {
-                            $result_options['placeholder'] = strip_tags(i18n(null, $result_options['placeholder']));
+                            $loc_key = \String2::createStatic($result_options['placeholder'])->englishOnly(true)->toString();
+                            $result_options['placeholder'] = loc('NF.Form.' . $loc_key, $result_options['placeholder']);
                         }
                     }
                 } elseif (!empty($result_options['validator_method']) && empty($result_options['value']) && empty($result_options['multiple_column'])) {
@@ -2627,7 +2953,8 @@ TTT
                         $placeholder = $temp['placeholder'] ?? null;
                     }
                     if (!empty($placeholder)) {
-                        $result_options['placeholder'] = strip_tags(i18n(null, $placeholder));
+                        $loc_key = \String2::createStatic($placeholder)->englishOnly(true)->toString();
+                        $result_options['placeholder'] = loc('NF.Form.' . $loc_key, $placeholder);
                     }
                 }
                 // auto placeholder for selects
@@ -2686,22 +3013,22 @@ TTT
                     // todo: unset non html attributes
                     $value = $field_method_object->{$method[1]}($result_options);
                     // building navigation
-                    if (!empty($result_options['navigation'])) {
+                    if (!empty($result_options['navigation']) && empty($this->object->options['__skip_all_navigation'])) {
                         $name = 'navigation[' . $result_options['name'] . ']';
                         $refresh_id = 'navigation_' . $result_options['id'] . '_refresh';
                         $temp = '<table width="100%" dir="ltr">'; // always left to right
                         $temp .= '<tr>';
-                        $temp .= '<td width="1%">' . \HTML::button2(['name' => $name . '[first]', 'value' => \HTML::icon(['type' => 'fas fa-step-backward']), 'onclick' => '$(this.form).attr(\'no_ajax\', 1); Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'First'), 'class' => 'numbers_frontend_form_navigation_button']) . '</td>';
+                        $temp .= '<td width="1%">' . \HTML::button2(['name' => $name . '[first]', 'value' => \HTML::icon(['type' => 'fa-solid fa-step-backward']), 'onclick' => '$(this.form).attr(\'no_ajax\', 1); Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'First'), 'class' => 'numbers_frontend_form_navigation_button']) . '</td>';
                         $temp .= '<td width="1%">&nbsp;</td>';
-                        $temp .= '<td width="1%">' . \HTML::button2(['name' => $name . '[previous]', 'value' => \HTML::icon(['type' => 'fas fa-caret-left']), 'onclick' => '$(this.form).attr(\'no_ajax\', 1); Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Previous'), 'class' => 'numbers_frontend_form_navigation_button']) . '</td>';
+                        $temp .= '<td width="1%">' . \HTML::button2(['name' => $name . '[previous]', 'value' => \HTML::icon(['type' => 'fa-solid fa-caret-left']), 'onclick' => '$(this.form).attr(\'no_ajax\', 1); Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Previous'), 'class' => 'numbers_frontend_form_navigation_button']) . '</td>';
                         $temp .= '<td width="1%">&nbsp;</td>';
                         $temp .= '<td width="90%">' . $value . '</td>';
                         $temp .= '<td width="1%">&nbsp;</td>';
-                        $temp .= '<td width="1%">' . \HTML::button2(['name' => $name . '[refresh]', 'id' => $refresh_id, 'value' => \HTML::icon(['type' => 'fas fa-sync']), 'onclick' => '$(this.form).attr(\'no_ajax\', 1); Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Refresh'), 'class' => 'numbers_frontend_form_navigation_button']) . '</td>';
+                        $temp .= '<td width="1%">' . \HTML::button2(['name' => $name . '[refresh]', 'id' => $refresh_id, 'value' => \HTML::icon(['type' => 'fa-solid fa-sync']), 'onclick' => '$(this.form).attr(\'no_ajax\', 1); Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Refresh'), 'class' => 'numbers_frontend_form_navigation_button']) . '</td>';
                         $temp .= '<td width="1%">&nbsp;</td>';
-                        $temp .= '<td width="1%">' . \HTML::button2(['name' => $name . '[next]', 'value' => \HTML::icon(['type' => 'fas fa-caret-right']), 'onclick' => '$(this.form).attr(\'no_ajax\', 1); Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Next'), 'class' => 'numbers_frontend_form_navigation_button']) . '</td>';
+                        $temp .= '<td width="1%">' . \HTML::button2(['name' => $name . '[next]', 'value' => \HTML::icon(['type' => 'fa-solid fa-caret-right']), 'onclick' => '$(this.form).attr(\'no_ajax\', 1); Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Next'), 'class' => 'numbers_frontend_form_navigation_button']) . '</td>';
                         $temp .= '<td width="1%">&nbsp;</td>';
-                        $temp .= '<td width="1%">' . \HTML::button2(['name' => $name . '[last]', 'value' => \HTML::icon(['type' => 'fas fa-step-forward']), 'onclick' => '$(this.form).attr(\'no_ajax\', 1); Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Last'), 'class' => 'numbers_frontend_form_navigation_button']) . '</td>';
+                        $temp .= '<td width="1%">' . \HTML::button2(['name' => $name . '[last]', 'value' => \HTML::icon(['type' => 'fa-solid fa-step-forward']), 'onclick' => '$(this.form).attr(\'no_ajax\', 1); Numbers.Form.triggerSubmitOnButton(this);', 'title' => i18n(null, 'Last'), 'class' => 'numbers_frontend_form_navigation_button']) . '</td>';
                         $temp .= '</tr>';
                         $temp .= '</table>';
                         $value = $temp;
@@ -2740,6 +3067,12 @@ TTT
         if (!empty($html_table_description)) {
             $value = '<table width="100%"><tr><td width="99%">' . $value . '</td><td width="1%"><span class="numbers_frontend_form_html_table_description">' . $html_table_description . '</span></td></tr></table>';
         }
+        // method renderer called last
+        if (!empty($options['options']['method_renderer'])) {
+            $method = \Factory::method($options['options']['method_renderer'], $this->object->form_parent, true, [['skip_processing' => true]]);
+            $options_custom_renderer = $options;
+            $value = call_user_func_array($method, [& $this->object, & $options, & $value, & $neighbouring_values]);
+        }
         // if we need to display settings
         if (\Application::get('flag.numbers.frontend.html.form.show_field_settings')) {
             $id_original = $result_options['id'] . '__settings_original';
@@ -2750,7 +3083,7 @@ TTT
             $value .= '<div id="' . $id_modified . '" style="display:none; position: absolute; text-align: left; width: 500px; z-index: 32000;">' . print_r2($result_options, '', true) . '</div>';
         }
         // we need to put original options back
-        if (!empty($options['options']['custom_renderer'])) {
+        if (!empty($options['options']['custom_renderer']) || !empty($options['options']['method_renderer'])) {
             $options = $options_custom_renderer;
         }
         return $value;

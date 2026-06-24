@@ -11,6 +11,8 @@
 
 namespace Numbers\Frontend\HTML\FontAwesome;
 
+use Numbers\Frontend\HTML\MaterialSymbolsOutlined\Helper\Icon as MaterialSymbolsOutlined;
+
 class Base
 {
     /**
@@ -21,6 +23,8 @@ class Base
         // if we are rendering image
         if (isset($options['file'])) {
             return \Numbers\Frontend\HTML\Renderers\Common\Base::icon($options);
+        } elseif (isset($options['type']) && strpos($options['type'], 'material-symbols-outlined') !== false) {
+            return MaterialSymbolsOutlined::icon($options);
         } elseif (isset($options['type'])) {
             \Library::add('FontAwesome');
             // generating class & rendering tag

@@ -42,7 +42,8 @@ class Base implements \Numbers\Frontend\Components\Wizard\Interface2\Base
         $flag_description_found = false;
         $type = $options['type'] ?? 'primary';
         foreach ($options['options'] as $k => $v) {
-            $name = i18n(null, $v['name']);
+            // todo handle with loc
+            $name = i18n(null, $v['name'] ?? $v['label_name']);
             if (!empty($v['name_todo'])) {
                 $name = $v['name_todo'];
             }

@@ -296,8 +296,8 @@ var i18n = function(i18n, text, options) {
 /**
  * i18n if
  *
- * @param type text
- * @param type translate
+ * @param string text
+ * @param string translate
  * @return string
  */
 var i18n_if = function(text, translate) {

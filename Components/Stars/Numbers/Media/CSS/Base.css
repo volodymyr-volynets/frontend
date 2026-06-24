@@ -1,0 +1,10 @@
+.numbers_stars_item {
+	cursor: pointer;
+	cursor: hand;
+}
+.numbers_stars_selected {
+	color: darkorange;
+}
+.numbers_stars_active {
+	color: black;
+}
