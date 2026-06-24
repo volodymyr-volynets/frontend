@@ -56,6 +56,7 @@
 	padding-bottom: 0;
 	margin-bottom: 0;
 }
+
 /* form */
 table.numbers_frontend_form_table_renderer_field_table {
 	table-layout: fixed;
@@ -83,13 +84,41 @@ table.numbers_frontend_form_table_renderer_field_table {
 	padding-left: 0.25em;
 	padding-right: 0.25em;
 }
-/* form pannels */
+.numbers_frontend_segment_link, .numbers_frontend_segment_link:hover {
+	color: white;
+	text-decoration: underline !important;
+}
+/* form panels */
 .numbers_frontend_form_table_row_container {
 	width: 100%;
 }
 /* form modals */
+@media (min-width: 576px) {
+    .numbers_frontend_modal_full_width {
+        max-width: 540px;
+    }
+}
+@media (min-width: 768px) {
+    .numbers_frontend_modal_full_width {
+        max-width: 720px;
+    }
+}
+@media (min-width: 992px) {
+    .numbers_frontend_modal_full_width {
+        max-width: 960px;
+    }
+}
+@media (min-width: 1200px) {
+    .numbers_frontend_modal_full_width {
+        max-width: 1140px;
+    }
+}
+@media (min-width: 1400px) {
+    .numbers_frontend_modal_full_width {
+        max-width: 1320px;
+    }
+}
 .numbers_frontend_modal_full_width {
-	max-width: 1120px;
 	width: 100%;
 }
 /* form grid */
@@ -103,6 +132,12 @@ table.numbers_frontend_form_table_renderer_field_table {
 }
 .numbers_frontend_form_list_comment p {
 	margin: 0 !important;
+}
+.numbers_frontend_form_class .form_actions {
+	background-color: var(--bs-light);
+}
+.numbers_frontend_form_action_links {
+	display: inline-block !important;
 }
 
 /* widgets */
@@ -128,9 +163,41 @@ table.numbers_frontend_form_table_renderer_field_table {
 	z-index: 1080 !important;
 }
 .modal-backdrop {
-    display: none;
+    /* display: none; */
 }
 .modal-dialog {
 	border: 2px solid #000000;
 	border-radius: 1em;
+}
+
+/* animations */
+.numbers_frontend_form_link_animation {
+    animation-name: numbers_frontend_form_link_animation_settings;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+}
+@keyframes numbers_frontend_form_link_animation_settings {
+    from {
+        color: var(--bs-primary);
+    }
+    to {
+        color: var(--bs-danger);
+    }
+}
+.numbers_frontend_form_link_refresh::after {
+	content: "\e5d5";
+	font-family: "Material Symbols Outlined";
+	font-size: 1em;
+}
+
+/* anchor fragment */
+:target {
+	content: '';
+	display: block;
+	height: 1px;
+	position: absolute;
+	margin-top: -105px;
+}
+html {
+	scroll-behavior: smooth;
 }

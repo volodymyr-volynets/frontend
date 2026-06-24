@@ -12,6 +12,7 @@
 namespace Numbers\Frontend\HTML\FontAwesome\Controller;
 
 use Object\Controller;
+use Numbers\Frontend\HTML\FontAwesome\Model\Icons7;
 
 class Icons extends Controller
 {
@@ -19,10 +20,13 @@ class Icons extends Controller
 
     public function actionIndex()
     {
-        $data = \Numbers\Frontend\HTML\FontAwesome\Model\Icons::getStatic();
+        $data = Icons7::getStatic();
+        $result = '<table>';
+        $result .= '<tr><th>Icon</th><th>Name</th><th>Label</th><th>Styles</th></tr>';
         foreach ($data as $k => $v) {
-            echo '<i class="' . $k . '"> ' . $v['name'] . '</i>';
-            echo '<hr/>';
+            $result .= '<tr><td><i class="' . $k . ' fa-lg"></i></td><td>' . $v['name'] . '</td><td>' . $v['label'] . '</td><td>' . $v['styles'] . '</td></tr>';
         }
+        $result .= '</table>';
+        echo $result;
     }
 }

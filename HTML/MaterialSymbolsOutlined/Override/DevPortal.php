@@ -9,18 +9,18 @@
  * with this source code in the file LICENSE.
  */
 
-namespace Numbers\Frontend\HTML\FontAwesome\Override;
+namespace Numbers\Frontend\HTML\MaterialSymbolsOutlined\Override;
 
 class DevPortal
 {
     public $data = [
         'Links' => [
             'Global' => [
-                'Font Awesome 7 Icons' => [
-                    'url' => '/Numbers/Frontend/HTML/FontAwesome/Controller/Icons',
-                    'name' => 'FontAwesome Icons',
+                'Material Symbols Outlined Icons' => [
+                    'url' => '/Numbers/Frontend/HTML/MaterialSymbolsOutlined/Controller/Icons',
+                    'name' => 'Material-Symbols-Outlined Icons',
                     'icon' => 'fa-brands fa-algolia'
-                ],
+                ]
             ]
         ]
     ];

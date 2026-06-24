@@ -25,34 +25,31 @@ class Base
         $form_submit = $options['form_submit'] ?? '__submit_button';
         // fetched
         if (!empty($options['total'])) {
-            $fetched = i18n(null, 'Fetched [num_rows] of [total]', [
-                'replace' => [
-                    '[num_rows]' => i18n(null, $options['num_rows']),
-                    '[total]' => i18n(null, $options['total'])
-                ]
+            $fetched = loc('NF.Form.FetchedNumRowsOfTotal', 'Fetched {num_rows} of {total}', [
+                'num_rows' => \Format::id($options['num_rows']),
+                'total' => \Format::id($options['total']),
             ]);
         } else {
-            $fetched = i18n(null, 'Fetched [num_rows]', [
-                'replace' => [
-                    '[num_rows]' => i18n(null, $options['num_rows'])
-                ]
+            $fetched = loc('NF.Form.FetchedNumRows', 'Fetched {num_rows}', [
+                'num_rows' => \Format::id($options['num_rows']),
             ]);
         }
         // sorting
         $sort = '';
         if (!empty($options['sort'])) {
             $sort .= '<table style="min-height: 40px;"><tr><td valign="middle">';
-            $sort .= i18n(null, 'Sort') . ': ';
+            $sort .= loc('NF.Form.Sort', 'Sort') . ': ';
             $temp = [];
             foreach ($options['sort'] as $k => $v) {
-                $temp[] = i18n(null, $k) . ' ' . \HTML::icon(['type' => 'fas fa-sort-alpha-' . ($v == SORT_ASC ? 'up' : 'down')]);
+                $temp[] = loc('NF.Form.' . \String2::createStatic($k)->englishOnly(true)->toString(), $k) . ' ' . \HTML::icon(['type' => 'fa-solid fa-sort-alpha-' . ($v == SORT_ASC ? 'up' : 'down')]);
             }
             $sort .= implode(', ', $temp);
             $sort .= '</td></tr></table>';
         }
         // sorting select
         if (!empty($options['sort_options'])) {
-            $sort .= '<table width="100%" style="min-height: 40px;"><tr><td valign="middle">' . i18n(null, 'Sort') . ': ' .'</td><td valign="middle">';
+            $sort .= '<table width="100%" style="min-height: 40px;"><tr><td valign="middle">' . loc('NF.Form.Sort', 'Sort') . ': ' .'</td><td valign="middle">';
+            // todo: translate
             $sort .= \HTML::select(['id' => $options['form_link'] . '_sort_select_' . $type, 'options' => $options['sort_options'], 'value' => $options['sort_value'], 'no_choose' => true, 'onchange' => "Numbers.Form.setValue(this.form, '__sort', this.value); Numbers.Form.triggerSubmit(this.form, '{$form_submit}');"]);
             $sort .= '</td></tr></table>';
         }
@@ -65,23 +62,23 @@ class Base
                 if (empty($options['preview_as_line'])) {
                     goto previewLabel;
                 }
-                $preview_icon = 'fas fa-grip-lines';
+                $preview_icon = 'fa-solid fa-grip-lines';
                 $preview_value = 2;
-                $preview_title = i18n(null, 'Line');
+                $preview_title = loc('NF.Form.Line', 'Line');
             } elseif ($options['preview'] == 2) {
                 previewLabel:
-                                        $preview_icon = 'fas fa-list';
+                                        $preview_icon = 'fa-solid fa-list';
                 $preview_value = 0;
-                $preview_title = i18n(null, 'List');
+                $preview_title = loc('NF.Form.List', 'List');
             }
         } else {
-            $preview_icon = 'fas fa-th-list';
+            $preview_icon = 'fa-solid fa-th-list';
             $preview_value = 1;
-            $preview_title = i18n(null, 'Preview');
+            $preview_title = loc('NF.Form.Preview', 'Preview');
         }
         $displaying .= '<td>' . \HTML::button2(['type' => 'default', 'title' => $preview_title, 'value' => \HTML::icon(['type' => $preview_icon]), 'onclick' => "Numbers.Form.setValue(this.form, '__preview', {$preview_value}); Numbers.Form.triggerSubmit(this.form, '{$form_submit}'); return false;"]) . '</td>';
         $displaying .= '<td>&nbsp;</td>';
-        $displaying .= '<td><div style="width: 80px;">' . \HTML::select(['id' => $options['form_link'] . '_page_sizes_' . $type, 'title' => i18n(null, 'Displaying rows'), 'options' => \Factory::model('\Numbers\Framework\Object\Form\Model\PageSizes', true)->options(['i18n' => 'skip_sorting']), 'value' => $options['limit'], 'no_choose' => true, 'onchange' => "Numbers.Form.setValue(this.form, '__offset', 0); Numbers.Form.setValue(this.form, '__limit', this.value); Numbers.Form.triggerSubmit(this.form, '{$form_submit}');"]) . '</div></td>';
+        $displaying .= '<td><div style="width: 80px;">' . \HTML::select(['id' => $options['form_link'] . '_page_sizes_' . $type, 'title' => loc('NF.Form.DisplayingRows', 'Displaying rows'), 'options' => \Factory::model('\Numbers\Framework\Object\Form\Model\PageSizes', true)->options(['i18n' => 'skip_sorting']), 'value' => $options['limit'], 'no_choose' => true, 'onchange' => "Numbers.Form.setValue(this.form, '__offset', 0); Numbers.Form.setValue(this.form, '__limit', this.value); Numbers.Form.triggerSubmit(this.form, '{$form_submit}');"]) . '</div></td>';
         $displaying .= '</tr>';
         $displaying .= '</table>';
         // navigation
@@ -90,20 +87,20 @@ class Base
         $flag_last_row_exists = false;
         $current_page = intval($options['offset'] / $options['limit']);
         if ($current_page >= 1) {
-            $navigation[] = \HTML::button2(['value' => i18n(null, 'First'), 'onclick' => "Numbers.Form.setValue(this.form, '__offset', 0); Numbers.Form.triggerSubmit(this.form, '{$form_submit}'); return false;"]);
+            $navigation[] = \HTML::button2(['value' => loc('NF.Form.First', 'First'), 'onclick' => "Numbers.Form.setValue(this.form, '__offset', 0); Numbers.Form.triggerSubmit(this.form, '{$form_submit}'); return false;"]);
         }
         if ($current_page >= 2) {
             $previous = (($current_page - 1) * $options['limit']);
-            $navigation[] = \HTML::button2(['value' => i18n(null, 'Previous'), 'onclick' => "Numbers.Form.setValue(this.form, '__offset', {$previous}); Numbers.Form.triggerSubmit(this.form, '{$form_submit}'); return false;"]);
+            $navigation[] = \HTML::button2(['value' => loc('NF.Form.Previous', 'Previous'), 'onclick' => "Numbers.Form.setValue(this.form, '__offset', {$previous}); Numbers.Form.triggerSubmit(this.form, '{$form_submit}'); return false;"]);
         }
         // select with number of pages
         $pages = ceil($options['total'] / $options['limit']);
         if ($options['num_rows']) {
             $temp = [];
             for ($i = 0; $i < $pages; $i++) {
-                $temp[($i * $options['limit'])] = ['name' => i18n(null, $i + 1)];
+                $temp[($i * $options['limit'])] = ['name' => \Format::id($i + 1)];
             }
-            $navigation2 = i18n(null, 'Page') . ': ';
+            $navigation2 = loc('NF.Form.Page', 'Page') . ': ';
             $previous = (($current_page - 1) * $options['limit']);
             $navigation2 .= '<div style="width: 100px; display: inline-block; vertical-align: middle;">' . \HTML::select(['id' => $options['form_link'] . '_pages_' . $type, 'options' => $temp, 'value' => $options['offset'], 'no_choose' => true, 'onchange' => "Numbers.Form.setValue(this.form, '__offset', this.value); Numbers.Form.triggerSubmit(this.form, '{$form_submit}');"]) . '</div>';
             $navigation[] = $navigation2;
@@ -111,15 +108,15 @@ class Base
             $flag_next_row_exists = ($pages - $current_page - 2 > 0) ? true : false;
             $flag_last_row_exists = ($pages - $current_page - 1 > 0) ? true : false;
         } else {
-            $navigation[] = i18n(null, 'Page') . ': ' . ($current_page + 1);
+            $navigation[] = loc('NF.Form.Page', 'Page') . ': ' . \Format::id($current_page + 1);
         }
         if ($flag_next_row_exists) {
             $next = (($current_page + 1) * $options['limit']);
-            $navigation[] = \HTML::button2(['value' => i18n(null, 'Next'), 'onclick' => "Numbers.Form.setValue(this.form, '__offset', {$next}); Numbers.Form.triggerSubmit(this.form, '{$form_submit}'); return false;"]);
+            $navigation[] = \HTML::button2(['value' => loc('NF.Form.Next', 'Next'), 'onclick' => "Numbers.Form.setValue(this.form, '__offset', {$next}); Numbers.Form.triggerSubmit(this.form, '{$form_submit}'); return false;"]);
         }
         if ($flag_last_row_exists) {
             $last = (($pages - 1) * $options['limit']);
-            $navigation[] = \HTML::button2(['value' => i18n(null, 'Last'), 'onclick' => "Numbers.Form.setValue(this.form, '__offset', {$last}); Numbers.Form.triggerSubmit(this.form, '{$form_submit}'); return false;"]);
+            $navigation[] = \HTML::button2(['value' => loc('NF.Form.Last', 'Last'), 'onclick' => "Numbers.Form.setValue(this.form, '__offset', {$last}); Numbers.Form.triggerSubmit(this.form, '{$form_submit}'); return false;"]);
         }
         // generating grid
         $grid = [

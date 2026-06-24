@@ -25,8 +25,15 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base
         \Layout::addJs('/numbers/media_submodules/Numbers_Frontend_Components_Tree_Numbers_Media_JS_Base.js', -10001);
         \Layout::addCss('/numbers/media_submodules/Numbers_Frontend_Components_Tree_Numbers_Media_CSS_Base.css', -10001);
         $options['id'] = ($options['id'] ?? 'numbers_tree_id_' . rand(1000, 9999));
+        $flag_wrap_into_form = false;
+        if (empty($options['form_id'])) {
+            $flag_wrap_into_form = true;
+            $options['form_id'] = 'form_' . $options['id'];
+        }
+        $form_id = $options['form_id'];
         $table_class = $options['class'] ?? '';
         $options['class'] = ($options['holder_class'] ?? '') . ' numbers_tree_holder';
+        $loc_prefix = $options['loc_prefix'] ?? 'NF.System.';
         // process items
         $items = $options['options'] ?? [];
         unset($options['options']);
@@ -65,12 +72,13 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base
                 if (isset($v['width'])) {
                     $width = 'width="' . $v['width'] . '"';
                 }
+                $a_name = \String2::createStatic($v['name'])->englishOnly(true)->toString();
                 if ($k === 'name') {
                     $colspan = 1; // ($data_max_level + 1)
-                    $html .= '<th class="numbers_tree_sticky_column" colspan="' . $colspan . '" ' . $width .  ' nowrap>' . i18n(null, $v['name']) . '</th>';
+                    $html .= '<th class="numbers_tree_sticky_column" colspan="' . $colspan . '" ' . $width .  ' nowrap>' . loc($loc_prefix . $a_name, $v['name']) . '</th>';
                     $data_max_header += $data_max_level + 1;
                 } else {
-                    $html .= '<th ' . $width .  ' nowrap>' . i18n(null, $v['name']) . '</th>';
+                    $html .= '<th ' . $width .  ' nowrap>' . loc($loc_prefix . $a_name, $v['name']) . '</th>';
                     $data_max_header++;
                 }
             }
@@ -88,6 +96,7 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base
         // render rows
         $i = 0;
         $index = 1;
+        $expanded_array = [];
         foreach ($result as $i => $v) {
             // inactive
             $inactive_class = '';
@@ -101,11 +110,49 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base
             }
             // title
             $title = $v['title'] ?? '';
+            // collapse
+            if (!empty($v['id_column_parent'])) {
+                $temp_parent_ids = $v['id_column_parent'];
+                array_value_prefix_and_suffix($temp_parent_ids, 'numbers_tree_option_parent_');
+                $id_column_parent_classes = implode(' ', $temp_parent_ids);
+            } else {
+                $id_column_parent_classes = 'numbers_tree_option_parent_none';
+            }
+            $id_column_id = $v['id_column'];
+            $item_id = $options['id'] . '_item_id_' . $id_column_id;
+            $expanded = \Request::input($item_id);
+            $expanded = !empty($expanded);
+            $expanded_array[$item_id] = $expanded;
+            $cursor_class = ($options['cursor_id'] ?? null) == $id_column_id ? ' numbers_cursor ' : '';
+            $collapse_style = '';
+            if (!empty($options['collapse'])) {
+                // all parents must be expanded for items to be shown
+                if (!empty($v['id_column_parent'])) {
+                    $temp_all_expanded = true;
+                    foreach ($v['id_column_parent'] as $v2) {
+                        if ($v2 == $id_column_id) {
+                            continue;
+                        }
+                        $temp_item_id = $options['id'] . '_item_id_' . $v2;
+                        $temp_parent_expanded = \Request::input($temp_item_id);
+                        if (empty($temp_parent_expanded)) {
+                            $temp_all_expanded = false;
+                        }
+                    }
+                    if ($temp_all_expanded) {
+                        $collapse_style = '';
+                    } else {
+                        $collapse_style = ' style="display: none;" ';
+                    }
+                } else {
+                    $collapse_style = '';
+                }
+            }
             // if disabled
             if (!empty($v['disabled'])) {
-                $html .= '<tr class="numbers_tree_option_table_tr ' . $inactive_class . ' numbers_disabled" search-id="' . $i . '" title="' . $title . '">';
+                $html .= '<tr class="numbers_tree_option_table_tr ' . $inactive_class . ' numbers_disabled ' . $id_column_parent_classes . '" search-id="' . $i . '" title="' . \strip_tags($title) . '">';
             } else {
-                $html .= '<tr class="numbers_tree_option_table_tr' . $selected_class . $inactive_class . ' numbers_tree_option_table_tr_hover" search-id="' . $i . '" title="' . $title . '">';
+                $html .= '<tr class="numbers_tree_option_table_tr' . $selected_class . $inactive_class . $cursor_class . ' numbers_tree_option_table_tr_hover ' . $id_column_parent_classes . '" search-id="' . $i . '" title="' . \strip_tags($title) . '" ' . $collapse_style . '>';
             }
             // numerate
             if (!empty($options['numerate'])) {
@@ -227,7 +274,9 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base
             // if we have toolbar
             if (!empty($v['toolbar'])) {
                 $icon = '';
-                if (!empty($result[$i][$icon_key])) {
+                if (isset($result[$i]['favicon'])) {
+                    $icon = \HTML::img(['src' => $result[$i]['favicon'], 'width' => 16, 'height' => 16, 'style' => 'display: inline-block;']) . ' ';
+                } elseif (!empty($result[$i][$icon_key])) {
                     $icon = '<i class="numbers_tree_option_table_icon ' . $result[$i][$icon_key] . '"></i> ';
                 }
                 $temp_html = '<table width="100%" border="0">';
@@ -238,16 +287,51 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base
                     $temp_html .= '<tr><td>' . $v['description'] . '</td></tr>';
                 }
                 $temp_html .= '</table>';
-                $html .= '<table class="numbers_tree_option_table_name_column_groupped"><tr>' . $inner_html . '<td>' . $temp_html . '</td></tr></table>';
+                $html .= '<table class="numbers_tree_option_table_name_column_grouped"><tr>' . $inner_html . '<td>' . $temp_html . '</td></tr></table>';
             } else {
                 $name = '';
-                if (!empty($result[$i][$icon_key])) {
-                    $name .= '<i class="numbers_tree_option_table_icon ' . $result[$i][$icon_key] . '"></i> ';
+                // collapse
+                $plus_minus = '';
+                $name_suffix = '';
+                $options_counter = count($v['options'] ?? []);
+                if (!empty($options['collapse']) && $options_counter > 0) {
+                    $expand_i_class = !$expanded ? ' far fa-plus-square ' : ' far fa-minus-square ';
+                    $expand_icon = '<i class="numbers_tree_option_table_icon numbers_tree_expand_icon numbers_tree_option_table_expand' . $expand_i_class . '"></i>';
+                    $plus_minus .= \HTML::a([
+                        'value' => $expand_icon,
+                        'href' => 'javascript:void(0);',
+                        'class' => 'numbers_tree_plus_minus',
+                        'onclick' => "$('#{$item_id}').val(" . ($expanded ? '0' : '1') . "); $('#{$form_id}').submit();",
+                    ]);
+                    $plus_minus .= \HTML::hidden(['name' => $item_id, 'id' => $item_id, 'value' => $expanded ? 1 : 0]);
+                    //$name_suffix = '&nbsp;-&nbsp;<span style="color: grey;">' . loc('NF.Form.NumberItems', '{number} item(s)', ['number' => $options_counter, '__plural' => $options_counter]) . '</span>';
+                    $name_suffix = \HTML::nbsp() . \HTML::badge(['type' => 'secondary', 'value' => $options_counter]);
                 }
+                // icon
+                $flag_has_icon = false;
+                if (isset($result[$i]['favicon'])) {
+                    $name .= '&nbsp;' . \HTML::img(['src' => $result[$i]['favicon'], 'width' => 16, 'height' => 16, 'style' => 'display: inline-block;']) . ' ';
+                    $flag_has_icon = true;
+                }
+                if (!empty($result[$i][$icon_key]) && !$flag_has_icon) {
+                    $name .= '&nbsp;<i class="numbers_tree_option_table_icon ' . $result[$i][$icon_key] . '"></i> ';
+                    $flag_has_icon = true;
+                }
+                // avatar
+                if (!empty($result[$i]['__avatar_rendered']) && !$flag_has_icon) {
+                    $name .= $result[$i]['__avatar_rendered'] . '&nbsp;';
+                }
+                // avatar vs icon_class
                 if (!empty($result[$i]['photo_id'])) {
                     $name .= '<img class="navbar-menu-item-avatar-img" src="' . $result[$i]['photo_id'] . '" width="24" height="24" /> ';
                 }
-                $name .= $v['name'];
+                $a_name = \String2::createStatic($v['name'])->englishOnly(true)->toString();
+                $name_localized = loc($loc_prefix . $a_name, $v['name']);
+                $name .= $name_localized;
+                $reference = '';
+                if (!empty($result[$i]['reference'])) {
+                    $reference = '&nbsp;<span style="color: red;">#' . $result[$i]['reference'] . '</span>';
+                }
                 // if we have url
                 if (!empty($result[$i]['url'])) {
                     if (!empty($result[$i]['__menu_id'])) {
@@ -256,8 +340,10 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base
                         $temp_url = $result[$i]['url'];
                     }
                     $name = \HTML::a(['href' => \Request::fixUrl($temp_url, $result[$i]['template']), 'value' => $name]);
+                } elseif (!empty($options['cursor'])) {
+                    $name = \HTML::a(['href' => 'javascript:void(0);', 'class' => 'numbers_tree_plus_minus', 'value' => $name, 'onclick' => "let id_column_id = '" . $id_column_id . "';" . $options['cursor_onclick']]);
                 }
-                $html .= '<table class="numbers_tree_option_table_name_column_groupped"><tr>' . $inner_html . '<td>' . $name . '</td></tr></table>';
+                $html .= '<div class="numbers_tree_option_table_div_holder"><table class="numbers_tree_option_table_name_column_grouped" data-name="' . \strip_tags2($name_localized) . '"><tr>' . $inner_html . '<td>' . $plus_minus . $name . $reference . $name_suffix . '</td></tr></table></div>';
             }
             $html .= '</td>';
             //$html.= '<td width="1%">&nbsp;</td>';
@@ -278,11 +364,21 @@ class Base implements \Numbers\Frontend\Components\Tree\Interface2\Base
             $html .= \HTML::message(['type' => 'warning', 'options' => [i18n(null, Messages::NO_ROWS_FOUND)]]);
             $html .= '</td>';
             $html .= '</tr>';
-        } else {
-            \Layout::onLoad('numbers_tree_update_lines(\'' . $options['id'] .  '_tree_table\');');
+        }
+        // onkeyup for search event
+        if (isset($options['search'])) {
+            \Layout::onLoad("$('#{$options['search_id']}').keyup();");
         }
         $html .= '</table>';
         $options['value'] = $html;
-        return \HTML::div($options);
+        // we need to wrap it into form
+        if ($flag_wrap_into_form) {
+            return \HTML::form([
+                'id' => $options['form_id'],
+                'value' => \HTML::div($options),
+            ]);
+        } else {
+            return \HTML::div($options);
+        }
     }
 }

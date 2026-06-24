@@ -229,6 +229,11 @@ Numbers.Form = {
 		if (!button) {
 			button = '__submit_refresh';
 		}
+		// for forms submitted from frontend
+		if ($(form).attr('data-form_model_frontend') == '1') {
+			$("[name='" + button + "']", $("#" + $(form).attr('id'))).click();
+			return;
+		}
 		// if refresh we need to clear no ajax
 		$(form).attr('no_ajax', '');
 		$("[name='__format']", "#" + $(form).attr('id')).val('text/html').change();
@@ -697,21 +702,28 @@ Numbers.Form = {
 	listFilterSortToggle: function(form_or_element, show, always_show) {
 		var form = this.getForm(form_or_element);
 		var data = this.getFormData(form_or_element);
+		let is_shown = '';
 		if (data.has_errors) {
 			$('.numbers_form_filter_sort_container', form).show();
+			is_shown = 1;
 		} else if (show) {
 			if (!always_show) {
 				if (data.submitted || (!data.refresh && !data.submitted) || data.list_rendered) {
 					$('.numbers_form_filter_sort_container', form).hide();
+					is_shown = '';
 				} else {
 					$('.numbers_form_filter_sort_container', form).show();
+					is_shown = 1;
 				}
 			} else {
 				$('.numbers_form_filter_sort_container', form).show();
+				is_shown = 1;
 			}
 		} else {
 			$('.numbers_form_filter_sort_container', form).toggle();
+			is_shown = $('.numbers_form_filter_sort_container', form).is(':visible') ? 1 : '';
 		}
+		$("[name='__form_filter_sort_opened']", "#" + $(form).attr('id')).val(is_shown);
 	},
 
 	/**
@@ -732,7 +744,7 @@ Numbers.Form = {
 		params['__ajax_form_id'] = 'form_' + form_link + '_form';
 		params['__form_link'] = form_link;
 		params['__subform_link'] = subform_link;
-		params['__subform_load_window'] = true;
+		params['__subform_load_window'] = 1;
 		params['__collection_screen_link'] = collection_screen_link;
 		params['__collection_link'] = collection_link;
 		$.ajax({
@@ -777,6 +789,14 @@ Numbers.Form = {
 							$(window).trigger('resize');
 						}, 150);
 					}
+					// autofocus
+					document.addEventListener('shown.bs.modal', function (event) {
+						const modal = event.target;
+						const autofocusElement = modal.querySelector('[autofocus]');
+						if (autofocusElement) {
+							autofocusElement.focus();
+						}
+					});
 				} else {
 					// todo: open error dialog in popup window
 					print_r2(data.error);
@@ -828,6 +848,59 @@ Numbers.Form = {
 			$(form).attr('no_ajax', no_ajax);
 			$(form).attr('target', '');
 		}, 500);
+	},
+
+	/**
+	 * Copy To Clipboard
+	 *
+	 * @param {string} text
+	 */
+	copyToClipboard: async function (text) {
+		try {
+			await navigator.clipboard.writeText(text);
+		} catch (err) {
+			console.error('Failed to copy text: ', err);
+		}
+	},
+
+	/**
+	 * Paste From Clipboard
+	 *
+	 * @param {string} text
+	 */
+	pasteFromClipboard: async function (id) {
+		try {
+			const text = await navigator.clipboard.readText();
+			$(id).val(text);
+		} catch (err) {
+			console.error('Failed to paste text: ', err);
+		}
+	},
+
+	/**
+	 * Switch to workflow mode
+	 *
+	 * @param string form_or_element
+	 * @param string mode
+	 */
+	switchToWorkflowMode: function(form_id, mode) {
+		$("[name='__form_workflow_activated']", $('#' + form_id)).val(mode);
+		$('#' + form_id).attr('no_ajax', 1);
+		$('#' + form_id).submit();
+	},
+
+	/**
+	 * Switch between password or input
+	 *
+	 * @param object elem
+	 */
+	switchToInputOrPassword: function (elem) {
+		const type = $(elem).attr('type');
+		if (type == 'input') {
+			$(elem).attr('type', 'password');
+		} else {
+			$(elem).attr('type', 'input');
+		}
 	}
 }
 

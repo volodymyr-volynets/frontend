@@ -14,15 +14,26 @@ namespace Numbers\Frontend\Components\Select\Numbers;
 class Base implements \Numbers\Frontend\Components\Select\Interface2\Base
 {
     /**
+     * Initialize
+     *
+     * @param array $options
+     * @return void
+     */
+    public static function initialize(array $options = []): void
+    {
+        // include js & css files
+        \Layout::addJs('/numbers/media_submodules/Numbers_Frontend_Components_Select_Numbers_Media_JS_Base.js', -10000);
+        \Layout::addCss('/numbers/media_submodules/Numbers_Frontend_Components_Select_Numbers_Media_CSS_Base.css', -10000);
+    }
+
+    /**
      * see \HTML::select();
      */
     public static function select(array $options = []): string
     {
         // we do not process readonly selects
         if (empty($options['readonly'])) {
-            // include js & css files
-            \Layout::addJs('/numbers/media_submodules/Numbers_Frontend_Components_Select_Numbers_Media_JS_Base.js', -10000);
-            \Layout::addCss('/numbers/media_submodules/Numbers_Frontend_Components_Select_Numbers_Media_CSS_Base.css', -10000);
+            self::initialize($options);
             // font awesome icons
             \Library::add('FontAwesome');
             // id with name
@@ -45,6 +56,14 @@ class Base implements \Numbers\Frontend\Components\Select\Interface2\Base
             }
             if (isset($primary)) {
                 $options['value'] = $primary;
+            }
+        }
+        // text extension
+        if (isset($options['options'])) {
+            foreach ($options['options'] as $k => $v) {
+                if (isset($v['text_extension'])) {
+                    $options['options'][$k]['text_extension'] = nl2br2($v['text_extension']);
+                }
             }
         }
         // must gain proper class from previous submodule

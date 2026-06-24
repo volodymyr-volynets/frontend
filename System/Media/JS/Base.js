@@ -242,11 +242,27 @@ if (!Numbers) {
 		preloadNewJs: function(js) {
 			var new_scripts = false;
 			for (var i in js) {
-				if (!script_exists(js[i])) {
+				// we might get as array
+				let type = 'text/javascript';
+				let src = js[i];
+				let is_entry = false;
+				if (typeof js[i] == 'object') {
+					type = js[i].type;
+					src = js[i].src;
+					is_entry = js[i].is_entry;
+				}
+				// check if script exists not not entry
+				if (!script_exists(js[i]) || is_entry) {
+					if (is_entry) {
+						var existing = document.querySelector('script[src*="' + src + '"]');
+						if (existing) {
+							existing.remove();
+						}
+					}
 					let script = document.createElement('script');
-					script.src = js[i];
+					script.src = src;
 					script.async = true;
-					script.type = 'text/javascript';
+					script.type = type;
 					document.getElementsByTagName('head')[0].appendChild(script);
 					new_scripts = true;
 				}
@@ -261,7 +277,7 @@ if (!Numbers) {
 		 * @returns boolean
 		 */
 		preloadNewCss: function(css) {
-			var new_scripts = false;
+			var new_styles = false;
 			for (var i in css) {
 				if (!style_exists(css[i])) {
 					$("<link/>", {
@@ -269,10 +285,10 @@ if (!Numbers) {
 						type: "text/css",
 						href: css[i]
 					}).appendTo("head");
-					new_scripts = true;
+					new_styles = true;
 				}
 			}
-			return new_scripts;
+			return new_styles;
 		}
 	};
 

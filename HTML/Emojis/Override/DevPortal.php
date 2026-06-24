@@ -9,18 +9,18 @@
  * with this source code in the file LICENSE.
  */
 
-namespace Numbers\Frontend\HTML\FontAwesome\Override;
+namespace Numbers\Frontend\HTML\Emojis\Override;
 
 class DevPortal
 {
     public $data = [
         'Links' => [
             'Global' => [
-                'Font Awesome 7 Icons' => [
-                    'url' => '/Numbers/Frontend/HTML/FontAwesome/Controller/Icons',
-                    'name' => 'FontAwesome Icons',
-                    'icon' => 'fa-brands fa-algolia'
-                ],
+                'Emojis' => [
+                    'url' => '/Numbers/Frontend/HTML/Emojis/Controller/Emojis',
+                    'name' => 'Emojis',
+                    'icon' => 'fa-brands fa-alipay'
+                ]
             ]
         ]
     ];

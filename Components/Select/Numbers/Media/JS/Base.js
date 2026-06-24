@@ -301,6 +301,27 @@ var NumbersSelect = function (options) {
 	};
 
 	/**
+	 * Render avatar string
+	 */
+	result.renderAvatarString = function(avatar_colors) {
+		let color = avatar_colors.split(',');
+		let className = 'nf_render_avatar_';
+		let type = 'holder';
+		let small = color[4] ? 'small' : 'regular';
+		if (in_array(color[3], ['organization', 'role', 'team', 'realm', 'domain', 'circle'])) {
+			type = 'ort';
+		}
+		className+= type + '_' + small;
+		if (color[3] == 'circle') {
+			className+= ' nf_render_avatar_border';
+		}
+		let html = '<span class="' + className + '" style="background-color: ' + color[0] + '; color: ' + color[1] + ';">';
+			html+= color[2];
+		html+= '</span>';
+		return html;
+	},
+
+	/**
 	 * Render value
 	 */
 	result.renderValue = function () {
@@ -323,6 +344,9 @@ var NumbersSelect = function (options) {
 					}
 					if (this.data[i].icon_class) {
 						html+= '<i class="numbers_select_option_table_icon ' + this.data[i].icon_class + '"></i> ';
+					}
+					if (this.data[i].avatar_colors && !this.data[i].icon_class) {
+						html+= this.renderAvatarString(this.data[i].avatar_colors) + ' ';
 					}
 					if (this.data[i].photo_id) {
 						html+= '<img class="navbar-menu-item-avatar-img" src="' + this.data[i].photo_id + '" width="24" height="24" /> ';
@@ -358,6 +382,10 @@ var NumbersSelect = function (options) {
 			var icon_class = this.elem.options[this.elem.selectedIndex].getAttribute('icon_class');
 			if (icon_class) {
 				html+= '<i class="' + icon_class + '"></i> ';
+			}
+			var avatar_colors = this.elem.options[this.elem.selectedIndex].getAttribute('avatar_colors');
+			if (avatar_colors && !icon_class) {
+				html+= this.renderAvatarString(avatar_colors) + ' ';
 			}
 			var photo_id = this.elem.options[this.elem.selectedIndex].getAttribute('photo_id');
 			if (photo_id) {
@@ -481,6 +509,7 @@ var NumbersSelect = function (options) {
 				title: '',
 				text_extension: '',
 				icon_class: '',
+				avatar_colors: '',
 				flag_class: '',
 				photo_id: '',
 				text_right: ''
@@ -504,6 +533,7 @@ var NumbersSelect = function (options) {
 				title: this.elem.options[i].getAttribute('title'),
 				text_extension: this.elem.options[i].getAttribute('text_extension'),
 				icon_class: this.elem.options[i].getAttribute('icon_class'),
+				avatar_colors: this.elem.options[i].getAttribute('avatar_colors'),
 				flag_class: this.elem.options[i].getAttribute('flag_class'),
 				photo_id: this.elem.options[i].getAttribute('photo_id'),
 				text_right: this.elem.options[i].getAttribute('text_right')
@@ -527,6 +557,7 @@ var NumbersSelect = function (options) {
 							level: 0,
 							title: '',
 							icon_class: '',
+							avatar_colors: '',
 							flag_class: '',
 							photo_id: '',
 							text_right: ''
@@ -710,6 +741,9 @@ var NumbersSelect = function (options) {
 						if (this.data[i].icon_class) {
 							html+= '<i class="numbers_select_option_table_icon ' + this.data[i].icon_class + '"></i> ';
 						}
+						if (this.data[i].avatar_colors && !this.data[i].icon_class) {
+							html+= this.renderAvatarString(this.data[i].avatar_colors) + ' ';
+						}
 						if (this.data[i].photo_id) {
 							html+= '<img class="navbar-menu-item-avatar-img" src="' + this.data[i].photo_id + '" width="24" height="24" /> ';
 						}
@@ -723,7 +757,7 @@ var NumbersSelect = function (options) {
 							cell = this.data[i].text;
 						}
 						if (this.data[i].text_extension) {
-							cell+= '<br/><span style="font-size: 0.70em;">' + this.data[i].text_extension + '</span>';
+							cell+= '<br/><div class="numbers_select_row_text_extension">' + this.data[i].text_extension + '</div>';
 						}
 						html+= cell;
 					html+= '</td>';

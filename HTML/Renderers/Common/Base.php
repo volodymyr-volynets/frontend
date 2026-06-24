@@ -13,6 +13,7 @@ namespace Numbers\Frontend\HTML\Renderers\Common;
 
 use Helper\Ob;
 use NF\Error;
+use Numbers\Frontend\HTML\MaterialSymbolsOutlined\Helper\Icon;
 
 class Base implements Interface2\Base
 {
@@ -134,7 +135,7 @@ class Base implements Interface2\Base
      * @param string $tag
      * @return string
      */
-    protected static function generateAttributes($options, $tag = null)
+    public static function generateAttributes($options, $tag = null)
     {
         // email
         if (self::$is_email) {
@@ -164,6 +165,8 @@ class Base implements Interface2\Base
             }
             if ($k == 'src') {
                 $result[] = $k . '="' . $v . '"';
+            } elseif (in_array($k, HTML5::$boolean_attributes)) {
+                $result[] = $k;
             } else {
                 $result[] = $k . '="' . htmlentities($v . '') . '"';
             }
@@ -312,7 +315,9 @@ class Base implements Interface2\Base
             $rtl = ' dir="auto" ';
         }
         // generate html
-        $options['value'] = isset($options['value']) ? htmlspecialchars($options['value'], ENT_COMPAT, 'UTF-8') : '';
+        if (empty($options['skip_html_entities'])) {
+            $options['value'] = isset($options['value']) ? htmlspecialchars($options['value'], ENT_COMPAT, 'UTF-8') : '';
+        }
         return '<input ' . self::generateAttributes($options, 'input') . $rtl . ' />';
     }
 
@@ -960,9 +965,15 @@ class Base implements Interface2\Base
             }
             return \HTML::img($options);
         } elseif (isset($options['type'])) {
-            $options['class'] = array_add_token($options['class'] ?? [], 'icon ' . $options['type'], ' ');
             $options['tag'] = $options['tag'] ?? 'i';
+            if (strpos($options['type'], 'material-symbols-outlined') !== false) {
+                return Icon::icon($options);
+            } else {
+                $options['class'] = array_add_token($options['class'] ?? [], 'icon ' . $options['type'], ' ');
+            }
             return \HTML::tag($options);
+        } else {
+            return '';
         }
     }
 
