@@ -644,6 +644,7 @@ var Numbers_Calendar = function (options) {
 	 */
 	result.close = function () {
 		this.div_elem.style.display = 'none';
+		document.body.style.overflow = '';
 	};
 
 	/**

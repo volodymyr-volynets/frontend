@@ -706,6 +706,21 @@ class Base implements Interface2\Base
             $flag_colspan = 0;
             $temp2 .= '</tr>';
             $result[] = $temp2;
+            // if we have other new line columns
+            if (!empty($options['new_line_columns'])) {
+                foreach ($options['new_line_columns'] as $k3 => $v3) {
+                    $temp_new_colspan = count($header);
+                    $temp_new_line = '<tr ' . self::generateAttributes($row_options, 'tr') . '>';
+                    if (!empty($options['show_row_number'])) {
+                        $temp_new_line .= '<td>&nbsp;</td>';
+                        $temp_new_colspan--;
+                    }
+                    $temp_new_value = isset($v3['position']) ? $v[$v3['position']] : $v[$k3];
+                    $temp_new_line .= '<td colspan="' . $temp_new_colspan . '">' . $temp_new_value . '</td>';
+                    $temp_new_line .= '</tr>';
+                    $result[] = $temp_new_line;
+                }
+            }
             $index++;
         }
         // if we have no data
