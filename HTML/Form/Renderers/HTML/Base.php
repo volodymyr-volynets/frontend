@@ -165,6 +165,9 @@ class Base
             $refresh_params['token'] = $this->object->values['token'];
         }
         $refresh_params['__refresh'] = rand(1000, 9999) . '_' . rand(1000, 9999) . '_' . rand(1000, 9999);
+        if (\Request::input('__archives')) {
+            $refresh_params['__archives'] = 1;
+        }
         $refresh_href = ($mvc['full'] ?? '') . '?' . http_build_query2($refresh_params) . "#" . $anchor;
         $refresh_href = \Request::fixUrl($refresh_href, $mvc['controller_template'] ?? 'default');
         if (!empty($this->object->options['actions']['refresh'])) {
@@ -297,6 +300,9 @@ class Base
         }
         $result .= \HTML::hidden(['name' => '__form_values_loaded', 'value' => $this->object->values_loaded]);
         $result .= \HTML::hidden(['name' => '__form_onchange_field_values_key', 'value' => '']);
+        if ($this->object->initiator_class != 'list' || !empty($this->object->options['collection_link'])) {
+            $result .= \HTML::hidden(['name' => '__archives', 'value' => \Request::input('__archives') ?? '']);
+        }
         // form is within tabs
         if (!empty($this->object->options['collection_current_tab_id'])) {
             $result .= \HTML::hidden(['name' => $this->object->options['collection_current_tab_id'], 'value' => $this->object->form_link]);
@@ -756,6 +762,11 @@ TTT
             $data['columns'][$k]['elements'] = $v['elements'];
         }
         array_key_sort($data['columns'], ['order' => SORT_ASC]);
+        // archive links
+        $show_edit_url = true;
+        if (\Request::input('__archives') && !empty($this->object->options['collection_link'])) {
+            $show_edit_url = false;
+        }
         // render list
         if (empty($data['preview'])) {
             // render columns
@@ -806,14 +817,14 @@ TTT
                             $value = $this->object->renderListContainerDefaultOptions($v2['options'], $value, $v0);
                         }
                         // urls
-                        if (!empty($v2['options']['url_edit']) && isset($this->object->misc_settings['subforms']['url_edit'])) {
+                        if (!empty($v2['options']['url_edit']) && isset($this->object->misc_settings['subforms']['url_edit']) && $show_edit_url) {
                             if (!empty($this->object->misc_settings['subforms']['url_edit'])) {
                                 $params = $this->renderURLEditHref($v0, ['json' => true]);
                                 $temp_collection_link = $this->object->options['collection_link'] ?? '';
                                 $temp_collection_screen_link = $this->object->options['collection_screen_link'] ?? '';
                                 $value = \HTML::a(['href' => 'javascript:void(0);', 'onclick' => "Numbers.Form.openSubformWindow('{$temp_collection_link}', '{$temp_collection_screen_link}', '{$this->object->form_link}', '{$this->object->misc_settings['subforms']['url_edit']['subform_link']}', {$params});", 'value' => $value]);
                             }
-                        } elseif (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
+                        } elseif (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit') && $show_edit_url) {
                             // if single record and we need to auto open
                             if (!empty($this->object->options['open_edit_if_single']) && count($data['rows']) == 1) {
                                 if (empty($this->object->values['__list_report_filter_skip_one_record_redirect'])) {
@@ -886,14 +897,14 @@ TTT
                             $value = $this->object->renderListContainerDefaultOptions($v2['options'], $value, $v0);
                         }
                         // urls
-                        if (!empty($v2['options']['url_edit']) && isset($this->object->misc_settings['subforms']['url_edit'])) {
+                        if (!empty($v2['options']['url_edit']) && isset($this->object->misc_settings['subforms']['url_edit']) && $show_edit_url) {
                             if (!empty($this->object->misc_settings['subforms']['url_edit'])) {
                                 $params = $this->renderURLEditHref($v0, ['json' => true]);
                                 $temp_collection_link = $this->object->options['collection_link'] ?? '';
                                 $temp_collection_screen_link = $this->object->options['collection_screen_link'] ?? '';
                                 $value = \HTML::a(['href' => 'javascript:void(0);', 'onclick' => "Numbers.Form.openSubformWindow('{$temp_collection_link}', '{$temp_collection_screen_link}', '{$this->object->form_link}', '{$this->object->misc_settings['subforms']['url_edit']['subform_link']}', {$params});", 'value' => $value]);
                             }
-                        } elseif (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
+                        } elseif (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit') && $show_edit_url) {
                             // if single record and we need to auto open
                             if (!empty($this->object->options['open_edit_if_single']) && count($data['rows']) == 1) {
                                 if (empty($this->object->values['__list_report_filter_skip_one_record_redirect'])) {
@@ -957,14 +968,14 @@ TTT
                         $value = $this->object->renderListContainerDefaultOptions($v2['options'], $value, $v0);
                     }
                     // urls
-                    if (!empty($v2['options']['url_edit']) && isset($this->object->misc_settings['subforms']['url_edit'])) {
+                    if (!empty($v2['options']['url_edit']) && isset($this->object->misc_settings['subforms']['url_edit']) && $show_edit_url) {
                         if (!empty($this->object->misc_settings['subforms']['url_edit'])) {
                             $params = $this->renderURLEditHref($v0, ['json' => true]);
                             $temp_collection_link = $this->object->options['collection_link'] ?? '';
                             $temp_collection_screen_link = $this->object->options['collection_screen_link'] ?? '';
                             $value = \HTML::a(['href' => 'javascript:void(0);', 'onclick' => "Numbers.Form.openSubformWindow('{$temp_collection_link}', '{$temp_collection_screen_link}', '{$this->object->form_link}', '{$this->object->misc_settings['subforms']['url_edit']['subform_link']}', {$params});", 'value' => $value]);
                         }
-                    } elseif (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit')) {
+                    } elseif (!empty($v2['options']['url_edit']) && \Application::$controller->can('Record_View', 'Edit') && $show_edit_url) {
                         // if single record and we need to auto open
                         if (!empty($this->object->options['open_edit_if_single']) && count($data['rows']) == 1) {
                             if (empty($this->object->values['__list_report_filter_skip_one_record_redirect'])) {
@@ -1049,6 +1060,10 @@ TTT
         // __form_filter_id
         if (!empty($this->object->misc_settings['list']['__form_filter_id']) && empty($options['skip_form_filter'])) {
             $pk['__form_filter_id'] = $this->object->misc_settings['list']['__form_filter_id'];
+        }
+        // archives
+        if (!empty($values['__archives'])) {
+            $pk['__archives'] = 1;
         }
         if (!empty($options['json'])) {
             // bypass variables

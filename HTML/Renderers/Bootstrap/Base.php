@@ -718,7 +718,7 @@ class Base extends \Numbers\Frontend\HTML\Renderers\Common\Base implements \Numb
         $id = $options['id'] ?? 'tabs_default';
         // determine active tab
         $active_id = $id . '_active_hidden';
-        $active_tab = $options['active_tab'] ?? \Request::input($active_id);
+        $active_tab = $options['active_tab'] ?? \Request::input($active_id) ?? '';
         if (!empty($options['tab_options'][$active_tab]['hidden'])) {
             $active_tab = null;
         }
